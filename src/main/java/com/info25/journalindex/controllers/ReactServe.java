@@ -1,9 +1,11 @@
 package com.info25.journalindex.controllers;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,16 +13,17 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 public class ReactServe {
-    final File REACT_APP_PATH = new File("C:\\Users\\yuyan\\Desktop\\jaui\\build");
-
     @GetMapping("/app/**")
     public ResponseEntity<FileSystemResource> serveReactApp(HttpServletRequest request) {
         String path = request.getRequestURI().substring(request.getContextPath().length());
-        
-        File file = new File(REACT_APP_PATH, path);
-        if (!file.exists() || !file.isFile()) {
-            file = new File(REACT_APP_PATH, "index.html");
+
+        File file = null;
+        try {
+            file = ResourceUtils.getFile("classpath:index.html");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
+
 
         FileSystemResource fsr = new FileSystemResource(file);
         return ResponseEntity.ok()
