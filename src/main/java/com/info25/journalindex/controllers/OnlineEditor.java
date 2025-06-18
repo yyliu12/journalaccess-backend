@@ -35,6 +35,7 @@ public class OnlineEditor {
         LocalDate parsedDate = DateUtils.parseFromString(date);
         java.io.File file = new java.io.File(FsUtils.getFileByDateAndPath(parsedDate, path));
         try {
+            file.getParentFile().mkdirs();
             file.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
