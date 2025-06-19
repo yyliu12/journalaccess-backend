@@ -51,13 +51,11 @@ public class SolrClient {
         deleteNode.put("query", query);
         
         String response = sendHttpRequest("/solr/" + coreName + "/update?commit=true", root.toString());
-        System.out.println(response);
     }
 
     public void modify(JsonNode json) {
         System.out.println(json.toString());
         String response = sendHttpRequest("/solr/" + coreName + "/update?commit=true", json.toString());
-        System.out.println(response);
     }
 
     public JsonNode select(SolrSelectQuery q) {
@@ -78,7 +76,6 @@ public class SolrClient {
         query.put("q.op", "AND");
 
         String response = sendHttpRequest("/solr/" + coreName + "/select", root.toString());
-        System.out.println(response);
         ObjectMapper responseJson = new ObjectMapper();
         JsonNode responseRoot;
         try {
