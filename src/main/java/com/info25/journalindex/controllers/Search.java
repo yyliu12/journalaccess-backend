@@ -55,7 +55,6 @@ public class Search {
         TagSearchOptions tagSearchOptions = so.getTags();
         String searchQuery = so.getQuery();
 
-
         SolrSelectQuery selectQuery = new SolrSelectQuery();
         SolrQueryAssembler assembler = new SolrQueryAssembler();
         if (boundsQuery != null) {
@@ -78,7 +77,8 @@ public class Search {
                 tagIds.add(tag);
             }
 
-            assembler.addTerm("tags: (" + String.join(" " + tagSearchOptions.getCombiningTerm() + " ", tagIds.stream().map(String::valueOf).toList()) + ")");
+            assembler.addTerm("tags: (" + String.join(" " + tagSearchOptions.getCombiningTerm() + " ",
+                    tagIds.stream().map(String::valueOf).toList()) + ")");
         }
 
         selectQuery.setFq(assembler.getFullQuery());
@@ -130,12 +130,12 @@ public class Search {
         ArrayList<FileSearchDto> results = new ArrayList<>();
 
         for (int year = OTD_START_YEAR; year <= OTD_END_YEAR; year++) {
-            if (year == dateTime.getYear()) {
-                results.addAll(fileRepository.getFilesByDateForApi(dateTime));
-            } else {
-                results.addAll(fileRepository
-                        .getFilesByDateForApi(LocalDate.of(year, dateTime.getMonth(), dateTime.getDayOfMonth())));
-            }
+            results.addAll(fileRepository
+                    .getFilesByDateForApi(LocalDate.of(year, dateTime.getMonth(), dateTime.getDayOfMonth())));
+        }
+
+        for (FileSearchDto f : results) {
+            backlinkRepository.populateBacklinks(f);
         }
         return results;
     }
