@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/static/annotator/annotator.min.css" />
+</head>
+
+<body>
+    <div id="content" th:utext="${html}"></div>
+
+    <script src="/static/jquery.min.js"></script>
+    <script src="/static/annotator/annotator-full.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        $(document).ready(function () {
+            var content = $('#content').annotator();
+            content.annotator('addPlugin', 'Store', {
+                // The endpoint of the store on your server.
+                prefix: '/api/annotation/html',
+                annotationData: {
+                    fileId: /*[[${id}]]*/
+                },
+
+                // This will perform a "search" action when the plugin loads. Will
+                // request the last 20 annotations for the current url.
+                // eg. /store/endpoint/search?limit=20&uri=http://this/document/only
+                loadFromSearch: {
+                    id: /*[[${id}]]*/
+                }
+            });
+        });
+        /*]]>*/
+    </script>
+</body>
+
+</html>

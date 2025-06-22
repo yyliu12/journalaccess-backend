@@ -33,5 +33,6 @@ build/
 .vscode/
 
 
-src/main/resources/**
+src/main/resources/index.html
+src/main/resources/static/**
 !src/main/resources/application.properties

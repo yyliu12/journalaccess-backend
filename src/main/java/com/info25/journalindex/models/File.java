@@ -18,6 +18,7 @@ public class File {
     String content;
     ArrayList<Location> locations;
     ArrayList<Integer> tags;
+    String annotations;
     boolean __dateModified = false;
     boolean __pathModified = false;
     LocalDate __originalDate = null;
@@ -151,5 +152,21 @@ public class File {
         this.__pathModified = false;
         this.__originalDate = null;
         this.__originalPath = null;
+    }
+
+    public boolean __isDateModified() {
+        return this.__dateModified;
+    }
+
+    public boolean __isPathModified() {
+        return this.__pathModified;
+    }
+
+    public String getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(String annotations) {
+        this.annotations = annotations;
     }
 }

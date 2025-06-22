@@ -130,6 +130,7 @@ public class FileRepository {
         f.setTags(fSolr.getTags());
         f.setContent(fSolr.getContent());
 
+
     }
 
     public void loadFromSql(File f) {
@@ -144,6 +145,7 @@ public class FileRepository {
         f.setDate(fSql.getDate());
         f.setUuid(fSql.getUuid());
         f.setId(fSql.getId());
+        f.setAnnotations(fSql.getAnnotations());
     }
 
     public void save(File f) {
@@ -153,6 +155,23 @@ public class FileRepository {
         __saveToSql(f);
         __saveToSolr(f);
     }
+
+    // SHOULD BE USED WITH EXTREME CAUTION!
+    // Only when you are confident you only modified data that exists
+    // in the SQL database ONLY!
+    // DON'T USE TO CREATE FILE
+    public void saveToSolr(File f) {
+        __saveToSolr(f);
+    }
+
+    // SHOULD BE USED WITH EXTREME CAUTION!
+    // Only when you are confident you only modified data that exists
+    // in the SQL database ONLY!
+    // DON'T USE TO CREATE FILE
+    public void saveToSql(File f) {
+        __saveToSql(f);
+    }
+
 
     public void delete(File f) {
         if (f.getId() == -1) {
@@ -165,12 +184,12 @@ public class FileRepository {
     private void __saveToSql(File f) {
         int id = f.getId();
         if (id != -1) {
-            String sql = "UPDATE files SET uuid = ?, path = ?, date = ? WHERE id = ?";
-            jdbcTemplate.update(sql, f.getUuid(), f.getPath(), DateUtils.localDateToTimestamp(f.getDate()), id);
+            String sql = "UPDATE files SET uuid = ?, path = ?, date = ?, annotations = ? WHERE id = ?";
+            jdbcTemplate.update(sql, f.getUuid(), f.getPath(), DateUtils.localDateToTimestamp(f.getDate()), f.getAnnotations(), id);
         } else {
-            String sql = "INSERT INTO files (uuid, path, date) VALUES (?, ?, ?) RETURNING RowId";
+            String sql = "INSERT INTO files (uuid, path, date, annotations) VALUES (?, ?, ?, ?) RETURNING RowId";
             id = jdbcTemplate.queryForObject(sql,
-                    new Object[] { f.getUuid(), f.getPath(), DateUtils.localDateToTimestamp(f.getDate()) },
+                    new Object[] { f.getUuid(), f.getPath(), DateUtils.localDateToTimestamp(f.getDate()), f.getAnnotations() },
                     Integer.class);
             // After insert, we need to get the generated ID
 
@@ -217,6 +236,7 @@ public class FileRepository {
             file.setPath(rs.getString("path"));
             file.setDate(DateUtils.timestampToLocalDate(rs.getInt("date")));
             file.setUuid(rs.getString("uuid"));
+            file.setAnnotations(rs.getString("annotations"));
             return file;
         }
     }
