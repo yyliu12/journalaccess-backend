@@ -33,6 +33,8 @@ public class File {
             this.address = address;
         }
 
+        public Location() {}
+
         public String getCoordinate() {
             return coordinate;
         }
