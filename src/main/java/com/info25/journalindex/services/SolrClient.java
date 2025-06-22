@@ -54,7 +54,6 @@ public class SolrClient {
     }
 
     public void modify(JsonNode json) {
-        System.out.println(json.toString());
         String response = sendHttpRequest("/solr/" + coreName + "/update?commit=true", json.toString());
     }
 
