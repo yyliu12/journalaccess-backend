@@ -25,9 +25,12 @@ import com.info25.journalindex.util.FsUtils;
 import com.itextpdf.forms.xfdf.XfdfObject;
 import com.itextpdf.forms.xfdf.XfdfObjectFactory;
 import com.itextpdf.kernel.geom.AffineTransform;
+import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.research.xfdfmerge.XfdfMerge;
 import com.info25.journalindex.models.File;
 
@@ -36,13 +39,20 @@ import jakarta.servlet.http.HttpServletRequest;
 @Controller
 @RequestMapping("/api/annotation")
 public class AnnotationController {
+    // write False here if you don't have a nutrient license
+    // a copy of the nutrient web SDK should be located in the
+    // resources/static/nutrient
+    // folder.
+    // if False, then PDF annotations will be disabled
+    final boolean NUTRIENT_LICENSE = true;
+
     @Autowired
     FileRepository fileRepository;
 
-
-    //object return type: sorry! But it needs to return a filesystemresource or ModelAndView
+    // object return type: sorry! But it needs to return a filesystemresource or
+    // ModelAndView
     @GetMapping("/getEditor/byId/{id}")
-    public Object getEditor(@PathVariable("id") String strId) throws UnsupportedEncodingException{
+    public Object getEditor(@PathVariable("id") String strId) throws UnsupportedEncodingException {
         int id = Integer.parseInt(strId);
         File file = fileRepository.getById(id);
         String fileExt = ContentType.getFileExt(file.getPath());
@@ -51,6 +61,9 @@ public class AnnotationController {
             case "html":
                 return getHtmlEditorAndViewer(file);
             case "pdf":
+                if (!NUTRIENT_LICENSE) {
+                    return "No nutrient web SDK license, PDF annotations are disabled";
+                }
                 return getPdfEditor(file);
             case "jpeg":
             case "jpg":
@@ -64,7 +77,8 @@ public class AnnotationController {
     }
 
     @GetMapping("/getViewer/byId/{id}")
-    public Object getViewer(@PathVariable("id") String strId, HttpServletRequest request) throws UnsupportedEncodingException {
+    public Object getViewer(@PathVariable("id") String strId, HttpServletRequest request)
+            throws UnsupportedEncodingException {
         int id = Integer.parseInt(strId);
         File file = fileRepository.getById(id);
         String fileExt = ContentType.getFileExt(file.getPath());
@@ -85,15 +99,13 @@ public class AnnotationController {
         return null;
     }
 
-
     private ResponseEntity<byte[]> getPdfViewer(File f) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PdfDocument pdfDoc = null;
         try {
             pdfDoc = new PdfDocument(
-                new PdfReader(FsUtils.getFilePathByFile(f)),
-                new PdfWriter(out)
-            );
+                    new PdfReader(FsUtils.getFilePathByFile(f)),
+                    new PdfWriter(out));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -102,23 +114,26 @@ public class AnnotationController {
         XfdfObject xfdfObject = null;
         try {
             xfdfObject = factory.createXfdfObject(new ByteArrayInputStream(
-                f.getAnnotations().getBytes()
-            ));
+                    f.getAnnotations().getBytes()));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        XfdfMerge xfdfMerge = new XfdfMerge(pdfDoc, new AffineTransform(), 0);
-        xfdfMerge.mergeXfdfIntoPdf(xfdfObject);
+        // no annotations for doc if null, just close the pdfDoc
+        if (xfdfObject != null) {
+            XfdfMerge xfdfMerge = new XfdfMerge(pdfDoc, new AffineTransform(), 0);
+            xfdfMerge.mergeXfdfIntoPdf(xfdfObject);
+        }
 
         pdfDoc.close();
 
         return ResponseEntity.ok()
-            .header("Content-Disposition", "inline; filename=\"out.pdf\"")
-            .header("Content-Type", "application/pdf")
-            .body(out.toByteArray());
+                .header("Content-Disposition", "inline; filename=\"out.pdf\"")
+                .header("Content-Type", "application/pdf")
+                .body(out.toByteArray());
 
     }
+
 
     private ModelAndView getPdfEditor(File f) {
         ModelAndView mav = new ModelAndView("annotation_viewers/pdf.html");
@@ -134,10 +149,8 @@ public class AnnotationController {
         String content = null;
         try {
             content = FsUtils.decodeBytesWithCharset(
-                Files.readAllBytes(
-                    Path.of(FsUtils.getFilePathByFile(f))
-                )
-            );
+                    Files.readAllBytes(
+                            Path.of(FsUtils.getFilePathByFile(f))));
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -26,34 +26,52 @@
 
             }
         };
-        window.NutrientViewer.load({
-            container: "#nutrient",
-            document: "http://localhost:8080/api/files/getFile/byId/[[${id}]]"
-        })
-            .then(instance => {
-                const items = instance.toolbarItems;
-                // Hide the toolbar item with the `id` "ink"
-                // by removing it from the array of items.
-                instance.setToolbarItems(items.filter((item) => ![
-                    "image",
-                    "stamp",
-                    "ink",
-                    "signature",
-                    "link",
-                    "document-editor",
-                    "document-crop",
-                    "export-pdf",
-                    "debug",
-                    "print"].includes(item.type)));
-                instance.setToolbarItems((items) => {
-                    items.push(item);
-                    return items;
-                });
-                window.instance = instance;
+        (async () => {
+            var xfdfData = await fetch("http://localhost:8080/api/annotation/pdf/[[${id}]]/get",
+                {method: "POST"}
+            );
+            xfdfData = await xfdfData.text();
+            var instance = await window.NutrientViewer.load({
+                container: "#nutrient",
+                document: "http://localhost:8080/api/files/getFile/byId/[[${id}]]",
+                XFDF: xfdfData
             })
-            .catch(error => {
-                console.error(error.message);
+            const items = instance.toolbarItems;
+            // Hide the toolbar item with the `id` "ink"
+            // by removing it from the array of items.
+            instance.setToolbarItems(items.filter((item) => ![
+                "image",
+                "stamp",
+                "ink",
+                "signature",
+                "link",
+                "document-editor",
+                "document-crop",
+                "export-pdf",
+                "debug",
+                "highlighter",
+                "print",
+                "text",
+                "callout",
+                "line",
+                "arrow",
+                "rectangle",
+                "ellipse",
+                "polygon",
+                "cloudy-polygon",
+                "polyline",
+                "ink-eraser"
+            ].includes(item.type)));
+            instance.setToolbarItems((items) => {
+                items.push(item);
+                return items;
             });
+            window.instance = instance;
+
+        })();
+
+
+
         /*]]>*/
     </script>
 </body>
