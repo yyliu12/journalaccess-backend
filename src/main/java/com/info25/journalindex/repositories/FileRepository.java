@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.info25.journalindex.models.Backlink;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.services.SolrClient;
 import com.info25.journalindex.util.DateUtils;
@@ -41,6 +43,10 @@ public class FileRepository {
     TagRepository tagRepository;
 
     @Autowired
+    @Lazy
+    BacklinkRepository backlinkRepository;
+
+    @Autowired
     SolrClient solrClient;
 
     public File getById(int id) {
@@ -51,6 +57,7 @@ public class FileRepository {
     }
 
     public File getWithoutSolr(int id) {
+
         String sql = "SELECT * FROM files WHERE id = ?";
         return jdbcTemplate.queryForObject(sql, new FileRowMapper(), new Object[] { id });
     }
@@ -173,12 +180,28 @@ public class FileRepository {
     }
 
 
+
     public void delete(File f) {
         if (f.getId() == -1) {
             loadFromSql(f);
         }
         __deleteFromSql(f);
         __deleteFromSolr(f);
+
+
+        // deletion of backlinks
+        HashSet<Integer> involvedIn = new HashSet<Integer>();
+        for (Backlink b : backlinkRepository.findByFrom(f.getId())) {
+            involvedIn.add(b.getTo());
+        }
+        for (Backlink b : backlinkRepository.findByTo(f.getId())) {
+            involvedIn.add(b.getFrom());
+        }
+
+        for (Integer id : involvedIn) {
+            backlinkRepository.deleteById(id);
+        }
+
     }
 
     private void __saveToSql(File f) {

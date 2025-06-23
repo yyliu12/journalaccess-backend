@@ -164,6 +164,14 @@ public class File {
         return this.__pathModified;
     }
 
+    public String __getOriginalPath() {
+        return this.__originalPath;
+    }
+
+    public LocalDate __getOriginalDate() {
+        return this.__originalDate;
+    }
+
     public String getAnnotations() {
         return annotations;
     }

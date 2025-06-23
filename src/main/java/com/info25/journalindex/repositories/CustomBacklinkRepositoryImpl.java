@@ -22,6 +22,7 @@ class CustomBacklinkRepositoryImpl implements CustomBacklinkRepository {
         // Find all backlinks going to this file
         List<Backlink> backlinks = backlinkRepository.findByTo(f.getId());
         for (Backlink b : backlinks) {
+            System.out.println(b.getFrom());
             File fromFile = fileRepository.getWithoutSolr(b.getFrom());
             f.getBacklinks().add(FileSearchDto.fromFile(fromFile, null));
         }
