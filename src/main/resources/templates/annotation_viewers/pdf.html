@@ -1,0 +1,61 @@
+<html>
+
+<head>
+    <script src="/static/nutrient/nutrient-viewer.js"></script>
+</head>
+
+<body>
+    <div id="nutrient" style="width: 100%; height: 100vh;"></div>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const item = {
+            type: "custom",
+            id: "save",
+            title: "Save Annotations",
+            onPress: async (event) => {
+                var xfdf = await instance.exportXFDF();
+                fetch("http://localhost:8080/api/annotation/pdf/[[${id}]]/save", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: xfdf
+                }).then(response => {
+                    alert("Annotations saved!");
+                })
+
+            }
+        };
+        window.NutrientViewer.load({
+            container: "#nutrient",
+            document: "http://localhost:8080/api/files/getFile/byId/[[${id}]]"
+        })
+            .then(instance => {
+                const items = instance.toolbarItems;
+                // Hide the toolbar item with the `id` "ink"
+                // by removing it from the array of items.
+                instance.setToolbarItems(items.filter((item) => ![
+                    "image",
+                    "stamp",
+                    "ink",
+                    "signature",
+                    "link",
+                    "document-editor",
+                    "document-crop",
+                    "export-pdf",
+                    "debug",
+                    "print"].includes(item.type)));
+                instance.setToolbarItems((items) => {
+                    items.push(item);
+                    return items;
+                });
+                window.instance = instance;
+            })
+            .catch(error => {
+                console.error(error.message);
+            });
+        /*]]>*/
+    </script>
+</body>
+
+</html>

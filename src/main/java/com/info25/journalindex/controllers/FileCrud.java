@@ -40,6 +40,19 @@ public class FileCrud {
     @Autowired
     FileRepository fileRepository;
 
+    @GetMapping("/api/files/getFile/byId/{id}")
+    public ResponseEntity<FileSystemResource> getFileById(@PathVariable("id") int id) throws IOException {
+        File file = fileRepository.getById(id);
+        if (file == null) {
+            return ResponseEntity.notFound().build();
+        }
+        FileSystemResource fsr = new FileSystemResource(FsUtils.getFilePathByFile(file));
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(ContentType.getContentTypeFromFileName(file.getPath()));
+        headers.setContentLength(fsr.contentLength());
+        return new ResponseEntity<>(fsr, headers, HttpStatus.OK);
+    }
+
     @GetMapping("/api/files/getFile/{date}/**")
     public ResponseEntity<FileSystemResource> getFile(@PathVariable("date") String date, HttpServletRequest request)
             throws IOException {
