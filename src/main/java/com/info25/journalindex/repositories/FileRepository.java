@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.info25.journalindex.util.FileSolrSerializer;
+import com.info25.journalindex.util.FsUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -161,6 +163,7 @@ public class FileRepository {
         }
         __saveToSql(f);
         __saveToSolr(f);
+        __saveToFilesystem(f);
     }
 
     // SHOULD BE USED WITH EXTREME CAUTION!
@@ -179,7 +182,31 @@ public class FileRepository {
         __saveToSql(f);
     }
 
+    // if more properties arise then you need to figure out a better
+    // solution than doing this... this is OK as of right now
+    private void __saveToFilesystem(File f) {
+        LocalDate curDate = null;
+        if (f.__isDateModified()) {
+            curDate = f.__getOriginalDate();
+        } else {
+            curDate = f.getDate();
+        }
 
+        if (f.__isPathModified()) {
+            java.io.File fsFile = new java.io.File(FsUtils.getFileByDateAndPath(curDate, f.__getOriginalPath()));
+            fsFile.renameTo(new java.io.File(FsUtils.getFileByDateAndPath(curDate, null)));
+        }
+
+        // we know that the file exists at its set path now
+        if (f.__isDateModified()) {
+
+            java.io.File fsFile = new java.io.File(FsUtils.getFileByDateAndPath(f.__getOriginalDate(), f.getPath()));
+            
+            java.io.File toFile = new java.io.File(FsUtils.getFileByDateAndPath(f.getDate(), f.getPath()));
+            toFile.getParentFile().mkdirs();
+            fsFile.renameTo(toFile);
+        }
+    }
 
     public void delete(File f) {
         if (f.getId() == -1) {
