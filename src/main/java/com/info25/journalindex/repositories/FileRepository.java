@@ -110,13 +110,17 @@ public class FileRepository {
         int numFound = response.get("response").get("numFound").asInt();
 
         for (File file : files) {
-            JsonNode highlight = highlights.get(file.getUuid());
-            String highlightText = "";
-            if (highlight != null && highlight.has("content")) {
-                highlightText = highlight.get("content").get(0).asText();
-            } else {
-                highlightText = "";
-            }
+			String highlightText = "";
+			if (highlights != null) {
+				JsonNode highlight = highlights.get(file.getUuid());
+				if (highlight != null && highlight.has("content")) {
+					highlightText = highlight.get("content").get(0).asText();
+				} else {
+					highlightText = "";
+				}
+			} else {
+				highlightText = "";
+			}
             this.loadFromSql(file);
 
             FileSearchDto fileSearchDto = FileSearchDto.fromFile(file, highlightText);
