@@ -71,6 +71,28 @@ public class FileRepository {
         return file;
     }
 
+    public List<File> getFilesByTag(int id) {
+        return this.solrQuery(new SolrSelectQuery()
+            .setQ("tags:" + id)
+            .setRows(2147483647)
+        );
+    }
+
+    public void deleteTagFromFiles(int tagId) {
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode rootNode = mapper.createArrayNode();
+        for (File f : getFilesByTag(tagId)) {
+            rootNode.add(
+                mapper.createObjectNode()
+                    .put("id", f.getUuid())
+                    .set("tags", mapper.createObjectNode()
+                        .put("remove", tagId))
+            );
+        }
+
+        solrClient.modify(rootNode);
+    }
+
     public boolean existsByDateAndPath(LocalDate date, String path) {
         String sql = "SELECT COUNT(*) FROM files WHERE date = ? AND path = ?";
         int count = jdbcTemplate.queryForObject(sql, Integer.class, DateUtils.localDateToTimestamp(date), path);
@@ -210,6 +232,8 @@ public class FileRepository {
             toFile.getParentFile().mkdirs();
             fsFile.renameTo(toFile);
         }
+
+        f.__savedByRepository();
     }
 
     public void delete(File f) {

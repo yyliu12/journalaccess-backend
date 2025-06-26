@@ -94,7 +94,6 @@ public class File {
     }
 
     public void setDate(LocalDate date) {
-        System.out.println("Date set to " + date);
         if (this.date != null && !this.date.equals(date) && __originalDate == null) {
             this.__dateModified = true;
             this.__originalDate = this.date;

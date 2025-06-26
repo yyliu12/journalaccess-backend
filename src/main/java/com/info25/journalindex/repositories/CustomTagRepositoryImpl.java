@@ -4,13 +4,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.info25.journalindex.models.File;
 import com.info25.journalindex.models.Tag;
+import com.info25.journalindex.util.SolrSelectQuery;
 
 public class CustomTagRepositoryImpl implements CustomTagRepository {
     @Autowired
     JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    @Lazy
+    TagRepository tagRepository;
+
+    @Autowired
+    @Lazy
+    FileRepository fileRepository;
 
     @Override
     public List<Tag> findByManyIds(List<Integer> ids) {

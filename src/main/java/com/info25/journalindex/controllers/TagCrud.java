@@ -1,5 +1,6 @@
 package com.info25.journalindex.controllers;
 
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.info25.journalindex.apidtos.TagJsTreeDto;
 import com.info25.journalindex.apidtos.TagJsTreeDtoMapper;
 import com.info25.journalindex.models.Tag;
+import com.info25.journalindex.repositories.FileRepository;
 import com.info25.journalindex.repositories.TagRepository;
 
 @RestController
@@ -25,6 +27,9 @@ public class TagCrud {
 
     @Autowired
     TagJsTreeDtoMapper tagJsTreeDtoMapper;
+
+    @Autowired
+    FileRepository fileRepository;
 
     @PostMapping("/api/tags/getByIds")
     public List<TagJsTreeDto> getTagsByIds(@RequestParam("tags") JsonNode tags) {
@@ -104,6 +109,7 @@ public class TagCrud {
     public String deleteTag(@RequestParam("id") int id) {
         Tag tag = tagRepository.findById(id);
         if (tag != null) {
+            fileRepository.deleteTagFromFiles(tag.getId());;
             tagRepository.delete(tag);
             return "OK";
         } else {
