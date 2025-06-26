@@ -73,6 +73,8 @@ public class SolrClient {
         query.put("fq", q.getFq());
         query.put("wt", "json");
         query.put("q.op", "AND");
+        query.put("hl.bs.type", "WORD");
+        query.put("hl.fragsize", 300);
 
         String response = sendHttpRequest("/solr/" + coreName + "/select", root.toString());
         ObjectMapper responseJson = new ObjectMapper();

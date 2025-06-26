@@ -55,7 +55,10 @@ public class Search {
         TagSearchOptions tagSearchOptions = so.getTags();
         String searchQuery = so.getQuery();
 
-        SolrSelectQuery selectQuery = new SolrSelectQuery();
+        SolrSelectQuery selectQuery = new SolrSelectQuery()
+            .setHl("true")
+            .setStart(page * 10)
+            .setHlFl("content");
         SolrQueryAssembler assembler = new SolrQueryAssembler();
         if (boundsQuery != null) {
 
@@ -65,6 +68,7 @@ public class Search {
                     boundsQuery.get("boundsNeLat").asDouble() + "," +
                     boundsQuery.get("boundsNeLng").asDouble() + "]");
             selectQuery.setRows(2147483647);
+            selectQuery.setHl("false");
         }
 
         if (tagSearchOptions.getTags().size() > 0) {
@@ -87,10 +91,7 @@ public class Search {
             selectQuery.setQ(searchQuery);
         }
 
-        SolrFileResponse resp = fileRepository.solrQueryForApi(selectQuery
-                .setStart(page * 10)
-                .setHl("true")
-                .setHlFl("content"));
+        SolrFileResponse resp = fileRepository.solrQueryForApi(selectQuery);
 
         for (FileSearchDto f : resp.getFiles()) {
             backlinkRepository.populateBacklinks(f);

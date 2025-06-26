@@ -47,14 +47,14 @@ public class FsUtils {
         return new String(bytes, Charset.forName(charset));
     }
 
-    public static String changeToTxtExtension(String path) {
-        if (path.endsWith(".txt")) {
+    public static String changeExtension(String path, String newExtension) {
+        if (path.endsWith(newExtension)) {
             return path;
         }
         if (path.contains(".")) {
-            return path.substring(0, path.lastIndexOf('.')) + ".txt";
+            return path.substring(0, path.lastIndexOf('.')) + newExtension;
         } else {
-            return path + ".txt";
+            return path + newExtension;
         }
     }
 }

@@ -150,25 +150,15 @@ public class FileCrud {
 
             // attempt to read both a.pdf.txt and a.txt (as an example)
             String content = "";
-            String txtName = file.getOriginalFilename() + ".txt";
+            String[] attemptedContent = new String[3];
+            
+            attemptedContent[0] = attemptReadText(fileMap, file.getOriginalFilename() + ".txt");
+            attemptedContent[1] = FsUtils.changeExtension(file.getOriginalFilename(), ".txt");
+            attemptedContent[2] = FsUtils.changeExtension(file.getOriginalFilename(), ".TXT");
 
-            if (fileMap.containsKey(txtName)) {
-                try {
-                    content = FsUtils.decodeBytesWithCharset(fileMap.get(txtName).getBytes());
-                    newFile.setContent(content);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            txtName = FsUtils.changeToTxtExtension(file.getOriginalFilename());
-
-            if (fileMap.containsKey(txtName)) {
-                try {
-                    content = FsUtils.decodeBytesWithCharset(fileMap.get(txtName).getBytes());
-                    newFile.setContent(content);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            for (String attempt : attemptedContent) {
+                if (attempt != null)
+                    content = attempt;
             }
 
             if (fileName.endsWith(".html")) {
@@ -194,5 +184,17 @@ public class FileCrud {
         }
 
         return "OK";
+    }
+
+    private String attemptReadText(HashMap<String, MultipartFile> fileMap, String fileName) {
+        String content = null;
+        if (fileMap.containsKey(fileName)) {
+            try {
+                content = FsUtils.decodeBytesWithCharset(fileMap.get(fileName).getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return content;
     }
 }
