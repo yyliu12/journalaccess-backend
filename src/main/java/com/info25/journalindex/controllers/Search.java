@@ -58,7 +58,8 @@ public class Search {
         SolrSelectQuery selectQuery = new SolrSelectQuery()
             .setHl("true")
             .setStart(page * 10)
-            .setHlFl("content");
+            .setHlFl("content")
+            .setSort(so.getSort());
         SolrQueryAssembler assembler = new SolrQueryAssembler();
         if (boundsQuery != null) {
 

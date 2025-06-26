@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class SearchOptions {
     TagSearchOptions tags;
+    String sort;
     String query;
 }
