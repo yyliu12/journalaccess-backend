@@ -68,7 +68,7 @@ public class AnnotationController {
             case "jpeg":
             case "jpg":
             case "png":
-                break;
+                return getImageEditorAndViewer(file);
             default:
                 break;
         }
@@ -91,7 +91,7 @@ public class AnnotationController {
             case "jpeg":
             case "jpg":
             case "png":
-                break;
+                return getImageEditorAndViewer(file);
             default:
                 break;
         }
@@ -156,6 +156,12 @@ public class AnnotationController {
         }
 
         mav.addObject("html", content);
+        return mav;
+    }
+
+    public ModelAndView getImageEditorAndViewer(File f) {
+        ModelAndView mav = new ModelAndView("annotation_viewers/image.html");
+        mav.addObject("id", f.getId());
         return mav;
     }
 }

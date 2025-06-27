@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/static/annotorious-seadragon/annotorious.min.css" />
+    <style>
+        #content {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="content"></div>
+
+    <script src="/static/annotorious-seadragon/openseadragon.min.js"></script>
+    <script src="/static/annotorious-seadragon/openseadragon-annotorious.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        function fixId(id) {
+            return id.replace("#", ""); // # causes issues in urls
+        }
+
+        window.onload = function () {
+            var viewer = OpenSeadragon({
+                id: "content",
+                prefixUrl: "/static/annotorious-seadragon/images/",
+                springStiffness: 100,
+                animationTime: 0,
+                tileSources: {
+                    type: "image",
+                    url: "/api/files/getFile/byId/[[${id}]]"
+                }
+            });
+
+            var anno = OpenSeadragon.Annotorious(viewer, {
+                widgets: [
+                    'COMMENT'
+                ]
+            });
+
+            anno.loadAnnotations("/api/annotation/image/annotations/[[${id}]]");
+
+            anno.on('createAnnotation', function (annotation, overrideId) {
+                overrideId(fixId(annotation.id));
+                annotation.id = fixId(annotation.id);
+                fetch("/api/annotation/image/annotations/[[${id}]]", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(annotation)
+                });
+            });
+
+            anno.on('updateAnnotation', function (annotation) {
+                fetch("/api/annotation/image/annotations/[[${id}]]/" + annotation.id, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(annotation)
+                });
+            });
+
+            anno.on('deleteAnnotation', function (annotation, overrideId) {
+                fetch("/api/annotation/image/annotations/[[${id}]]/" + annotation.id, {
+                    method: "DELETE"
+                });
+            });
+
+        }
+        /*]]>*/
+    </script>
+</body>
+
+</html>
