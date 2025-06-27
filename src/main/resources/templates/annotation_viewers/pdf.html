@@ -34,14 +34,23 @@
         };
         (async () => {
             var xfdfData = await fetch("http://localhost:8080/api/annotation/pdf/[[${id}]]/get",
-                {method: "POST"}
+                { method: "POST" }
             );
             xfdfData = await xfdfData.text();
-            var instance = await window.NutrientViewer.load({
-                container: "#nutrient",
-                document: "http://localhost:8080/api/files/getFile/byId/[[${id}]]",
-                XFDF: xfdfData
-            })
+            console.log(xfdfData);
+            if (xfdfData != "") {
+                var instance = await window.NutrientViewer.load({
+                    container: "#nutrient",
+                    document: "http://localhost:8080/api/files/getFile/byId/[[${id}]]",
+                    XFDF: xfdfData
+                });
+            } else {
+                var instance = await window.NutrientViewer.load({
+                    container: "#nutrient",
+                    document: "http://localhost:8080/api/files/getFile/byId/[[${id}]]"
+                });
+            }
+
             const items = instance.toolbarItems;
             // Hide the toolbar item with the `id` "ink"
             // by removing it from the array of items.
