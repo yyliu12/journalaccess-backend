@@ -12,6 +12,9 @@
 <script src="/static/annotator/annotator-full.min.js"></script>
 <script th:inline="javascript">
 	/*<![CDATA[*/
+	var date = [[${date}]];
+	$('img').each(function(){ this.src='/api/files/getFile/' + date + '/' + this.getAttribute('src') });
+	$('href').each(function(){ this.src='/api/files/getFile/' + date + '/' + this.getAttribute('href') });
 	$(document).ready(function () {
 		var content = $('body').annotator();
 		content.annotator('addPlugin', 'Store', {
