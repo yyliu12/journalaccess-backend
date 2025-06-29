@@ -151,10 +151,11 @@ public class XfdfMerge {
             PdfPopupAnnotation pdfPopupAnnot = new PdfPopupAnnotation(readAnnotRect(popup));
             String openProp = popup.getAttributeValue("open");
             boolean open = "yes".equals(openProp);
-            pdfPopupAnnot.setOpen(open)
-                    .setFlags(XfdfObjectReadingUtils
-                            .convertFlagsFromString(popup.getAttributeValue(XfdfConstants.FLAGS)));
+            //pdfPopupAnnot.setOpen(open)
+            //       .setFlags(XfdfObjectReadingUtils
+            //                .convertFlagsFromString(popup.getAttributeValue(XfdfConstants.FLAGS)));
             parent.setPopup(pdfPopupAnnot);
+			pdfPopupAnnot.setFlag(PdfAnnotation.NO_ROTATE);
             pdfDocument.getPage(page).addAnnotation(pdfPopupAnnot);
         }
     }
@@ -307,8 +308,11 @@ public class XfdfMerge {
             switch (annotName) {
                 case XfdfConstants.TEXT:
                     PdfTextAnnotation pdfTextAnnotation = new PdfTextAnnotation(readAnnotRectAndResize(annotObject));
+					
                     addCommonAnnotationAttributes(pdfTextAnnotation, annotObject, color);
                     addMarkupAnnotationAttributes(pdfTextAnnotation, annotObject);
+					
+					
 
                     String icon = annotObject.getAttributeValue(XfdfConstants.ICON);
                     if ("Comment".equals(icon)) {
@@ -323,6 +327,8 @@ public class XfdfMerge {
                     if (stateModelString != null) {
                         pdfTextAnnotation.setStateModel(new PdfString(stateModelString));
                     }
+					
+					pdfTextAnnotation.setFlag(PdfAnnotation.NO_ROTATE);
 
                     page = readAnnotPage(annotObject);
                     pdfDocument.getPage(page).addAnnotation(pdfTextAnnotation);

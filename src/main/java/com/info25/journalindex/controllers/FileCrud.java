@@ -149,16 +149,15 @@ public class FileCrud {
             newFile.setContent("");
 
             // attempt to read both a.pdf.txt and a.txt (as an example)
-            String content = "";
             String[] attemptedContent = new String[3];
             
             attemptedContent[0] = attemptReadText(fileMap, file.getOriginalFilename() + ".txt");
-            attemptedContent[1] = FsUtils.changeExtension(file.getOriginalFilename(), ".txt");
-            attemptedContent[2] = FsUtils.changeExtension(file.getOriginalFilename(), ".TXT");
+            attemptedContent[1] = attemptReadText(fileMap, FsUtils.changeExtension(file.getOriginalFilename(), ".txt"));
+            attemptedContent[2] = attemptReadText(fileMap, FsUtils.changeExtension(file.getOriginalFilename(), ".TXT"));
 
             for (String attempt : attemptedContent) {
                 if (attempt != null)
-                    content = attempt;
+                    newFile.setContent(attempt);
             }
 
             if (fileName.endsWith(".html")) {
