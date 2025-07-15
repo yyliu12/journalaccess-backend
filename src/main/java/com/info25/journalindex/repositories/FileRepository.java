@@ -1,7 +1,5 @@
 package com.info25.journalindex.repositories;
 
-import java.beans.JavaBean;
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -10,10 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.info25.journalindex.util.FileSolrSerializer;
-import com.info25.journalindex.util.FsUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -24,16 +18,18 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.info25.journalindex.apidtos.FileSearchDto;
 import com.info25.journalindex.models.Backlink;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.services.SolrClient;
 import com.info25.journalindex.util.DateUtils;
 import com.info25.journalindex.util.FileSolrDeserializer;
+import com.info25.journalindex.util.FileSolrSerializer;
+import com.info25.journalindex.util.FsUtils;
 import com.info25.journalindex.util.SolrSelectQuery;
 
 import lombok.Data;
-
-import com.info25.journalindex.apidtos.FileSearchDto;
 
 @Component
 public class FileRepository {

@@ -31,10 +31,18 @@
  */
 package com.itextpdf.research.xfdfmerge;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.itextpdf.commons.utils.MessageFormatUtil;
 import com.itextpdf.forms.xfdf.AnnotObject;
 import com.itextpdf.forms.xfdf.AnnotsObject;
-import com.itextpdf.forms.xfdf.XfdfAnnotFactory;
 import com.itextpdf.forms.xfdf.XfdfConstants;
 import com.itextpdf.forms.xfdf.XfdfObject;
 import com.itextpdf.forms.xfdf.XfdfObjectReadingUtils;
@@ -45,10 +53,7 @@ import com.itextpdf.kernel.geom.AffineTransform;
 import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfName;
-import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfString;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.kernel.pdf.StampingProperties;
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation;
 import com.itextpdf.kernel.pdf.annot.PdfCaretAnnotation;
 import com.itextpdf.kernel.pdf.annot.PdfFreeTextAnnotation;
@@ -59,17 +64,6 @@ import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation;
 import com.itextpdf.kernel.pdf.annot.PdfTextMarkupAnnotation;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.kernel.pdf.xobject.PdfFormXObject;
-
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class XfdfMerge {
 

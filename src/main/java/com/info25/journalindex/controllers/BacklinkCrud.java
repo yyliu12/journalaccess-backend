@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.info25.journalindex.apidtos.BacklinkDto;
-import com.info25.journalindex.apidtos.FileModifyDto;
 import com.info25.journalindex.apidtos.FileModifyDtoMapper;
 import com.info25.journalindex.models.Backlink;
 import com.info25.journalindex.repositories.BacklinkRepository;

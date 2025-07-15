@@ -1,6 +1,5 @@
 package com.info25.journalindex.controllers.annotation;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;

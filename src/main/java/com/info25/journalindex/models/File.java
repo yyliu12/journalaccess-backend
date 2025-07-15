@@ -2,13 +2,6 @@ package com.info25.journalindex.models;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.info25.journalindex.apidtos.FileSearchDto;
-
 
 public class File {
     int id = -1;

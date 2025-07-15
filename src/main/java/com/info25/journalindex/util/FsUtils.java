@@ -1,11 +1,10 @@
 package com.info25.journalindex.util;
 
-import org.springframework.stereotype.Service;
-
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+
 import com.ibm.icu.text.CharsetDetector;
 import com.info25.journalindex.models.File;
 

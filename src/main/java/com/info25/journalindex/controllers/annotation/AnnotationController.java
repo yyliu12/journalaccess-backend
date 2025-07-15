@@ -7,8 +7,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,8 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-import org.xml.sax.SAXException;
 
+import com.info25.journalindex.models.File;
 import com.info25.journalindex.repositories.FileRepository;
 import com.info25.journalindex.util.ContentType;
 import com.info25.journalindex.util.DateUtils;
@@ -25,14 +23,10 @@ import com.info25.journalindex.util.FsUtils;
 import com.itextpdf.forms.xfdf.XfdfObject;
 import com.itextpdf.forms.xfdf.XfdfObjectFactory;
 import com.itextpdf.kernel.geom.AffineTransform;
-import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.research.xfdfmerge.XfdfMerge;
-import com.info25.journalindex.models.File;
 
 import jakarta.servlet.http.HttpServletRequest;
 

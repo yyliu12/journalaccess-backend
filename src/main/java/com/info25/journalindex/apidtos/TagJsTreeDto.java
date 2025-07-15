@@ -1,7 +1,5 @@
 package com.info25.journalindex.apidtos;
 
-import com.info25.journalindex.models.Tag;
-
 import lombok.Data;
 
 @Data

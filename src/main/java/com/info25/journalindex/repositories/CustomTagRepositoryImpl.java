@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.info25.journalindex.models.File;
 import com.info25.journalindex.models.Tag;
-import com.info25.journalindex.util.SolrSelectQuery;
 
 public class CustomTagRepositoryImpl implements CustomTagRepository {
     @Autowired

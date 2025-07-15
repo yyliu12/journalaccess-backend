@@ -2,8 +2,6 @@ package com.info25.journalindex.apidtos;
 
 import java.util.List;
 
-import com.info25.journalindex.models.Tag;
-
 import lombok.Data;
 
 @Data
