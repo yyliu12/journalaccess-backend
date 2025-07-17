@@ -5,16 +5,31 @@ import java.util.ArrayList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.info25.journalindex.models.File;
 
+/**
+ * This class takes JSON data from Solr and creates a File object
+ * from the JSON data.
+ */
 public class FileSolrDeserializer {
+    /**
+     * Deserializes a single file from a JSON doc.
+     * @param doc The JSON document representing a file.
+     * @return A File object with the JSON data
+     */
     public static File deserializeSingle(JsonNode doc) {
         File f = new File();
 
         f.setUuid(doc.get("id").asText());
         f.setPath(doc.get("path").asText());
+        f.setDate(DateUtils.timestampToLocalDate(doc.get("date").asLong()));
+
+        // only some files have content & annotation_content
         if (doc.has("content"))
             f.setContent(doc.get("content").asText());
-        f.setDate(DateUtils.timestampToLocalDate(doc.get("date").asLong()));
+        if (doc.has("annotation_content"))
+            f.setAnnotationContent(doc.get("annotation_content").asText());
         
+        // Addresses & coordinates are stored as two different arrays; this
+        // code combines them into a list of Location objects
         JsonNode addresses = doc.get("address");
         JsonNode coordinates = doc.get("location");
         if (addresses != null && coordinates != null && addresses.isArray() && coordinates.isArray()) {
@@ -38,6 +53,11 @@ public class FileSolrDeserializer {
         return f;
     }
 
+    /**
+     * Deserializes multiple files from a JsonNode array.
+     * @param docs A JSON array with multiple documents
+     * @return An ArrayList of File objects created from docs.
+     */
     public static ArrayList<File> deserializeMany(JsonNode docs) {
         ArrayList<File> files = new ArrayList<>();
         for (JsonNode doc : docs) {

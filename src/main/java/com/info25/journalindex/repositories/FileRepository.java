@@ -54,17 +54,17 @@ public class FileRepository {
         return file;
     }
 
-    public File getWithoutSolr(int id) {
-
-        String sql = "SELECT * FROM files WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql, new FileRowMapper(), new Object[] { id });
-    }
-
     public File getByUuid(String uuid) {
         String sql = "SELECT * FROM files WHERE uuid = ?";
         File file = jdbcTemplate.queryForObject(sql, new FileRowMapper(), new Object[] { uuid });
         loadFromSolr(file);
         return file;
+    }
+
+    public File getWithoutSolr(int id) {
+
+        String sql = "SELECT * FROM files WHERE id = ?";
+        return jdbcTemplate.queryForObject(sql, new FileRowMapper(), new Object[] { id });
     }
 
     public List<File> getFilesByTag(int id) {
@@ -149,6 +149,11 @@ public class FileRepository {
         return new SolrFileResponse(numFound, output, null);
     }
 
+    /**
+     * This function takes a File and modifies it with data from Solr.
+     * It requires that the f has the uuid set.
+     * @param f The file for which to load data from Solr. 
+     */
     public void loadFromSolr(File f) {
         JsonNode response = solrClient.select(new SolrSelectQuery("id:" + f.getUuid()));
         JsonNode doc = response.get("response").get("docs").get(0);
@@ -160,10 +165,14 @@ public class FileRepository {
         f.setLocations(fSolr.getLocations());
         f.setTags(fSolr.getTags());
         f.setContent(fSolr.getContent());
-
-
+        f.setAnnotationContent(fSolr.getAnnotationContent());
     }
 
+    /**
+     * This function loads data from the SQL database into f.
+     * It requires that either the id or the uuid of the file is set.
+     * @param f The file for which to load data from SQL db.
+     */
     public void loadFromSql(File f) {
         File fSql;
         if (f.getId() != -1) {

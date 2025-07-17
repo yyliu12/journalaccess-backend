@@ -19,14 +19,23 @@ import com.info25.journalindex.models.File;
 import com.info25.journalindex.repositories.FileRepository;
 
 
-// this class is very similar to the HTMLAnnotator,
-// I could consider merging them in the future
+/**
+ * This file handles annotations for image files.
+ * 
+ * We use the annotorious seadragon library.
+ */
 @RestController
 @RequestMapping("/api/annotation/image")
 public class ImageAnnotator {
     @Autowired
     FileRepository fileRepository;
 
+    /**
+     * Returns annotations for the image file with given id.
+     * @param id The id of the file
+     * @return JSON data containing the annotation data
+     * @throws JsonProcessingException
+     */
     @GetMapping("/annotations/{id}")
     public String search(@PathVariable("id") String id) throws JsonProcessingException {
         HTMLAnnotationDto data = getFileAnnotations(Integer.parseInt(id));
@@ -40,16 +49,30 @@ public class ImageAnnotator {
         return om.writeValueAsString(annotations);
     }
 
+    /**
+     * Creates an annotation on the given image file with the given data.
+     * @param id The id of the file
+     * @param data The annotation data
+     * @return A JSON string with the created annotation data
+     */
     @PostMapping("/annotations/{id}")
     public String createAnnotation(@PathVariable("id") int id, @RequestBody JsonNode data) {
         ObjectNode dataNode = (ObjectNode) data;
         HTMLAnnotationDto existingData = getFileAnnotations(id);
+        // BTW Annotorious seadragon creates a random uuid for us
         existingData.getAnnotations().put(dataNode.get("id").asText(), dataNode);
         saveFileAnnotations(id, existingData);
 
         return dataNode.toString();
     }
 
+    /**
+     * Updates an existing annotation on the image file.
+     * @param data The JSON data of the annotation to update.
+     * @param uuid The UUID of the annotation to update.
+     * @param id The id of the file
+     * @return A JSON string with the updated annotation data.
+     */
     @PutMapping("/annotations/{id}/{uuid}")
     public String updateAnnotation(@RequestBody JsonNode data, @PathVariable("uuid") String uuid, @PathVariable("id") int id) {
         ObjectNode dataNode = (ObjectNode) data;
@@ -61,6 +84,12 @@ public class ImageAnnotator {
 
     }
 
+    /**
+     * Deletes an annotation from the image file.
+     * @param uuid The UUID of the annotation to delete.
+     * @param id The id of the file
+     * @return an empty json object.
+     */
     @DeleteMapping("/annotations/{id}/{uuid}")
     public String deleteAnnotation(@PathVariable("uuid") String uuid, @PathVariable("id") int id) {
         HTMLAnnotationDto existingData = getFileAnnotations(id);
@@ -70,8 +99,14 @@ public class ImageAnnotator {
         return "{}";
     }
 
+    /**
+     * Gets annotation data for a file.
+     * @param id The id of the file to get annotations for.
+     * @return An HTMLAnnotationDto object with the annotations.
+     */
     private HTMLAnnotationDto getFileAnnotations(int id) {
         File f = fileRepository.getWithoutSolr(id);
+        // If there are no annotations, we create an empty annotations object
         if (f.getAnnotations() == null || f.getAnnotations().isEmpty()) {
             f.setAnnotations("{\"annotations\": {}}");
         }
@@ -85,17 +120,41 @@ public class ImageAnnotator {
         return dto;
     }
 
+    /**
+     * Saves the annotations for a file. Also generates annotation content for searching.
+     * @param id The id of the file
+     * @param data The annotation data to save
+     */
     private void saveFileAnnotations(int id, HTMLAnnotationDto data) {
         File f = fileRepository.getById(id);
         ObjectMapper om = new ObjectMapper();
         
-        
+        /**
+         * Example annotorious seadragon annotation:
+         * 
+         * {
+         *   "body": [
+         *     { "value": "Comment 1" },
+         *     { "value": "Comment 2" }
+         *   ]
+         * }
+         */
+        StringBuilder annotationContent = new StringBuilder();
+        for (JsonNode node : data.getAnnotations().values()) {
+            for (JsonNode body : node.get("body")) {
+                // Accumulates the text of all bodies
+                annotationContent.append(" ").append(body.get("value").asText());
+            }
+        }
+
+        f.setAnnotationContent(annotationContent.toString());
+
         try {
             f.setAnnotations(om.writeValueAsString(data));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        fileRepository.saveToSql(f);
+        fileRepository.save(f);
     }
 
 }

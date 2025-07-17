@@ -2,16 +2,48 @@ package com.info25.journalindex.models;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-
+/**
+ * A file represents a file uploaded to the system as part of a journal entry.
+ * A file belongs to a specific day, and may have tags, locations, and backlinks
+ * associated with it. Solr stores the raw text content of the file (for searching 
+ * purposes), while the actual file is stored on the filesystem.
+ */
 public class File {
+    /**
+     * === Stored in both SQL and Solr ===
+     */
     int id = -1;
     String path;
     LocalDate date;
     String uuid;
+    /**
+     * === Stored in Solr only ===
+     */
     String content;
     ArrayList<Location> locations;
+    // An arraylist of tag IDs which can be looked up in the SQL db.
     ArrayList<Integer> tags;
+    /**
+     * XML or JSON annotation data depending on the file type.
+     * 
+     * pdf = XML xfdf annotation data
+     * image (png, jpg, jpeg) = annotorious seadragon JSON data
+     * html = annotator.js JSON data
+     */
     String annotations;
+    /**
+     * === Stored in SQL only ===
+     */
+    // Raw text of annotation content for searching in Solr.
+    String annotationContent;
+    /** 
+     * These variables are used to save date and path modifications to the filesystem
+     * since we need to know the original date & path in order to rename a file.
+     * 
+     * These should not be modified directly.
+     * 
+     * These are not stored in Solr or SQL
+     */
     boolean __dateModified = false;
     boolean __pathModified = false;
     LocalDate __originalDate = null;
@@ -75,6 +107,7 @@ public class File {
     }
 
     public void setPath(String path) {
+        // Track the original path
         if (this.path != null && !this.path.equals(path) && __originalPath == null) {
             this.__pathModified = true;
             this.__originalPath = this.path;
@@ -87,6 +120,7 @@ public class File {
     }
 
     public void setDate(LocalDate date) {
+        // Track the original date
         if (this.date != null && !this.date.equals(date) && __originalDate == null) {
             this.__dateModified = true;
             this.__originalDate = this.date;
@@ -142,6 +176,9 @@ public class File {
         this.content = content;
     }
 
+    // Called by repository after saving the file since the file now exists
+    // at the location described by date & path. Should only be called by
+    // FileRepository.
     public void __savedByRepository() {
         this.__dateModified = false;
         this.__pathModified = false;
@@ -171,5 +208,13 @@ public class File {
 
     public void setAnnotations(String annotations) {
         this.annotations = annotations;
+    }
+
+    public String getAnnotationContent() {
+        return annotationContent;
+    }
+
+    public void setAnnotationContent(String annotationContent) {
+        this.annotationContent = annotationContent;
     }
 }
