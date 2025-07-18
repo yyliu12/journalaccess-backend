@@ -31,6 +31,11 @@ import com.info25.journalindex.util.SolrSelectQuery;
 
 import lombok.Data;
 
+/**
+ * This class is responsible for saving files to Solr and SQL.
+ * 
+ * Complicated. Be careful.
+ */
 @Component
 public class FileRepository {
     @Autowired
@@ -47,6 +52,11 @@ public class FileRepository {
     @Autowired
     SolrClient solrClient;
 
+    /**
+     * This function returns a file with SQL and Solr data baesd on id.
+     * @param id The id of the file to get.
+     * @return The file with SQL and Solr data.
+     */
     public File getById(int id) {
         String sql = "SELECT * FROM files WHERE id = ?";
         File file = jdbcTemplate.queryForObject(sql, new FileRowMapper(), new Object[] { id });
@@ -54,6 +64,11 @@ public class FileRepository {
         return file;
     }
 
+    /**
+     * This function returns a file with SQL and Solr data based on uuid.
+     * @param uuid The uuid of the file to get.
+     * @return The file with SQL and Solr data.
+     */
     public File getByUuid(String uuid) {
         String sql = "SELECT * FROM files WHERE uuid = ?";
         File file = jdbcTemplate.queryForObject(sql, new FileRowMapper(), new Object[] { uuid });
@@ -61,12 +76,22 @@ public class FileRepository {
         return file;
     }
 
+    /**
+     * This function returns a file with SQL data based on id.
+     * It does not load data from Solr.
+     * @param id The id of the file to get.
+     * @return The file with SQL data ONLY.
+     */
     public File getWithoutSolr(int id) {
-
         String sql = "SELECT * FROM files WHERE id = ?";
         return jdbcTemplate.queryForObject(sql, new FileRowMapper(), new Object[] { id });
     }
 
+    /**
+     * This function returns files with a specific tag with Solr data.
+     * @param id the tag id.
+     * @return files with the specified tag
+     */
     public List<File> getFilesByTag(int id) {
         return this.solrQuery(new SolrSelectQuery()
             .setQ("tags:" + id)
@@ -74,6 +99,10 @@ public class FileRepository {
         );
     }
 
+    /**
+     * This function deletes a tag from all files that have the tag
+     * @param tagId The id of the tag to delete from files.
+     */
     public void deleteTagFromFiles(int tagId) {
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode rootNode = mapper.createArrayNode();
@@ -89,32 +118,53 @@ public class FileRepository {
         solrClient.modify(rootNode);
     }
 
+    /**
+     * This function checks if a file with the given date and path exists.
+     * @param date The date of the file.
+     * @param path The path of the file.
+     * @return true if the file exists, false otherwise.
+     */
     public boolean existsByDateAndPath(LocalDate date, String path) {
         String sql = "SELECT COUNT(*) FROM files WHERE date = ? AND path = ?";
         int count = jdbcTemplate.queryForObject(sql, Integer.class, DateUtils.localDateToTimestamp(date), path);
         return count > 0;
     }
 
+    /**
+     * This function returns a list of files for a specific date with Solr and SQL data.
+     * @param date The date of the files.
+     * @return A list of files for the specified date.
+     */
     public List<FileSearchDto> getFilesByDateForApi(LocalDate date) {
-        String sql = "SELECT * FROM files WHERE date = ?";
-        List<File> files = jdbcTemplate.query(sql, new FileRowMapper(), DateUtils.localDateToTimestamp(date));
-        List<FileSearchDto> fileDtos = new ArrayList<>();
-        for (File file : files) {
-            // loadFromSolr(file);
-            fileDtos.add(FileSearchDto.fromFile(file, ""));
-        }
-        return fileDtos;
+        SolrSelectQuery query = new SolrSelectQuery()
+            .setQ("date:" + DateUtils.localDateToTimestamp(date))
+            .setRows(2147483647);
+
+        return solrQueryForApi(query).getFiles();
     }
 
+    /**
+     * This performs a Solr query and returns the data. Note that the File objects will
+     * only contain Solr data.
+     * @param query The Solr query to perform.
+     * @return A list of files containing Solr data ONLY.
+     */
     public List<File> solrQuery(SolrSelectQuery query) {
         JsonNode response = solrClient.select(query).get("response").get("docs");
         List<File> files = FileSolrDeserializer.deserializeMany(response);
         return files;
     }
 
+    /**
+     * This function performs a Solr query and returns files with both Solr and SQL data.
+     * This is designed for API usage as it also includes highlight information and expands
+     * tag information.
+     * @param query The Solr query to perform.
+     * @return A SolrFileResponse containing the files and additional information.
+     */
     public SolrFileResponse solrQueryForApi(SolrSelectQuery query) {
         JsonNode response = solrClient.select(query);
-
+        // Return error
         if (response.has("error")) {
             String errorMessage = response.get("error").get("msg").asText();
             return new SolrFileResponse(0, new ArrayList<>(), errorMessage);
@@ -129,8 +179,10 @@ public class FileRepository {
 
         for (File file : files) {
 			String highlightText = "";
+            // if highlights were enabled
 			if (highlights != null) {
 				JsonNode highlight = highlights.get(file.getUuid());
+                // if there actually is a highlight (some solr queries don't return highlights)
 				if (highlight != null && highlight.has("content")) {
 					highlightText = highlight.get("content").get(0).asText();
 				} else {
@@ -141,6 +193,7 @@ public class FileRepository {
 			}
             this.loadFromSql(file);
 
+            // Expand tag info and put into the file object
             FileSearchDto fileSearchDto = FileSearchDto.fromFile(file, highlightText);
             fileSearchDto.setTags(tagRepository.findByManyIds(file.getTags()));
             output.add(fileSearchDto);
@@ -188,6 +241,10 @@ public class FileRepository {
         f.setAnnotations(fSql.getAnnotations());
     }
 
+    /**
+     * This function saves a file to SQL, Solr, and the filesystem.
+     * @param f The file to save.
+     */
     public void save(File f) {
         if (f.getUuid() == null) {
             f.setUuid(UUID.randomUUID().toString());
