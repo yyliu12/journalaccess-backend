@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="/static/mdb/mdb.min.css" rel="stylesheet">
+</head>
+<body>
+<style th:inline="css">
+    #intro {
+        /* random expression guarantees that login bg changes -- no-cache apparently wasn't enough */
+        background-image: url("/loginBg.jpg?random=[[${T(java.lang.Math).random()}]]");
+        height: 100vh;
+    }
+
+    /* Height for devices larger than 576px */
+    @media (min-width: 992px) {
+        #intro {
+            margin-top: -58.59px;
+        }
+    }
+
+    .navbar .nav-link {
+        color: #fff !important;
+    }
+</style>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark d-none d-lg-block" style="z-index: 2000;">
+    <div class="container-fluid">
+        <!-- Navbar brand -->
+        <a class="navbar-brand nav-link" href="#">
+            <strong>Journal Access</strong>
+        </a>
+
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+                <a class="nav-link active" href="#">Authentication</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div id="intro" class="bg-image shadow-2-strong">
+    <div class="mask d-flex align-items-center h-100" style="background-color: rgba(0, 0, 0, 0.2);">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xl-5 col-md-8">
+                    <!-- alerts for error & logout -- show when the appropriate param is present in url -->
+                    <div class="alert alert-danger" th:if="${param.error}">
+                        Incorrect username and/or password.
+                    </div>
+
+                    <div class="alert alert-success" th:if="${param.logout}">
+                        Logout successful.
+                    </div>
+
+                    <!-- th:action  required here to add CSRF token -->
+                    <form class="bg-white rounded shadow-5-strong p-5" th:action="@{/login}" method="POST">
+                        <!-- Username input -->
+                        <div class="form-outline mb-4" data-mdb-input-init>
+                            <input autofocus name="username" type="text" id="form1Example1" class="form-control"/>
+                            <label class="form-label" for="form1Example1">Username</label>
+                        </div>
+
+                        <!-- Password input -->
+                        <div class="form-outline mb-4" data-mdb-input-init>
+                            <input name="password" type="password" id="form1Example2" class="form-control"/>
+                            <label class="form-label" for="form1Example2">Password</label>
+                        </div>
+
+                        <!-- Submit button -->
+                        <button type="submit" class="btn btn-primary btn-block" data-mdb-ripple-init>Sign in
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/mdb/mdb.umd.min.js"></script>
+</body>
+</html>
