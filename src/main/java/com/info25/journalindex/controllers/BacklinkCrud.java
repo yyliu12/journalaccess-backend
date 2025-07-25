@@ -32,17 +32,38 @@ public class BacklinkCrud {
             dto.setId(backlink.getId());
             dto.setFrom(backlink.getFrom());
             dto.setTo(backlink.getTo());
+            dto.setAnnotation(backlink.getAnnotation());
             dto.setToFile(fileModifyDtoMapper.fileToFileModifyDto(fileRepository.getWithoutSolr(backlink.getTo())));
             return dto;
         }).collect(Collectors.toList());
     }
 
     @PostMapping("/api/backlinks/create")
-    public Backlink createBacklink(@RequestParam("from") int from, @RequestParam("to") int to) {
+    public int createBacklink(
+        @RequestParam("from") int from, 
+        @RequestParam("to") int to, 
+        @RequestParam("annotation") String annotation
+    ) {
         Backlink backlink = new Backlink();
         backlink.setFrom(from);
         backlink.setTo(to);
-        return backlinkRepository.save(backlink);
+        backlink.setAnnotation(annotation);
+        backlinkRepository.save(backlink);
+        return backlink.getId();
+    }
+
+    @PostMapping("/api/backlinks/update")
+    public String updateBacklink(
+        @RequestParam("id") int id, 
+        @RequestParam("to") int to, 
+        @RequestParam("annotation") String annotation
+    ) {
+        Backlink backlink = backlinkRepository.findById(id);
+        backlink.setTo(to);
+        backlink.setAnnotation(annotation);
+        backlinkRepository.save(backlink);
+        // TODO: Index backlinks
+        return "OK";
     }
 
     @PostMapping("/api/backlinks/delete")

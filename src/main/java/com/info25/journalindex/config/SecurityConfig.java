@@ -63,7 +63,7 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true); // you USUALLY want this
-        config.addAllowedOrigin("http://localhost:3000"); // Allow requests from this origin
+        config.addAllowedOrigin("http://localhost:5173"); // Allow requests from this origin
         config.addAllowedHeader("*");
         config.addAllowedMethod("OPTIONS");
         config.addAllowedMethod("HEAD");

@@ -20,4 +20,6 @@ public class Backlink {
     int from;
     @Column("target")
     int to;
+    @Column("annotation")
+    String annotation;
 }

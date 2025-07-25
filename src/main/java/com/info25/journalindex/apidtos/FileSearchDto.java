@@ -15,7 +15,7 @@ public class FileSearchDto {
     List<Tag> tags;
     LocalDate date;
     // backlinks GOING to this file
-    List<FileSearchDto> backlinks = new ArrayList<>();
+    List<BacklinkDto> backlinks = new ArrayList<>();
 
     public LocalDate getDate() {
         return date;
@@ -70,16 +70,16 @@ public class FileSearchDto {
         return this;
     }
 
-    public List<FileSearchDto> getBacklinks() {
+    public List<BacklinkDto> getBacklinks() {
         return backlinks;
     }
 
-    public FileSearchDto setBacklinks(List<FileSearchDto> backlinks) {
+    public FileSearchDto setBacklinks(List<BacklinkDto> backlinks) {
         this.backlinks = backlinks;
         return this;
     }
 
-    public FileSearchDto addBacklink(FileSearchDto backlink) {
+    public FileSearchDto addBacklink(BacklinkDto backlink) {
         this.backlinks.add(backlink);
         return this;
     }
