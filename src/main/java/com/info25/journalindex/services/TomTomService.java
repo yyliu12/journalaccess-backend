@@ -64,7 +64,8 @@ public class TomTomService {
                 address.append(result.get("address").get("freeformAddress").asText());
                 Location location = new Location(
                         result.get("position").get("lat").asText() + ", " + result.get("position").get("lon").asText(),
-                        address.toString()
+                        address.toString(),
+                        ""
                 );
                 locations.add(location);
             }

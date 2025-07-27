@@ -11,5 +11,5 @@ import com.info25.journalindex.models.Tag;
 public interface TagRepository extends CrudRepository<Tag, Integer>,  CustomTagRepository {
     Tag findById(int id);
     void deleteById(int id);
-    List<Tag> findByFolder(int folder);
+    List<Tag> findByParent(int folder);
 }

@@ -83,13 +83,4 @@ public class FileSearchDto {
         this.backlinks.add(backlink);
         return this;
     }
-
-    public static FileSearchDto fromFile (File f, String highlight) {
-        return new FileSearchDto()
-                .setHighlight(highlight)
-                .setId(f.getId())
-                .setPath(f.getPath())
-                .setLocations(f.getLocations())
-                .setDate(f.getDate());
-    }
 }

@@ -56,7 +56,7 @@ public class TagCrud {
         else
             folderId = Integer.parseInt(folder);
 
-        List<Tag> tagList = tagRepository.findByFolder(folderId);
+        List<Tag> tagList = tagRepository.findByParent(folderId);
         return tagList.stream()
                 .map(tag -> tagJsTreeDtoMapper.fromTag(tag))
                 .collect(Collectors.toList());
@@ -72,7 +72,7 @@ public class TagCrud {
             parentId = Integer.parseInt(parent);
 
         Tag tag = tagRepository.findById(Integer.parseInt(tagId));
-        tag.setFolder(parentId);
+        tag.setParent(parentId);
         tagRepository.save(tag);
         return "OK";
     }
@@ -97,7 +97,7 @@ public class TagCrud {
         Tag existingTag = tagRepository.findById(tag.getId());
         existingTag.setName(tag.getName());
         existingTag.setFullName(tag.getFullName());
-        existingTag.setContainer(tag.getContainer());
+        existingTag.setContainer(tag.isContainer());
         tagRepository.save(existingTag);
 
         return "OK";

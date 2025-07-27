@@ -107,13 +107,13 @@ public class ImageAnnotator {
     private HTMLAnnotationDto getFileAnnotations(int id) {
         File f = fileRepository.getWithoutSolr(id);
         // If there are no annotations, we create an empty annotations object
-        if (f.getAnnotations() == null || f.getAnnotations().isEmpty()) {
-            f.setAnnotations("{\"annotations\": {}}");
+        if (f.getAnnotation() == null || f.getAnnotation().isEmpty()) {
+            f.setAnnotation("{\"annotations\": {}}");
         }
         HTMLAnnotationDto dto = null;
         ObjectMapper om = new ObjectMapper();
         try {
-            dto = om.readValue(f.getAnnotations(), HTMLAnnotationDto.class);
+            dto = om.readValue(f.getAnnotation(), HTMLAnnotationDto.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -128,10 +128,31 @@ public class ImageAnnotator {
     private void saveFileAnnotations(int id, HTMLAnnotationDto data) {
         File f = fileRepository.getById(id);
         ObjectMapper om = new ObjectMapper();
-        
+
+        try {
+            f.setAnnotation(om.writeValueAsString(data));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        fileRepository.save(f);
+    }
+
+    /**
+     * Gets the raw text of the annotation
+     * @return raw text of all annotations
+     */
+    public static String annotationTextContent(String data) {
+        ObjectMapper om = new ObjectMapper();
+        HTMLAnnotationDto dto = null;
+
+        try {
+            dto = om.readValue(data, HTMLAnnotationDto.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         /**
          * Example annotorious seadragon annotation:
-         * 
+         *
          * {
          *   "body": [
          *     { "value": "Comment 1" },
@@ -140,21 +161,14 @@ public class ImageAnnotator {
          * }
          */
         StringBuilder annotationContent = new StringBuilder();
-        for (JsonNode node : data.getAnnotations().values()) {
+        for (JsonNode node : dto.getAnnotations().values()) {
             for (JsonNode body : node.get("body")) {
                 // Accumulates the text of all bodies
                 annotationContent.append(" ").append(body.get("value").asText());
             }
         }
 
-        f.setAnnotationContent(annotationContent.toString());
-
-        try {
-            f.setAnnotations(om.writeValueAsString(data));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        fileRepository.save(f);
+        return annotationContent.toString();
     }
 
 }

@@ -36,7 +36,7 @@ public class FileSolrDeserializer {
             for (int i = 0; i < addresses.size(); i++) {
                 String address = addresses.get(i).asText();
                 String coordinate = coordinates.get(i).asText();
-                f.addLocation(new File.Location(coordinate, address));
+                f.addLocation(new File.Location(coordinate, address, ""));
             }
         }
 

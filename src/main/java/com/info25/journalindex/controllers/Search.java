@@ -8,9 +8,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.info25.journalindex.apidtos.FileSearchDto;
-import com.info25.journalindex.apidtos.SearchOptions;
-import com.info25.journalindex.apidtos.TagSearchOptions;
+import com.info25.journalindex.apidtos.*;
 import com.info25.journalindex.util.DateUtils;
 import com.info25.journalindex.util.SolrQueryAssembler;
 
@@ -40,10 +38,13 @@ public class Search {
     @Autowired
     TagRepository tagRepository;
 
+    @Autowired
+    FileSearchDtoMapper fileSearchDtoMapper;
+
     @PostMapping("/api/files/search")
-    public SolrFileResponse search(@RequestParam(name = "query", required = false) JsonNode query,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "bounds", required = false) JsonNode boundsQuery) {
+    public SearchResponseDto search(@RequestParam(name = "query", required = false) JsonNode query,
+                                   @RequestParam(name = "page", defaultValue = "0") int page,
+                                   @RequestParam(name = "bounds", required = false) JsonNode boundsQuery) {
 
         ObjectMapper mapper = new ObjectMapper();
         SearchOptions so = mapper.convertValue(query, SearchOptions.class);
@@ -52,10 +53,10 @@ public class Search {
         String searchQuery = so.getQuery();
 
         SolrSelectQuery selectQuery = new SolrSelectQuery()
-            .setHl("true")
-            .setStart(page * 10)
-            .setHlFl("content")
-            .setSort(so.getSort());
+                .setHl("true")
+                .setStart(page * 10)
+                .setHlFl("content")
+                .setSort(so.getSort());
         SolrQueryAssembler assembler = new SolrQueryAssembler();
         if (boundsQuery != null) {
 
@@ -88,11 +89,37 @@ public class Search {
             selectQuery.setQ(searchQuery);
         }
 
-        SolrFileResponse resp = fileRepository.solrQueryForApi(selectQuery);
+        SolrFileResponse dbResp = fileRepository.solrQueryForApi(selectQuery);
 
-        for (FileSearchDto f : resp.getFiles()) {
-            backlinkRepository.populateBacklinks(f);
+        SearchResponseDto resp = new SearchResponseDto();
+
+        resp.setError(dbResp.getError());
+
+        if (dbResp.getError() == null) {
+            resp.setNumFound(dbResp.getNumFound());
+            List<FileSearchDto> results = new ArrayList<>();
+            JsonNode highlights = dbResp.getHighlights();
+            if (highlights != null) {
+                for (File f : dbResp.getFiles()) {
+                    JsonNode highlight = highlights.get(String.valueOf(f.getId())); // all solr ids are strings
+                    if (highlight != null) {
+                        FileSearchDto dto = fileSearchDtoMapper.toDtoWithHighlight(f,
+                                highlight.get("content").get(0).asText());
+                        results.add(dto);
+                    } else {
+                        FileSearchDto dto = fileSearchDtoMapper.toDto(f);
+                        results.add(dto);
+                    }
+                }
+            } else {
+                for (File f : dbResp.getFiles()) {
+                    results.add(fileSearchDtoMapper.toDto(f));
+                }
+            }
+            resp.setFiles(results);
         }
+
+
 
         return resp;
     }
@@ -100,25 +127,21 @@ public class Search {
     @PostMapping("/api/files/byDate")
     public List<FileSearchDto> byDate(@RequestParam("date") String date) {
         LocalDate dateTime = DateUtils.parseFromString(date);
-        List<FileSearchDto> results = fileRepository.getFilesByDateForApi(dateTime);
-        for (FileSearchDto f : results) {
-            backlinkRepository.populateBacklinks(f);
-        }
+        List<File> results = fileRepository.getFilesByDate(dateTime);
 
-        return results;
+        return fileSearchDtoMapper.toDtoList(results);
     }
 
     @PostMapping("/api/files/byId")
     public File getFile(@RequestParam("id") int id) {
         File f = fileRepository.getById(id);
-        fileRepository.loadFromSolr(f);
         System.out.println("Date: " + f.getDate());
         return f;
     }
 
     @PostMapping("/api/files/datesWithFiles")
     public List<LocalDate> datesWithFiles(@RequestParam("month") int month,
-            @RequestParam("year") int year) {
+                                          @RequestParam("year") int year) {
         return fileRepository.getDatesWithFiles(month, year);
     }
 
@@ -128,13 +151,17 @@ public class Search {
         ArrayList<FileSearchDto> results = new ArrayList<>();
 
         for (int year = OTD_START_YEAR; year <= OTD_END_YEAR; year++) {
-            results.addAll(fileRepository
-                    .getFilesByDateForApi(LocalDate.of(year, dateTime.getMonth(), dateTime.getDayOfMonth())));
+            results.addAll(
+                    fileSearchDtoMapper.toDtoList(
+                            fileRepository.getFilesByDate(
+                                    LocalDate.of(year, dateTime.getMonth(),
+                                            dateTime.getDayOfMonth()
+                                    )
+                            )
+                    )
+            );
         }
 
-        for (FileSearchDto f : results) {
-            backlinkRepository.populateBacklinks(f);
-        }
         return results;
     }
 

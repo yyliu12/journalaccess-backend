@@ -2,6 +2,8 @@ package com.info25.journalindex.config;
 
 import javax.sql.DataSource;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.data.relational.core.dialect.Dialect;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -12,12 +14,15 @@ import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
 @EnableJdbcRepositories(basePackages = "com.info25.journalindex.repositories")
 public class JdbcConfig {
     @Bean
-    public DataSource dataSource() {
-        //sqlite data source
-        return DataSourceBuilder.create()
-                .url("jdbc:sqlite:C:\\Users\\yuyan\\Desktop\\journalindex\\data.db")
-                .driverClassName("org.sqlite.JDBC")
-                .build();
+    public HikariDataSource dataSource() {
+        //postgres data source
+        HikariConfig c = new HikariConfig();
+        c.setJdbcUrl("jdbc:postgresql://localhost:5432/journal");
+        c.setUsername("postgres");
+        c.setPassword("12345678");
+        c.setMaximumPoolSize(30);
+        c.setLeakDetectionThreshold(1000);
+        return new HikariDataSource(c);
     }
 
     @Bean

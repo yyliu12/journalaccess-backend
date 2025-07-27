@@ -108,7 +108,7 @@ public class AnnotationController {
         XfdfObject xfdfObject = null;
         try {
             xfdfObject = factory.createXfdfObject(new ByteArrayInputStream(
-                    f.getAnnotations().getBytes()));
+                    f.getAnnotation().getBytes()));
         } catch (Exception e) {
             e.printStackTrace();
         }

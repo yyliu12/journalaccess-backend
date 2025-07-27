@@ -30,7 +30,8 @@ public class CustomTagRepositoryImpl implements CustomTagRepository {
 
     @Override
     public List<Tag> findByName(String name) {
-        String sql = "SELECT * FROM tags WHERE (name LIKE ? OR full_name LIKE ?)";
+        // ILIKE = case-insensitive like
+        String sql = "SELECT * FROM tags WHERE (name ILIKE ? OR full_name ILIKE ?)";
         String searchPattern = "%" + name + "%";
 
         return jdbcTemplate.query(sql, new Object[]{searchPattern, searchPattern}, new TagRowMapper());
@@ -38,7 +39,7 @@ public class CustomTagRepositoryImpl implements CustomTagRepository {
 
     @Override
     public boolean hasChildren(int id) {
-        String sql = "SELECT COUNT(*) FROM tags WHERE folder = ?";
+        String sql = "SELECT COUNT(*) FROM tags WHERE parent = ?";
         Integer count = jdbcTemplate.queryForObject(sql, new Object[]{id}, Integer.class);
         return count != null && count > 0;
     }
@@ -49,13 +50,13 @@ public class CustomTagRepositoryImpl implements CustomTagRepository {
                      "  SELECT * FROM tags WHERE id = ?" +
                      "  UNION ALL" +
                      "  SELECT t.* FROM tags t" +
-                     "  JOIN tag_tree tt ON t.folder = tt.id" +
+                     "  JOIN tag_tree tt ON t.parent = tt.id" +
                      ") SELECT * FROM tag_tree";
 
         List<Tag> tags = jdbcTemplate.query(sql, new Object[]{id}, new TagRowMapper());
 
         if (!includeFolders) {
-            return tags.stream().filter(tag -> tag.getContainer() == 0).collect(Collectors.toList());
+            return tags.stream().filter(tag -> !tag.isContainer()).collect(Collectors.toList());
         }
         return tags;
     }
@@ -67,8 +68,8 @@ public class CustomTagRepositoryImpl implements CustomTagRepository {
             tag.setId(rs.getInt("id"));
             tag.setName(rs.getString("name"));
             tag.setFullName(rs.getString("full_name"));
-            tag.setFolder(rs.getInt("folder"));
-            tag.setContainer(rs.getInt("container"));
+            tag.setParent(rs.getInt("parent"));
+            tag.setContainer(rs.getBoolean("is_folder"));
             return tag;
         }
     }

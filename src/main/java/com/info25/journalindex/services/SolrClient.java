@@ -16,7 +16,7 @@ import com.info25.journalindex.util.SolrSelectQuery;
 @Component
 public class SolrClient {
     final String SOLR_URL = "http://127.0.0.1:8983";
-    final String coreName = "journal";
+    final String coreName = "journal_new";
 
     HttpClient client;
 

@@ -128,13 +128,13 @@ public class HTMLAnnotator {
         // No Solr data is needed here -- annotations are stored in the SQL db.
         File f = fileRepository.getWithoutSolr(id);
         // We populate an empty annotations dictionary if there are no annotations
-        if (f.getAnnotations() == null || f.getAnnotations().isEmpty()) {
-            f.setAnnotations("{\"annotations\": {}}");
+        if (f.getAnnotation() == null || f.getAnnotation().isEmpty()) {
+            f.setAnnotation("{\"annotations\": {}}");
         }
         HTMLAnnotationDto dto = null;
         ObjectMapper om = new ObjectMapper();
         try {
-            dto = om.readValue(f.getAnnotations(), HTMLAnnotationDto.class);
+            dto = om.readValue(f.getAnnotation(), HTMLAnnotationDto.class);
         } catch (Exception e) { }
         return dto;
     }
@@ -147,19 +147,34 @@ public class HTMLAnnotator {
     private void saveFileAnnotations(int id, HTMLAnnotationDto data) {
         File f = fileRepository.getById(id);
         ObjectMapper om = new ObjectMapper();
-        
-        StringBuilder annotationContent = new StringBuilder();
-        for (JsonNode node : data.getAnnotations().values()) {
-            // Accumulates the text of all annotations
-            annotationContent.append(" ").append(node.get("text").asText());
-        }
-        f.setAnnotationContent(annotationContent.toString());
 
         try {
-            f.setAnnotations(om.writeValueAsString(data));
+            f.setAnnotation(om.writeValueAsString(data));
         } catch (JsonProcessingException e) { }
 
         fileRepository.save(f);
+    }
+
+    /**
+     * Gets the string content from a HTML annotation string
+     * @return The text content of the annotation
+     */
+    public static String annotationTextContent(String annotation) {
+        ObjectMapper om = new ObjectMapper();
+        HTMLAnnotationDto dto = null;
+        try {
+            dto = om.readValue(annotation, HTMLAnnotationDto.class);
+        } catch (Exception e) {
+            return "";
+        }
+
+        StringBuilder annotationContent = new StringBuilder();
+        for (JsonNode node : dto.getAnnotations().values()) {
+            // Accumulates the text of all annotations
+            annotationContent.append(" ").append(node.get("text").asText());
+        }
+
+        return annotationContent.toString();
     }
 
 }

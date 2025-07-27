@@ -14,10 +14,10 @@ public class TagJsTreeDtoMapper {
     public TagJsTreeDto fromTag(Tag tag) {
         TagJsTreeDto dto = new TagJsTreeDto();
         dto.setId(tag.getId());
-        dto.setParent(tag.getFolder() == -1 ? "#" : String.valueOf(tag.getFolder()));
+        dto.setParent(tag.getParent() == -1 ? "#" : String.valueOf(tag.getParent()));
         dto.setChildren(tagRepository.hasChildren(tag.getId()));
         dto.setText(tag.getName() + " (" + tag.getFullName() + ")");
-        dto.setType(tag.getContainer() == 0 ? "tag" : "folder");
+        dto.setType(tag.isContainer() ? "folder" : "tag");
         return dto;
     }
 }

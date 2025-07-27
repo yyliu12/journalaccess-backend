@@ -30,7 +30,7 @@ public class File {
      * image (png, jpg, jpeg) = annotorious seadragon JSON data
      * html = annotator.js JSON data
      */
-    String annotations;
+    String annotation;
     /**
      * === Stored in SQL only ===
      */
@@ -52,10 +52,12 @@ public class File {
     static public class Location {
         String coordinate;
         String address;
+        String buildingName;
 
-        public Location(String coordinate, String address) {
+        public Location(String coordinate, String address, String buildingName) {
             this.coordinate = coordinate;
             this.address = address;
+            this.buildingName = buildingName;
         }
 
         public Location() {}
@@ -76,6 +78,13 @@ public class File {
             this.address = address;
         }
 
+        public String getBuildingName() {
+            return buildingName;
+        }
+
+        public void setBuildingName(String buildingName) {
+            this.buildingName = buildingName;
+        }
     }
 
     public File(int id, String path, LocalDate date, String uuid) {
@@ -202,12 +211,12 @@ public class File {
         return this.__originalDate;
     }
 
-    public String getAnnotations() {
-        return annotations;
+    public String getAnnotation() {
+        return annotation;
     }
 
-    public void setAnnotations(String annotations) {
-        this.annotations = annotations;
+    public void setAnnotation(String annotation) {
+        this.annotation = annotation;
     }
 
     public String getAnnotationContent() {

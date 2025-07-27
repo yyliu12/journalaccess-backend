@@ -47,8 +47,7 @@ public class PDFAnnotator {
     @PostMapping("/{id}/save")
     public String saveAnnotation(@PathVariable("id") int id, @RequestBody String xfdfData) {
         File f = fileRepository.getById(id);
-        f.setAnnotations(cleanXFDF(xfdfData));
-        f.setAnnotationContent(getRawTextOfAnnotations(xfdfData));
+        f.setAnnotation(cleanXFDF(xfdfData));
 
         fileRepository.save(f);
         return "OK";
@@ -62,7 +61,7 @@ public class PDFAnnotator {
     @PostMapping("/{id}/get")
     public String getAnnotations(@PathVariable("id") int id) {
         File f = fileRepository.getById(id);
-        String annotations = f.getAnnotations();
+        String annotations = f.getAnnotation();
 
         return annotations;
     }
@@ -72,7 +71,7 @@ public class PDFAnnotator {
      * @param doc The XFDF document as a string
      * @return The combined raw text of all annotations
      */
-    private String getRawTextOfAnnotations(String doc) {
+    public static String getRawTextOfAnnotations(String doc) {
         // read xml file
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder;
