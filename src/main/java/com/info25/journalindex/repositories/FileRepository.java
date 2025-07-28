@@ -29,7 +29,6 @@ import com.info25.journalindex.models.File;
 import com.info25.journalindex.models.File.Location;
 import com.info25.journalindex.services.SolrClient;
 import com.info25.journalindex.util.DateUtils;
-import com.info25.journalindex.util.FileSolrDeserializer;
 import com.info25.journalindex.util.FileSolrSerializer;
 import com.info25.journalindex.util.FsUtils;
 import com.info25.journalindex.util.SolrSelectQuery;
@@ -243,6 +242,9 @@ public class FileRepository {
 
         c.close(); // ALWAYS CLOSE - OTHERWISE LEAKS CONNECTIONS
         ps.setArray(9, buildingNameArray);
+
+        ps.setString(10, f.getTitle());
+        ps.setString(11, f.getDescription());
     }
 
     private void __saveToSql(File f) {
@@ -254,17 +256,18 @@ public class FileRepository {
             String sql = "UPDATE files SET uuid = ?, path = ?, " +
                     "date = ?, annotation = ?, content = ?, tags = ?, " +
                     "location_coordinates = ?, location_address = ?, " +
-                    "location_buildingname = ? WHERE id = ?";
+                    "location_buildingname = ?, title = ?, description = ? WHERE id = ?";
             jdbcTemplate.update(sql, ps -> {
                 preparedStatementFromFile(ps, f);
-                ps.setInt(10, f.getId());
+                ps.setInt(12, f.getId());
             });
 
             System.out.println("update done!");
         } else {
             String sql = "INSERT INTO files (uuid, path, date, annotation, content," +
                     "tags, location_coordinates, location_address," +
-                    "location_buildingname) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                    "location_buildingname, title, description) VALUES (?, ?, ?, ?," + 
+                    "?, ?, ?, ?, ?, ?, ?) RETURNING id";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -318,6 +321,8 @@ public class FileRepository {
             file.setUuid(rs.getString("uuid"));
             file.setAnnotation(rs.getString("annotation"));
             file.setContent(rs.getString("content"));
+            file.setTitle(rs.getString("title"));
+            file.setDescription(rs.getString("description"));
             Array tags = rs.getArray("tags");
             if (tags != null) {
                 Integer[] tagIds = (Integer[]) tags.getArray();

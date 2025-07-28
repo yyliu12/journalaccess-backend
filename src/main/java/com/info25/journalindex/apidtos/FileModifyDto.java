@@ -19,6 +19,8 @@ public class FileModifyDto {
     String content;
     ArrayList<Location> locations;
     ArrayList<Integer> tags;
+    String title;
+    String description;
 
     public FileModifyDto() {}
 }

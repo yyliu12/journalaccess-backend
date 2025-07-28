@@ -101,10 +101,10 @@ public class Search {
             JsonNode highlights = dbResp.getHighlights();
             if (highlights != null) {
                 for (File f : dbResp.getFiles()) {
-                    JsonNode highlight = highlights.get(String.valueOf(f.getId())); // all solr ids are strings
+                    JsonNode highlight = highlights.get(String.valueOf(f.getId())).get("content"); // all solr ids are strings
                     if (highlight != null) {
                         FileSearchDto dto = fileSearchDtoMapper.toDtoWithHighlight(f,
-                                highlight.get("content").get(0).asText());
+                                highlight.get(0).asText());
                         results.add(dto);
                     } else {
                         FileSearchDto dto = fileSearchDtoMapper.toDto(f);

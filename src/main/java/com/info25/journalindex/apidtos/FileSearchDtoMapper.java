@@ -27,6 +27,8 @@ public class FileSearchDtoMapper {
         dto.setPath(f.getPath());
         dto.setLocations(f.getLocations());
         dto.setDate(f.getDate());
+        dto.setTitle(f.getTitle());
+        dto.setDescription(f.getDescription());
 
         ArrayList<Tag> tags = new ArrayList<>();
         for (int tagId : f.getTags()) {

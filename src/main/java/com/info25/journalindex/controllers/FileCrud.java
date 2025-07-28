@@ -3,7 +3,9 @@ package com.info25.journalindex.controllers;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -29,6 +31,7 @@ import com.info25.journalindex.util.DateUtils;
 import com.info25.journalindex.util.FsUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Data;
 
 @RestController
 public class FileCrud {
@@ -98,7 +101,7 @@ public class FileCrud {
 
 
     @PostMapping("/api/files/upload")
-    public String uploadFile(@RequestParam("files") MultipartFile[] files,
+    public FileUploadResult uploadFile(@RequestParam("files") MultipartFile[] files,
             @RequestParam("date") String date,
             @RequestParam("type") String type
     ) {
@@ -106,6 +109,8 @@ public class FileCrud {
         HashMap<String, MultipartFile> fileMap = new HashMap<>();
 
         new java.io.File(FsUtils.getFolderByDate(uploadDate)).mkdirs();
+
+        FileUploadResult result = new FileUploadResult();
 
         for (MultipartFile file : files) {
             String fileName;
@@ -115,13 +120,16 @@ public class FileCrud {
                 fileName = file.getOriginalFilename().strip();
             }
             if (fileRepository.existsByDateAndPath(uploadDate, fileName) || new java.io.File(FsUtils.getFileByDateAndPath(uploadDate, fileName)).exists()) {
-                return "EXISTS";
+                result.setOk(false);
+                return result;
             }
 
             fileMap.put(fileName, file);
         }
 
         // now we are sure we won't be overwriting data
+
+        List<FileModifyDto> fileDtos = new ArrayList<>();
 
         for (MultipartFile file : files) {
             String fileName;
@@ -178,9 +186,12 @@ public class FileCrud {
             }
 
             fileRepository.save(newFile);
+            fileDtos.add(fileMapper.fileToFileModifyDto(newFile));
         }
 
-        return "OK";
+        result.setFiles(fileDtos);
+        result.setOk(true);
+        return result;
     }
 
     private String attemptReadText(HashMap<String, MultipartFile> fileMap, String fileName) {
@@ -193,5 +204,11 @@ public class FileCrud {
             }
         }
         return content;
+    }
+
+    @Data
+    class FileUploadResult {
+        private boolean ok;
+        private List<FileModifyDto> files;
     }
 }

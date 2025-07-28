@@ -9,33 +9,16 @@ import java.util.ArrayList;
  * purposes), while the actual file is stored on the filesystem.
  */
 public class File {
-    /**
-     * === Stored in both SQL and Solr ===
-     */
     int id = -1;
     String path;
     LocalDate date;
     String uuid;
-    /**
-     * === Stored in Solr only ===
-     */
     String content;
     ArrayList<Location> locations;
-    // An arraylist of tag IDs which can be looked up in the SQL db.
     ArrayList<Integer> tags;
-    /**
-     * XML or JSON annotation data depending on the file type.
-     * 
-     * pdf = XML xfdf annotation data
-     * image (png, jpg, jpeg) = annotorious seadragon JSON data
-     * html = annotator.js JSON data
-     */
     String annotation;
-    /**
-     * === Stored in SQL only ===
-     */
-    // Raw text of annotation content for searching in Solr.
-    String annotationContent;
+    String title;
+    String description;
     /** 
      * These variables are used to save date and path modifications to the filesystem
      * since we need to know the original date & path in order to rename a file.
@@ -219,11 +202,19 @@ public class File {
         this.annotation = annotation;
     }
 
-    public String getAnnotationContent() {
-        return annotationContent;
+    public String getTitle() {
+        return title;
     }
 
-    public void setAnnotationContent(String annotationContent) {
-        this.annotationContent = annotationContent;
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

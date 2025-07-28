@@ -3,6 +3,7 @@ package com.info25.journalindex.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.info25.journalindex.controllers.annotation.HTMLAnnotator;
 import com.info25.journalindex.controllers.annotation.ImageAnnotator;
 import com.info25.journalindex.controllers.annotation.PDFAnnotator;
 import com.info25.journalindex.models.File;
@@ -52,7 +53,7 @@ public class FileSolrSerializer {
                     sb.append(ImageAnnotator.annotationTextContent(f.getAnnotation()));
                     break;
                 case "html":
-                    sb.append(f.getAnnotationContent());
+                    sb.append(HTMLAnnotator.annotationTextContent(f.getAnnotation()));
                     break;
             }
         }

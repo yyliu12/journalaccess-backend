@@ -14,6 +14,8 @@ public class FileSearchDto {
     List<File.Location> locations;
     List<Tag> tags;
     LocalDate date;
+    String title;
+    String description;
     // backlinks GOING to this file
     List<BacklinkDto> backlinks = new ArrayList<>();
 
@@ -81,6 +83,24 @@ public class FileSearchDto {
 
     public FileSearchDto addBacklink(BacklinkDto backlink) {
         this.backlinks.add(backlink);
+        return this;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public FileSearchDto setTitle(String title) {
+        this.title = title;
+        return this;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public FileSearchDto setDescription(String description) {
+        this.description = description;
         return this;
     }
 }
