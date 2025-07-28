@@ -15,5 +15,5 @@ public class BacklinkDto {
     private int to;
     private String annotation;
     private FileModifyDto toFile;
-
+    private boolean display;
 }

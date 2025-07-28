@@ -33,7 +33,22 @@ public class BacklinkCrud {
             dto.setFrom(backlink.getFrom());
             dto.setTo(backlink.getTo());
             dto.setAnnotation(backlink.getAnnotation());
+            dto.setDisplay(backlink.isDisplay());
             dto.setToFile(fileModifyDtoMapper.fileToFileModifyDto(fileRepository.getWithoutSolr(backlink.getTo())));
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    @PostMapping("/api/backlinks/getByTo")
+    public List<BacklinkDto> getBacklinksByTo(@RequestParam("id") int id) {
+        return backlinkRepository.findByTo(id).stream().map(backlink -> {
+            BacklinkDto dto = new BacklinkDto();
+            dto.setId(backlink.getId());
+            dto.setFrom(backlink.getFrom());
+            dto.setTo(backlink.getTo());
+            dto.setAnnotation(backlink.getAnnotation());
+            dto.setDisplay(backlink.isDisplay());
+            dto.setToFile(fileModifyDtoMapper.fileToFileModifyDto(fileRepository.getWithoutSolr(backlink.getFrom())));
             return dto;
         }).collect(Collectors.toList());
     }
@@ -42,12 +57,14 @@ public class BacklinkCrud {
     public int createBacklink(
         @RequestParam("from") int from, 
         @RequestParam("to") int to, 
-        @RequestParam("annotation") String annotation
+        @RequestParam("annotation") String annotation,
+        @RequestParam("display") boolean display
     ) {
         Backlink backlink = new Backlink();
         backlink.setFrom(from);
         backlink.setTo(to);
         backlink.setAnnotation(annotation);
+        backlink.setDisplay(display);
         backlinkRepository.save(backlink);
         return backlink.getId();
     }
@@ -56,11 +73,13 @@ public class BacklinkCrud {
     public String updateBacklink(
         @RequestParam("id") int id, 
         @RequestParam("to") int to, 
-        @RequestParam("annotation") String annotation
+        @RequestParam("annotation") String annotation,
+        @RequestParam("display") boolean display
     ) {
         Backlink backlink = backlinkRepository.findById(id);
         backlink.setTo(to);
         backlink.setAnnotation(annotation);
+        backlink.setDisplay(display);
         backlinkRepository.save(backlink);
         // TODO: Index backlinks
         return "OK";

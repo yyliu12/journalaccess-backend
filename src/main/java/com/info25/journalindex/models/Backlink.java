@@ -22,4 +22,6 @@ public class Backlink {
     int to;
     @Column("annotation")
     String annotation;
+    @Column("display")
+    boolean display;
 }
