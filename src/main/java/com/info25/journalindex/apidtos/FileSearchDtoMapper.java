@@ -1,8 +1,11 @@
 package com.info25.journalindex.apidtos;
 
+import com.info25.journalindex.models.EventFile;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.models.Tag;
 import com.info25.journalindex.repositories.BacklinkRepository;
+import com.info25.journalindex.repositories.EventFileRepository;
+import com.info25.journalindex.repositories.EventRepository;
 import com.info25.journalindex.repositories.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -20,6 +23,9 @@ public class FileSearchDtoMapper {
     @Autowired
     @Lazy
     BacklinkRepository backlinkRepository;
+
+    @Autowired
+    EventRepository eventRepository;
 
     public FileSearchDto toDto(File f) {
         FileSearchDto dto = new FileSearchDto();
@@ -40,6 +46,7 @@ public class FileSearchDtoMapper {
         dto.setTags(tags);
 
         backlinkRepository.populateBacklinks(dto);
+        eventRepository.populateEventDtos(dto);
 
         return dto;
     }
