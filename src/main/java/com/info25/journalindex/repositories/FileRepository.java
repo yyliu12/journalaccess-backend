@@ -57,6 +57,9 @@ public class FileRepository {
     @Autowired
     SolrClient solrClient;
 
+    @Autowired
+    FileSolrSerializer fileSolrSerializer;
+
     /**
      * This function returns a file with SQL and Solr data baesd on id.
      *
@@ -283,7 +286,7 @@ public class FileRepository {
     private void __saveToSolr(File f) {
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode rootNode = mapper.createArrayNode();
-        JsonNode serialization = FileSolrSerializer.serializeForSolrModifyQuery(f);
+        JsonNode serialization = fileSolrSerializer.serializeForSolrModifyQuery(f);
         rootNode.add(serialization);
         solrClient.modify(rootNode);
     }

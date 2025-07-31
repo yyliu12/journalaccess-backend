@@ -1,5 +1,8 @@
 package com.info25.journalindex.util;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -7,17 +10,22 @@ import com.info25.journalindex.controllers.annotation.HTMLAnnotator;
 import com.info25.journalindex.controllers.annotation.ImageAnnotator;
 import com.info25.journalindex.controllers.annotation.PDFAnnotator;
 import com.info25.journalindex.models.File;
+import com.info25.journalindex.repositories.EventFileRepository;
 
 /**
  * This class takes a File object and creates Solr modify query JSON
  */
+@Component
 public class FileSolrSerializer {
+    @Autowired
+    EventFileRepository eventFileRepository;
+
     /**
      * Turns a file into a Solr modify query
      * @param f The file to create a Solr modify query for
      * @return The JSON data as a JsonNode
      */
-    public static JsonNode serializeForSolrModifyQuery(File f) {
+    public JsonNode serializeForSolrModifyQuery(File f) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("id", f.getId());
@@ -26,13 +34,17 @@ public class FileSolrSerializer {
         rootNode.set("location", createSet(mapper.valueToTree(f.getLocations().stream()
                 .map(File.Location::getCoordinate)
                 .toList())));
+        rootNode.set("events", createSet(mapper.valueToTree(
+            eventFileRepository.findByFile(f.getId()).stream()
+                .map(eventFile -> eventFile.getEvent())
+                .toList()
+        )));
         rootNode.set("tags", createSet(mapper.valueToTree(f.getTags())));
         return rootNode;
     }
 
     /**
      * Gets all text content that could conceivably be searched into one
-     * string. this includes the actual content of the file (field: content)
      * and the annotations.
      * @param f what file to get the text content from
      * @return a string containing all the text content

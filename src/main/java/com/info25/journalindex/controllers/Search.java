@@ -83,6 +83,11 @@ public class Search {
                     tagIds.stream().map(String::valueOf).toList()) + ")");
         }
 
+        if (so.getEvents() != null && so.getEvents().size() > 0) {
+            assembler.addTerm("events: (" + String.join(" OR ", so.getEvents().stream()
+                    .map(String::valueOf).toList()) + ")");
+        }
+
         selectQuery.setFq(assembler.getFullQuery());
 
         if (searchQuery != "") {
