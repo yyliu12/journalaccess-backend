@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.info25.journalindex.apidtos.*;
 import com.info25.journalindex.util.DateUtils;
 import com.info25.journalindex.util.SolrQueryAssembler;
@@ -47,6 +48,7 @@ public class Search {
                                    @RequestParam(name = "bounds", required = false) JsonNode boundsQuery) {
 
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         SearchOptions so = mapper.convertValue(query, SearchOptions.class);
 
         TagSearchOptions tagSearchOptions = so.getTags();
@@ -86,6 +88,12 @@ public class Search {
         if (so.getEvents() != null && so.getEvents().size() > 0) {
             assembler.addTerm("events: (" + String.join(" OR ", so.getEvents().stream()
                     .map(String::valueOf).toList()) + ")");
+        }
+
+        if (so.isDateFilteringEnabled()) {
+            assembler.addTerm("date: [" +
+                    DateUtils.localDateToTimestamp(so.getStartDate()) + " TO " +
+                    DateUtils.localDateToTimestamp(so.getEndDate()) + "]");
         }
 
         selectQuery.setFq(assembler.getFullQuery());
