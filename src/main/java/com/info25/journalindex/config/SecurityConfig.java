@@ -31,13 +31,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // access react app & api endpoints should req authentication
                         // login pages OK w/o auth
-                        /*.requestMatchers("/app/**").authenticated()
+                        .requestMatchers("/app/**").authenticated()
                         .requestMatchers("/api/**").authenticated()
                         .requestMatchers("/").authenticated()
                         .requestMatchers("/static/**").permitAll()
                         .requestMatchers("/login").permitAll()
-                        .requestMatchers("/loginBg.jpg").permitAll()*/
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/loginBg.jpg").permitAll()
                 )
                 .formLogin(f -> f.loginPage("/login").loginProcessingUrl("/login"))
                 .headers(headers -> headers.disable())
