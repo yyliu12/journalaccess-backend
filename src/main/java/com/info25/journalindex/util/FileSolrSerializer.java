@@ -69,6 +69,14 @@ public class FileSolrSerializer {
                     break;
             }
         }
+        
+        sb.append(" ");
+        if (f.getTitle() != null) {
+            sb.append(f.getTitle()).append(" ");
+        }
+        if (f.getDescription() != null) {
+            sb.append(f.getDescription()).append(" ");
+        }
 
         return sb.toString();
     }
