@@ -105,7 +105,7 @@ public class ImageAnnotator {
      * @return An HTMLAnnotationDto object with the annotations.
      */
     private HTMLAnnotationDto getFileAnnotations(int id) {
-        File f = fileRepository.getWithoutSolr(id);
+        File f = fileRepository.getById(id);
         // If there are no annotations, we create an empty annotations object
         if (f.getAnnotation() == null || f.getAnnotation().isEmpty()) {
             f.setAnnotation("{\"annotations\": {}}");

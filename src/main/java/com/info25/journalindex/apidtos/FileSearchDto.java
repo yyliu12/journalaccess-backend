@@ -20,6 +20,7 @@ public class FileSearchDto {
     List<BacklinkDto> backlinks = new ArrayList<>();
     List<EventDto> events = new ArrayList<>();
     int parent;
+    String attachmentCode;
 
     public LocalDate getDate() {
         return date;
@@ -123,4 +124,14 @@ public class FileSearchDto {
         this.parent = parent;
         return this;
     }
+
+    public String getAttachmentCode() {
+        return attachmentCode;
+    }
+
+    public FileSearchDto setAttachmentCode(String attachmentCode) {
+        this.attachmentCode = attachmentCode;
+        return this;
+    }
+
 }

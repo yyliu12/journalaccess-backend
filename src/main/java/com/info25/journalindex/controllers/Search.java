@@ -178,4 +178,14 @@ public class Search {
         return results;
     }
 
+    @PostMapping("/api/files/getAttachments")
+    public List<FileSearchDto> getAttachments(@RequestParam("id") int id) {
+        List<File> files = fileRepository.getAttachmentsAndFile(id);
+        List<FileSearchDto> dtos = new ArrayList<>();
+        for (File f : files) {
+            dtos.add(fileSearchDtoMapper.toDto(f));
+        }
+        return dtos;
+    }
+
 }

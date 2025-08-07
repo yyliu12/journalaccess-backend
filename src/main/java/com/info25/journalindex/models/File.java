@@ -20,6 +20,7 @@ public class File {
     String title;
     String description;
     int parent = -1; // -1 means no parent
+    String attachmentCode;
     /** 
      * These variables are used to save date and path modifications to the filesystem
      * since we need to know the original date & path in order to rename a file.
@@ -225,5 +226,13 @@ public class File {
 
     public void setParent(int parent) {
         this.parent = parent;
+    }
+
+    public String getAttachmentCode() {
+        return attachmentCode;
+    }
+
+    public void setAttachmentCode(String attachmentCode) {
+        this.attachmentCode = attachmentCode;
     }
 }

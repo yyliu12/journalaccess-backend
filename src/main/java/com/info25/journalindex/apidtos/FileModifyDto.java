@@ -22,6 +22,7 @@ public class FileModifyDto {
     String title;
     String description;
     int parent;
+    String attachmentCode;
 
     public FileModifyDto() {}
 }

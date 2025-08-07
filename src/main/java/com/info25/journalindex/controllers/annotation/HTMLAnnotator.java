@@ -126,7 +126,7 @@ public class HTMLAnnotator {
      */
     private HTMLAnnotationDto getFileAnnotations(int id) {
         // No Solr data is needed here -- annotations are stored in the SQL db.
-        File f = fileRepository.getWithoutSolr(id);
+        File f = fileRepository.getById(id);
         // We populate an empty annotations dictionary if there are no annotations
         if (f.getAnnotation() == null || f.getAnnotation().isEmpty()) {
             f.setAnnotation("{\"annotations\": {}}");

@@ -34,7 +34,7 @@ public class BacklinkCrud {
             dto.setTo(backlink.getTo());
             dto.setAnnotation(backlink.getAnnotation());
             dto.setDisplay(backlink.isDisplay());
-            dto.setToFile(fileModifyDtoMapper.fileToFileModifyDto(fileRepository.getWithoutSolr(backlink.getTo())));
+            dto.setToFile(fileModifyDtoMapper.fileToFileModifyDto(fileRepository.getById(backlink.getTo())));
             return dto;
         }).collect(Collectors.toList());
     }
@@ -48,7 +48,7 @@ public class BacklinkCrud {
             dto.setTo(backlink.getTo());
             dto.setAnnotation(backlink.getAnnotation());
             dto.setDisplay(backlink.isDisplay());
-            dto.setToFile(fileModifyDtoMapper.fileToFileModifyDto(fileRepository.getWithoutSolr(backlink.getFrom())));
+            dto.setToFile(fileModifyDtoMapper.fileToFileModifyDto(fileRepository.getById(backlink.getFrom())));
             return dto;
         }).collect(Collectors.toList());
     }

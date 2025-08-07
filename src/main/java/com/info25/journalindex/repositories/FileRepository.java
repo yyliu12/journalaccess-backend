@@ -70,20 +70,7 @@ public class FileRepository {
     public File getById(int id) {
         String sql = "SELECT * FROM files WHERE id = ?";
         File file = jdbcTemplate.queryForObject(sql, new FileRowMapper(), new Object[]{id});
-        // loadFromSolr(file);
         return file;
-    }
-
-    /**
-     * This function returns a file with SQL data based on id.
-     * It does not load data from Solr.
-     *
-     * @param id The id of the file to get.
-     * @return The file with SQL data ONLY.
-     */
-    public File getWithoutSolr(int id) {
-        String sql = "SELECT * FROM files WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql, new FileRowMapper(), new Object[]{id});
     }
 
     /**
@@ -120,6 +107,19 @@ public class FileRepository {
         String sql = "SELECT * FROM files WHERE date = ?";
         List<File> files = jdbcTemplate.query(sql, new FileRowMapper(), DateUtils.localDateToTimestamp(date));
 
+        return files;
+    }
+
+    /**
+     * Retrieves the file and its attachments by file id.
+     */
+    public List<File> getAttachmentsAndFile(int id) {
+        List<File> files = new ArrayList<>();
+        files.add(getById(id));
+
+        String sql = "SELECT * FROM files WHERE parent = ?";
+        List<File> attachments = jdbcTemplate.query(sql, new FileRowMapper(), id);
+        files.addAll(attachments);
         return files;
     }
 
@@ -249,6 +249,9 @@ public class FileRepository {
         ps.setString(10, f.getTitle());
         ps.setString(11, f.getDescription());
         ps.setInt(12, f.getParent());
+        ps.setString(13, f.getAttachmentCode());
+        // update ps.setInt in id == -1 when adding new statements -- the update
+        // sql statement requires the id at the end
     }
 
     private void __saveToSql(File f) {
@@ -259,16 +262,17 @@ public class FileRepository {
             String sql = "UPDATE files SET uuid = ?, path = ?, " +
                     "date = ?, annotation = ?, content = ?, tags = ?, " +
                     "location_coordinates = ?, location_address = ?, " +
-                    "location_buildingname = ?, title = ?, description = ?, parent = ? WHERE id = ?";
+                    "location_buildingname = ?, title = ?, description = ?, " + 
+                    "parent = ?, attachment_code = ? WHERE id = ?";
             jdbcTemplate.update(sql, ps -> {
                 preparedStatementFromFile(ps, f);
-                ps.setInt(13, f.getId());
+                ps.setInt(14, f.getId());
             });
         } else {
             String sql = "INSERT INTO files (uuid, path, date, annotation, content," +
                     "tags, location_coordinates, location_address," +
-                    "location_buildingname, title, description, parent) VALUES (?, ?, ?, ?," +
-                    "?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                    "location_buildingname, title, description, parent, attachment_code) VALUES (?, ?, ?, ?," +
+                    "?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -325,6 +329,7 @@ public class FileRepository {
             file.setTitle(rs.getString("title"));
             file.setDescription(rs.getString("description"));
             file.setParent(rs.getInt("parent"));
+            file.setAttachmentCode(rs.getString("attachment_code"));
             Array tags = rs.getArray("tags");
             if (tags != null) {
                 Integer[] tagIds = (Integer[]) tags.getArray();
