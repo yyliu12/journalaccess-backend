@@ -19,6 +19,7 @@ public class FileSearchDto {
     // backlinks GOING to this file
     List<BacklinkDto> backlinks = new ArrayList<>();
     List<EventDto> events = new ArrayList<>();
+    int parent;
 
     public LocalDate getDate() {
         return date;
@@ -111,6 +112,15 @@ public class FileSearchDto {
 
     public FileSearchDto setEvents(List<EventDto> events) {
         this.events = events;
+        return this;
+    }
+
+    public int getParent() {
+        return parent;
+    }
+
+    public FileSearchDto setParent(int parent) {
+        this.parent = parent;
         return this;
     }
 }

@@ -21,6 +21,7 @@ public class FileModifyDto {
     ArrayList<Integer> tags;
     String title;
     String description;
+    int parent;
 
     public FileModifyDto() {}
 }

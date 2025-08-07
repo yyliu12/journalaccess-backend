@@ -248,6 +248,7 @@ public class FileRepository {
 
         ps.setString(10, f.getTitle());
         ps.setString(11, f.getDescription());
+        ps.setInt(12, f.getParent());
     }
 
     private void __saveToSql(File f) {
@@ -255,22 +256,19 @@ public class FileRepository {
         boolean newEntry = id == -1;
 
         if (id != -1) {
-            System.out.println("about to run update!");
             String sql = "UPDATE files SET uuid = ?, path = ?, " +
                     "date = ?, annotation = ?, content = ?, tags = ?, " +
                     "location_coordinates = ?, location_address = ?, " +
-                    "location_buildingname = ?, title = ?, description = ? WHERE id = ?";
+                    "location_buildingname = ?, title = ?, description = ?, parent = ? WHERE id = ?";
             jdbcTemplate.update(sql, ps -> {
                 preparedStatementFromFile(ps, f);
-                ps.setInt(12, f.getId());
+                ps.setInt(13, f.getId());
             });
-
-            System.out.println("update done!");
         } else {
             String sql = "INSERT INTO files (uuid, path, date, annotation, content," +
                     "tags, location_coordinates, location_address," +
-                    "location_buildingname, title, description) VALUES (?, ?, ?, ?," + 
-                    "?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                    "location_buildingname, title, description, parent) VALUES (?, ?, ?, ?," +
+                    "?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -326,6 +324,7 @@ public class FileRepository {
             file.setContent(rs.getString("content"));
             file.setTitle(rs.getString("title"));
             file.setDescription(rs.getString("description"));
+            file.setParent(rs.getInt("parent"));
             Array tags = rs.getArray("tags");
             if (tags != null) {
                 Integer[] tagIds = (Integer[]) tags.getArray();

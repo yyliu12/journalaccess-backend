@@ -19,6 +19,7 @@ public class File {
     String annotation;
     String title;
     String description;
+    int parent = -1; // -1 means no parent
     /** 
      * These variables are used to save date and path modifications to the filesystem
      * since we need to know the original date & path in order to rename a file.
@@ -216,5 +217,13 @@ public class File {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public int getParent() {
+        return parent;
+    }
+
+    public void setParent(int parent) {
+        this.parent = parent;
     }
 }
