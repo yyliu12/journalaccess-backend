@@ -9,12 +9,13 @@ import com.ibm.icu.text.CharsetDetector;
 import com.info25.journalindex.models.File;
 
 public class FsUtils {
-    static Path rootPath = Paths.get("C:\\Users\\yuyan\\Desktop\\journalindex\\fs");
+    static Path rootPath = Paths.get("/Users/yuyangliu/Desktop/journalindex/fs");
+    static String sep = java.io.File.separator;
 
     public static String getFileByDateAndPath(LocalDate date, String path) {
         Path p = rootPath.resolve(
-                date.getYear() + "\\" + date.getMonthValue() + "\\" + date.getDayOfMonth()
-        ).resolve(path.replace("/", "\\"));
+                date.getYear() + sep + date.getMonthValue() + sep + date.getDayOfMonth()
+        ).resolve(path.replace("\\", sep));
         System.out.println(p.toAbsolutePath().toString());
         return p.toAbsolutePath().toString();
     }
@@ -25,7 +26,7 @@ public class FsUtils {
 
     public static String getFolderByDate(LocalDate date) {
         return rootPath.resolve(
-                date.getYear() + "\\" + date.getMonthValue() + "\\" + date.getDayOfMonth()
+                date.getYear() + sep + date.getMonthValue() + sep + date.getDayOfMonth()
         ).toAbsolutePath().toString();
     }
 

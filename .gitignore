@@ -37,3 +37,5 @@ src/main/resources/index.html
 src/main/resources/static/**
 !src/main/resources/application.properties
 src/main/resources/loginbg/**
+
+.DS_Store

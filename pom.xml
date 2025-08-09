@@ -30,6 +30,7 @@
 	<properties>
 		<java.version>21</java.version>
 		<org.mapstruct.version>1.6.3</org.mapstruct.version>
+		<start-class>com.info25.journalindex.JournalindexApplication</start-class>
 	</properties>
 	<dependencies>
 		<dependency>
