@@ -2,6 +2,8 @@ package com.info25.journalindex.util;
 
 import org.springframework.http.MediaType;
 
+import com.info25.journalindex.models.File;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +20,10 @@ public class ContentType {
 
     public static MediaType getContentType(String extension) {
         return contentTypeMap.get(extension.toLowerCase());
+    }
+
+    public static String getFileExt(File f) {
+        return getFileExt(f.getPath());
     }
 
     public static String getFileExt(String fileName) {

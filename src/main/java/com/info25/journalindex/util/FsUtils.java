@@ -14,20 +14,19 @@ public class FsUtils {
 
     public static String getFileByDateAndPath(LocalDate date, String path) {
         Path p = rootPath.resolve(
-                date.getYear() + sep + date.getMonthValue() + sep + date.getDayOfMonth()
-        ).resolve(path.replace("\\", sep));
+                date.getYear() + sep + date.getMonthValue() + sep + date.getDayOfMonth())
+                .resolve(path.replace("\\", sep));
         System.out.println(p.toAbsolutePath().toString());
         return p.toAbsolutePath().toString();
     }
 
     public static String getFilePathByFile(File f) {
         return getFileByDateAndPath(f.getDate(), f.getPath());
-    } 
+    }
 
     public static String getFolderByDate(LocalDate date) {
         return rootPath.resolve(
-                date.getYear() + sep + date.getMonthValue() + sep + date.getDayOfMonth()
-        ).toAbsolutePath().toString();
+                date.getYear() + sep + date.getMonthValue() + sep + date.getDayOfMonth()).toAbsolutePath().toString();
     }
 
     public static String removeFirstFolderFromPath(String path) {
