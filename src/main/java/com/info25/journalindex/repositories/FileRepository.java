@@ -57,6 +57,9 @@ public class FileRepository {
     @Autowired
     FileSolrSerializer fileSolrSerializer;
 
+    @Autowired
+    FsUtils fsUtils;
+
     /**
      * This function returns a file with SQL and Solr data baesd on id.
      *
@@ -179,16 +182,16 @@ public class FileRepository {
         }
 
         if (f.__isPathModified()) {
-            java.io.File fsFile = new java.io.File(FsUtils.getFileByDateAndPath(curDate, f.__getOriginalPath()));
-            fsFile.renameTo(new java.io.File(FsUtils.getFileByDateAndPath(curDate, null)));
+            java.io.File fsFile = new java.io.File(fsUtils.getFileByDateAndPath(curDate, f.__getOriginalPath()));
+            fsFile.renameTo(new java.io.File(fsUtils.getFileByDateAndPath(curDate, null)));
         }
 
         // we know that the file exists at its set path now
         if (f.__isDateModified()) {
 
-            java.io.File fsFile = new java.io.File(FsUtils.getFileByDateAndPath(f.__getOriginalDate(), f.getPath()));
+            java.io.File fsFile = new java.io.File(fsUtils.getFileByDateAndPath(f.__getOriginalDate(), f.getPath()));
 
-            java.io.File toFile = new java.io.File(FsUtils.getFileByDateAndPath(f.getDate(), f.getPath()));
+            java.io.File toFile = new java.io.File(fsUtils.getFileByDateAndPath(f.getDate(), f.getPath()));
             toFile.getParentFile().mkdirs();
             fsFile.renameTo(toFile);
         }

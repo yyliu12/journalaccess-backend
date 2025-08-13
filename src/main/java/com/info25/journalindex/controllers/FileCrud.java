@@ -41,13 +41,16 @@ public class FileCrud {
     @Autowired
     FileRepository fileRepository;
 
+    @Autowired
+    FsUtils fsUtils;
+
     @GetMapping("/api/files/getFile/byId/{id}")
     public ResponseEntity<FileSystemResource> getFileById(@PathVariable("id") int id) throws IOException {
         File file = fileRepository.getById(id);
         if (file == null) {
             return ResponseEntity.notFound().build();
         }
-        FileSystemResource fsr = new FileSystemResource(FsUtils.getFilePathByFile(file));
+        FileSystemResource fsr = new FileSystemResource(fsUtils.getFilePathByFile(file));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(ContentType.getContentTypeFromFileName(file.getPath()));
         headers.setContentLength(fsr.contentLength());
@@ -67,7 +70,7 @@ public class FileCrud {
 
         urlParts = URLDecoder.decode(urlParts, "UTF-8");
 
-        FileSystemResource fsr = new FileSystemResource(FsUtils.getFileByDateAndPath(parsedDate, urlParts));
+        FileSystemResource fsr = new FileSystemResource(fsUtils.getFileByDateAndPath(parsedDate, urlParts));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(ContentType.getContentTypeFromFileName(urlParts));
         headers.setContentLength(fsr.contentLength());
@@ -91,7 +94,7 @@ public class FileCrud {
     @PostMapping("/api/files/delete")
     public String deleteFile(@RequestParam("id") int id) {
         File file = fileRepository.getById(id);
-        java.io.File osFile = new java.io.File(FsUtils.getFilePathByFile(file));
+        java.io.File osFile = new java.io.File(fsUtils.getFilePathByFile(file));
         if (osFile.exists()) {
             osFile.delete();
         }
@@ -108,7 +111,7 @@ public class FileCrud {
         LocalDate uploadDate = DateUtils.parseFromString(date);
         HashMap<String, MultipartFile> fileMap = new HashMap<>();
 
-        new java.io.File(FsUtils.getFolderByDate(uploadDate)).mkdirs();
+        new java.io.File(fsUtils.getFolderByDate(uploadDate)).mkdirs();
 
         FileUploadResult result = new FileUploadResult();
 
@@ -119,7 +122,7 @@ public class FileCrud {
             } else {
                 fileName = file.getOriginalFilename().strip();
             }
-            if (fileRepository.existsByDateAndPath(uploadDate, fileName) || new java.io.File(FsUtils.getFileByDateAndPath(uploadDate, fileName)).exists()) {
+            if (fileRepository.existsByDateAndPath(uploadDate, fileName) || new java.io.File(fsUtils.getFileByDateAndPath(uploadDate, fileName)).exists()) {
                 result.setOk(false);
                 return result;
             }
@@ -158,8 +161,8 @@ public class FileCrud {
             String[] attemptedContent = new String[3];
             
             attemptedContent[0] = attemptReadText(fileMap, file.getOriginalFilename() + ".txt");
-            attemptedContent[1] = attemptReadText(fileMap, FsUtils.changeExtension(file.getOriginalFilename(), ".txt"));
-            attemptedContent[2] = attemptReadText(fileMap, FsUtils.changeExtension(file.getOriginalFilename(), ".TXT"));
+            attemptedContent[1] = attemptReadText(fileMap, fsUtils.changeExtension(file.getOriginalFilename(), ".txt"));
+            attemptedContent[2] = attemptReadText(fileMap, fsUtils.changeExtension(file.getOriginalFilename(), ".TXT"));
 
             for (String attempt : attemptedContent) {
                 if (attempt != null)
@@ -169,14 +172,14 @@ public class FileCrud {
             if (fileName.endsWith(".html")) {
                 Document doc = null;
                 try {
-                    doc = Jsoup.parse(FsUtils.decodeBytesWithCharset(file.getBytes()));
+                    doc = Jsoup.parse(fsUtils.decodeBytesWithCharset(file.getBytes()));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 newFile.setContent(doc.body().wholeText());
             }
 
-            java.io.File osFile = new java.io.File(FsUtils.getFileByDateAndPath(uploadDate, fileName));
+            java.io.File osFile = new java.io.File(fsUtils.getFileByDateAndPath(uploadDate, fileName));
             
             try {
                 osFile.mkdirs();
@@ -198,7 +201,7 @@ public class FileCrud {
         String content = null;
         if (fileMap.containsKey(fileName)) {
             try {
-                content = FsUtils.decodeBytesWithCharset(fileMap.get(fileName).getBytes());
+                content = fsUtils.decodeBytesWithCharset(fileMap.get(fileName).getBytes());
             } catch (IOException e) {
                 e.printStackTrace();
             }

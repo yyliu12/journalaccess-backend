@@ -43,6 +43,9 @@ public class AnnotationController {
     @Autowired
     FileRepository fileRepository;
 
+    @Autowired
+    FsUtils fsUtils;
+
     // object return type: sorry! But it needs to return a filesystemresource or
     // ModelAndView
     @GetMapping("/getEditor/byId/{id}")
@@ -98,7 +101,7 @@ public class AnnotationController {
         PdfDocument pdfDoc = null;
         try {
             pdfDoc = new PdfDocument(
-                    new PdfReader(FsUtils.getFilePathByFile(f)),
+                    new PdfReader(fsUtils.getFilePathByFile(f)),
                     new PdfWriter(out));
         } catch (IOException e) {
             e.printStackTrace();
@@ -142,9 +145,9 @@ public class AnnotationController {
         mav.addObject("id", f.getId());
         String content = null;
         try {
-            content = FsUtils.decodeBytesWithCharset(
+            content = fsUtils.decodeBytesWithCharset(
                     Files.readAllBytes(
-                            Path.of(FsUtils.getFilePathByFile(f))));
+                            Path.of(fsUtils.getFilePathByFile(f))));
         } catch (IOException e) {
             e.printStackTrace();
         }

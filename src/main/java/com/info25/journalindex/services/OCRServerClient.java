@@ -21,14 +21,22 @@ import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class OCRServerClient {
-    final String OCRSERVER_URL = "http://127.0.0.1:2009";
-    final String OCRSERVER_SECRET = "288Nk8sNbqnfhjI4JQAcAQCcRwZnj5r1";
+    @Autowired
+    FsUtils fsUtils;
+
+    String OCRSERVER_URL = "http://127.0.0.1:2009";
+    String OCRSERVER_SECRET = "288Nk8sNbqnfhjI4JQAcAQCcRwZnj5r1";
 
     CloseableHttpClient client = HttpClientBuilder.create().build();
+
+    public OCRServerClient() {
+
+    }
 
     public String getTextOfPDF(File f, boolean includePdfTextLayer) {
         try {
@@ -36,7 +44,7 @@ public class OCRServerClient {
 
             builder.setMode(HttpMultipartMode.LEGACY);
             builder.addPart("secret", new StringBody(OCRSERVER_SECRET, ContentType.MULTIPART_FORM_DATA));
-            builder.addPart("file", new FileBody(new java.io.File(FsUtils.getFilePathByFile(f)), ContentType.DEFAULT_BINARY));
+            builder.addPart("file", new FileBody(new java.io.File(fsUtils.getFilePathByFile(f)), ContentType.DEFAULT_BINARY));
             builder.addPart("includePdfTextLayer", new StringBody(Boolean.toString(includePdfTextLayer), ContentType.MULTIPART_FORM_DATA));
 
             HttpEntity httpEntity = builder.build();
@@ -58,7 +66,7 @@ public class OCRServerClient {
 
             builder.setMode(HttpMultipartMode.LEGACY);
             builder.addPart("secret", new StringBody(OCRSERVER_SECRET, ContentType.MULTIPART_FORM_DATA));
-            builder.addPart("file", new FileBody(new java.io.File(FsUtils.getFilePathByFile(f)), ContentType.DEFAULT_BINARY));
+            builder.addPart("file", new FileBody(new java.io.File(fsUtils.getFilePathByFile(f)), ContentType.DEFAULT_BINARY));
 
             HttpEntity httpEntity = builder.build();
             HttpPost request = new HttpPost(OCRSERVER_URL + "/ocrImage");

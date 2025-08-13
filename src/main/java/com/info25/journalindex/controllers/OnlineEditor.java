@@ -22,6 +22,9 @@ public class OnlineEditor {
     @Autowired
     FileRepository fileRepository;
 
+    @Autowired
+    FsUtils fsUtils;
+
     final String HEADER_CSS = """
             <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
             <style> * { font-family: 'Roboto' }</style>
@@ -30,7 +33,7 @@ public class OnlineEditor {
     @PostMapping("/api/onlineEditor/init")
     public String initOnlineEditor(@RequestParam("date") String date, @RequestParam("path") String path) {
         LocalDate parsedDate = DateUtils.parseFromString(date);
-        java.io.File file = new java.io.File(FsUtils.getFileByDateAndPath(parsedDate, path));
+        java.io.File file = new java.io.File(fsUtils.getFileByDateAndPath(parsedDate, path));
         try {
             file.getParentFile().mkdirs();
             file.createNewFile();
@@ -50,7 +53,7 @@ public class OnlineEditor {
     public String saveOnlineEditor(@RequestParam("id") int id, @RequestParam("content") String content) {
         File file = fileRepository.getById(id);
 
-        java.io.File localFile = new java.io.File(FsUtils.getFilePathByFile(file));
+        java.io.File localFile = new java.io.File(fsUtils.getFilePathByFile(file));
         try {
             java.nio.file.Files.writeString(localFile.toPath(), HEADER_CSS + content);
 
@@ -71,7 +74,7 @@ public class OnlineEditor {
     public String getOnlineEditor(@RequestParam("id") int id) {
         File file = fileRepository.getById(id);
 
-        java.io.File localFile = new java.io.File(FsUtils.getFilePathByFile(file));
+        java.io.File localFile = new java.io.File(fsUtils.getFilePathByFile(file));
         try {
             return java.nio.file.Files.readString(localFile.toPath());
         } catch (IOException e) {
@@ -90,7 +93,7 @@ public class OnlineEditor {
         fileModel.setPath(file.getOriginalFilename());
         fileRepository.save(fileModel);
 
-        java.io.File localFile = new java.io.File(FsUtils.getFilePathByFile(fileModel));
+        java.io.File localFile = new java.io.File(fsUtils.getFilePathByFile(fileModel));
         try {
             file.transferTo(localFile);
             return "{\"location\": \"" + file.getOriginalFilename() + "\"}";
