@@ -6,6 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,15 +16,18 @@ import com.info25.journalindex.util.SolrSelectQuery;
 
 @Component
 public class SolrClient {
-    final String SOLR_URL = "http://127.0.0.1:8983";
-    final String coreName = "journal_new";
+    String SOLR_URL;
+    String coreName;
 
     HttpClient client;
 
-    public SolrClient() {
+    public SolrClient(ConfigService configService) {
         client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .build();
+        
+        SOLR_URL = configService.getConfigOption("solrUrl");
+        coreName = configService.getConfigOption("solrCoreName");
     }
 
     public String sendHttpRequest(String url, String postBody) {

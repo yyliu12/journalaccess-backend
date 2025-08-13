@@ -29,13 +29,14 @@ public class OCRServerClient {
     @Autowired
     FsUtils fsUtils;
 
-    String OCRSERVER_URL = "http://127.0.0.1:2009";
-    String OCRSERVER_SECRET = "288Nk8sNbqnfhjI4JQAcAQCcRwZnj5r1";
+    String OCRSERVER_URL;
+    String OCRSERVER_SECRET;
 
     CloseableHttpClient client = HttpClientBuilder.create().build();
 
-    public OCRServerClient() {
-
+    public OCRServerClient(ConfigService configService) {
+        OCRSERVER_URL = configService.getConfigOption("ocrServerUrl");
+        OCRSERVER_SECRET = configService.getConfigOption("ocrServerSecret");
     }
 
     public String getTextOfPDF(File f, boolean includePdfTextLayer) {

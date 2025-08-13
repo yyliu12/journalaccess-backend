@@ -8,6 +8,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,14 +17,16 @@ import com.info25.journalindex.models.File.Location;
 
 @Service
 public class TomTomService {
-    final String TOMTOM_APIKEY = "vriuC2gRvgx2Gmr02YzuPxZE7SsslVkl";
+    String TOMTOM_APIKEY;
 
     HttpClient client;
 
-    public TomTomService() {
+    public TomTomService(ConfigService configService) {
         client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .build();
+        
+        TOMTOM_APIKEY = configService.getConfigOption("tomtomApiKey");
     }
 
     public ArrayList<Location> searchForLocations(String query) {

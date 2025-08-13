@@ -9,14 +9,15 @@ import org.springframework.stereotype.Component;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.info25.journalindex.models.File;
+import com.info25.journalindex.services.ConfigService;
 
 @Component
 public class FsUtils {
-    Path rootPath = Paths.get("/Users/yuyangliu/Desktop/journalindex/fs");
+    Path rootPath;
     String sep = java.io.File.separator;
 
-    public FsUtils() {
-
+    public FsUtils(ConfigService configService) {
+        rootPath = Paths.get(configService.getConfigOption("fsRoot"));
     }
 
     public String getFileByDateAndPath(LocalDate date, String path) {

@@ -1,0 +1,15 @@
+<config>
+    <!-- 
+        Where files for the journal are stored
+
+        New journal files are added tp year/month/day
+    -->
+    <fsRoot>/Users/yuyangliu/Desktop/journalindex/fs</fsRoot>
+    <tomtomApiKey>vriuC2gRvgx2Gmr02YzuPxZE7SsslVkl</tomtomApiKey>
+    <!-- do not include trailing slash. e.g. http://solr.com -->
+    <solrUrl>http://127.0.0.1:8983</solrUrl>
+    <solrCoreName>journal_new</solrCoreName>
+    <!-- do not include trailing slash -->
+    <ocrServerUrl>http://127.0.0.1:2009</ocrServerUrl>
+    <ocrServerSecret>288Nk8sNbqnfhjI4JQAcAQCcRwZnj5r1</ocrServerSecret>
+</config>
