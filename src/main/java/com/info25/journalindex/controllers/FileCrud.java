@@ -2,6 +2,8 @@ package com.info25.journalindex.controllers;
 
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,11 +27,14 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import com.info25.journalindex.apidtos.FileModifyDto;
 import com.info25.journalindex.apidtos.FileModifyDtoMapper;
+import com.info25.journalindex.apidtos.FinalizeUpload;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.repositories.FileRepository;
+import com.info25.journalindex.services.OCRServerClient;
 import com.info25.journalindex.util.ContentType;
 import com.info25.journalindex.util.DateUtils;
 import com.info25.journalindex.util.FsUtils;
+import com.info25.journalindex.util.FileTypes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;
@@ -43,6 +49,9 @@ public class FileCrud {
 
     @Autowired
     FsUtils fsUtils;
+
+    @Autowired
+    OCRServerClient ocrServerClient;
 
     @GetMapping("/api/files/getFile/byId/{id}")
     public ResponseEntity<FileSystemResource> getFileById(@PathVariable("id") int id) throws IOException {
@@ -102,12 +111,38 @@ public class FileCrud {
         return "OK";
     }
 
+    @PostMapping("/api/files/finalizeUpload")
+    public String finalizeUpload(@RequestBody List<FinalizeUpload> data) {
+        for (FinalizeUpload uploadData : data) {
+            File file = fileRepository.getById(uploadData.getFile().getId());
+            fileMapper.updateFileFromDto(uploadData.getFile(), file);
+
+            if (uploadData.isRunOCR()) {
+                switch (ContentType.getFileType(file)) {
+                    case FileTypes.IMAGE:
+                        file.setContent(ocrServerClient.getTextOfImage(file));
+                    case FileTypes.PDF:
+                        file.setContent(ocrServerClient.getTextOfPDF(file, uploadData.isIncludePdfTextLayer()));
+                    case FileTypes.WEBPAGE:
+                        try {
+                            byte[] fileData = Files.readAllBytes(Paths.get(fsUtils.getFilePathByFile(file)));
+                            file.setContent(Jsoup.parse(fsUtils.decodeBytesWithCharset(fileData)).body().wholeText());
+                        } catch (Exception e) {
+                            System.out.println(e);
+                        }
+                }
+            }
+
+            fileRepository.save(file);
+        }
+
+        return "OK";
+    }
 
     @PostMapping("/api/files/upload")
     public FileUploadResult uploadFile(@RequestParam("files") MultipartFile[] files,
             @RequestParam("date") String date,
-            @RequestParam("type") String type
-    ) {
+            @RequestParam("type") String type) {
         LocalDate uploadDate = DateUtils.parseFromString(date);
         HashMap<String, MultipartFile> fileMap = new HashMap<>();
 
@@ -122,7 +157,8 @@ public class FileCrud {
             } else {
                 fileName = file.getOriginalFilename().strip();
             }
-            if (fileRepository.existsByDateAndPath(uploadDate, fileName) || new java.io.File(fsUtils.getFileByDateAndPath(uploadDate, fileName)).exists()) {
+            if (fileRepository.existsByDateAndPath(uploadDate, fileName)
+                    || new java.io.File(fsUtils.getFileByDateAndPath(uploadDate, fileName)).exists()) {
                 result.setOk(false);
                 return result;
             }
@@ -159,7 +195,7 @@ public class FileCrud {
 
             // attempt to read both a.pdf.txt and a.txt (as an example)
             String[] attemptedContent = new String[3];
-            
+
             attemptedContent[0] = attemptReadText(fileMap, file.getOriginalFilename() + ".txt");
             attemptedContent[1] = attemptReadText(fileMap, fsUtils.changeExtension(file.getOriginalFilename(), ".txt"));
             attemptedContent[2] = attemptReadText(fileMap, fsUtils.changeExtension(file.getOriginalFilename(), ".TXT"));
@@ -180,7 +216,7 @@ public class FileCrud {
             }
 
             java.io.File osFile = new java.io.File(fsUtils.getFileByDateAndPath(uploadDate, fileName));
-            
+
             try {
                 osFile.mkdirs();
                 file.transferTo(osFile);

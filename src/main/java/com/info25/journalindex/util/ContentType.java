@@ -1,5 +1,6 @@
 package com.info25.journalindex.util;
 
+import org.apache.pdfbox.util.filetypedetector.FileType;
 import org.springframework.http.MediaType;
 
 import com.info25.journalindex.models.File;
@@ -37,5 +38,19 @@ public class ContentType {
     public static MediaType getContentTypeFromFileName(String fileName) {
         String ext = getFileExt(fileName);
         return getContentType(ext);
+    }
+
+    public static FileTypes getFileType(File f) {
+        switch (ContentType.getFileExt(f.getPath())) {
+            case "pdf":
+                return FileTypes.PDF;
+            case "jpg":
+            case "jpeg":
+            case "png":
+                return FileTypes.IMAGE;
+            case "html":
+                return FileTypes.WEBPAGE;
+        }
+        return null; // no file type
     }
 }
