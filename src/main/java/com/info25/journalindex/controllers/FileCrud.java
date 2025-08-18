@@ -121,8 +121,10 @@ public class FileCrud {
                 switch (ContentType.getFileType(file)) {
                     case FileTypes.IMAGE:
                         file.setContent(ocrServerClient.getTextOfImage(file));
+						break;
                     case FileTypes.PDF:
                         file.setContent(ocrServerClient.getTextOfPDF(file, uploadData.isIncludePdfTextLayer()));
+						break;
                     case FileTypes.WEBPAGE:
                         try {
                             byte[] fileData = Files.readAllBytes(Paths.get(fsUtils.getFilePathByFile(file)));
@@ -130,7 +132,10 @@ public class FileCrud {
                         } catch (Exception e) {
                             System.out.println(e);
                         }
+						break;
                 }
+				
+				System.out.println(file.getContent());
             }
 
             fileRepository.save(file);
