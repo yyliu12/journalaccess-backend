@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.repositories.FileRepository;
 import com.info25.journalindex.services.OCRServerClient;
+import com.info25.journalindex.services.TextExtractionService;
+import com.info25.journalindex.util.ContentType;
+import com.info25.journalindex.util.FileTypes;
 
 @RestController
 @RequestMapping("/api/ocrserver")
@@ -18,6 +21,9 @@ public class OCRServerApi {
 
     @Autowired
     FileRepository fileRepository;
+
+    @Autowired
+    TextExtractionService textExtractionService;
 
     @PostMapping("/getTextOfPdf")
     public String getTextOfPdf(
@@ -34,5 +40,15 @@ public class OCRServerApi {
         File f = fileRepository.getById(fileId);
 
         return ocrServerClient.getTextOfImage(f);
+    }
+
+    @PostMapping("/getText")
+    public String getText(
+        @RequestParam("id") int fileId,
+        @RequestParam("includePdfTextLayer") boolean includePdfTextLayer
+    ) {
+        File f = fileRepository.getById(fileId);
+        
+        return textExtractionService.getText(f, includePdfTextLayer);
     }
 }

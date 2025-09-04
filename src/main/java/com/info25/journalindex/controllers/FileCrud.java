@@ -31,6 +31,7 @@ import com.info25.journalindex.apidtos.FinalizeUpload;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.repositories.FileRepository;
 import com.info25.journalindex.services.OCRServerClient;
+import com.info25.journalindex.services.TextExtractionService;
 import com.info25.journalindex.util.ContentType;
 import com.info25.journalindex.util.DateUtils;
 import com.info25.journalindex.util.FsUtils;
@@ -52,6 +53,9 @@ public class FileCrud {
 
     @Autowired
     OCRServerClient ocrServerClient;
+
+    @Autowired
+    TextExtractionService textExtractionService;
 
     @GetMapping("/api/files/getFile/byId/{id}")
     public ResponseEntity<FileSystemResource> getFileById(@PathVariable("id") int id) throws IOException {
@@ -118,24 +122,7 @@ public class FileCrud {
             fileMapper.updateFileFromDto(uploadData.getFile(), file);
 
             if (uploadData.isRunOCR()) {
-                switch (ContentType.getFileType(file)) {
-                    case FileTypes.IMAGE:
-                        file.setContent(ocrServerClient.getTextOfImage(file));
-						break;
-                    case FileTypes.PDF:
-                        file.setContent(ocrServerClient.getTextOfPDF(file, uploadData.isIncludePdfTextLayer()));
-						break;
-                    case FileTypes.WEBPAGE:
-                        try {
-                            byte[] fileData = Files.readAllBytes(Paths.get(fsUtils.getFilePathByFile(file)));
-                            file.setContent(Jsoup.parse(fsUtils.decodeBytesWithCharset(fileData)).body().wholeText());
-                        } catch (Exception e) {
-                            System.out.println(e);
-                        }
-						break;
-                }
-				
-				System.out.println(file.getContent());
+                file.setContent(textExtractionService.getText(file, uploadData.isIncludePdfTextLayer()));
             }
 
             fileRepository.save(file);
