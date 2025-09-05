@@ -4,6 +4,9 @@ import java.util.List;
 
 import lombok.Data;
 
+/**
+ * Search options for tags returned from the client
+ */
 @Data
 public class TagSearchOptions {
     List<Integer> tags;

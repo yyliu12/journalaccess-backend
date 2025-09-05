@@ -11,12 +11,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+/**
+ * Helps serve the React app
+ */
 @RestController
 public class ReactServe {
+    /**
+     * returns the index.html file for any url under /app
+     * @param request
+     * @return index.html of the react app, located in resources/index.html
+     */
     @GetMapping("/app/**")
     public ResponseEntity<FileSystemResource> serveReactApp(HttpServletRequest request) {
-        String path = request.getRequestURI().substring(request.getContextPath().length());
-
         File file = null;
         try {
             file = ResourceUtils.getFile("classpath:index.html");

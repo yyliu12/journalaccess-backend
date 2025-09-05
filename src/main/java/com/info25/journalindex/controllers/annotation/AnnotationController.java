@@ -73,6 +73,7 @@ public class AnnotationController {
         return null;
     }
 
+    // Returns the right viewer for the annotation type
     @GetMapping("/getViewer/byId/{id}")
     public Object getViewer(@PathVariable("id") String strId, HttpServletRequest request)
             throws UnsupportedEncodingException {
@@ -96,6 +97,7 @@ public class AnnotationController {
         return null;
     }
 
+    // Returns a pdf file after opening it with iText and adding annotations
     private ResponseEntity<byte[]> getPdfViewer(File f) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PdfDocument pdfDoc = null;
@@ -131,7 +133,7 @@ public class AnnotationController {
 
     }
 
-
+    // Returns the notrient pdf editor with the correct pdf file
     private ModelAndView getPdfEditor(File f) {
         ModelAndView mav = new ModelAndView("annotation_viewers/pdf.html");
         mav.addObject("id", f.getId());
@@ -139,6 +141,7 @@ public class AnnotationController {
         return mav;
     }
 
+    // Returns the HTML file with annotator.js
     private ModelAndView getHtmlEditorAndViewer(File f) {
         ModelAndView mav = new ModelAndView("annotation_viewers/html.html");
         mav.addObject("date", DateUtils.formatToString(f.getDate()));
@@ -156,6 +159,7 @@ public class AnnotationController {
         return mav;
     }
 
+    // Returns an html file that has annotorious seadragon set up with the correct image
     public ModelAndView getImageEditorAndViewer(File f) {
         ModelAndView mav = new ModelAndView("annotation_viewers/image.html");
         mav.addObject("id", f.getId());

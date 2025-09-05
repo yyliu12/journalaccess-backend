@@ -14,7 +14,11 @@ import com.info25.journalindex.services.TomTomService;
 public class Mapping {
     @Autowired
     TomTomService tomTomService;
-
+    /**
+     * Endpoint used to communicate with the tomtom service
+     * @param query the textual query
+     * @return data from the tomtom api
+     */
     @PostMapping("/api/mapping/search")
     public List<Location> searchLocations(@RequestParam("query") String query) {
         List<Location> locations = tomTomService.searchForLocations(query);

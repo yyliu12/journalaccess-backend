@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * CRUD functions for events, a way of grouping files together
+ */
 @RestController
 @RequestMapping("/api/event")
 public class EventCrud {
@@ -22,6 +25,11 @@ public class EventCrud {
     @Autowired
     EventFileRepository eventFileRepository;
 
+    /**
+     * Gets a list of events with the parent id specified
+     * @param id the parent id of the events; -1 is the root
+     * @return a list of events
+     */
     @PostMapping("/get")
     List<EventDto> getEvents(@RequestParam("id") int id) {
         List<Event> events = eventRepository.findByParent(id);
@@ -42,6 +50,14 @@ public class EventCrud {
         return output;
     }
 
+    /**
+     * Creates an event based on the specified properties
+     * @param name the name of the event
+     * @param parent the id of the event's parent
+     * @param description a brief description of the event
+     * @param isFolder whether the event holds other events or not
+     * @return the event id
+     */
     @PostMapping("/create")
     int createEvent(
             @RequestParam("name") String name,
@@ -57,6 +73,14 @@ public class EventCrud {
         return event.getId();
     }
 
+    /**
+     * Modifies an event based on the given properties
+     * @param id the id of the event to modify
+     * @param name the name of the event
+     * @param parent what the event's parent is
+     * @param description the description of the event
+     * @return the id of the event
+     */
     @PostMapping("/modify")
     int modifyEvent(
             @RequestParam("id") int id,
@@ -74,6 +98,11 @@ public class EventCrud {
         return id;
     }
 
+    /**
+     * Deletes a specified event
+     * @param id the id of the event to delete
+     * @return OK
+     */
     @PostMapping("/delete")
     String deleteEvent(@RequestParam("id") int id) {
         if (!eventRepository.existsById(id)) {

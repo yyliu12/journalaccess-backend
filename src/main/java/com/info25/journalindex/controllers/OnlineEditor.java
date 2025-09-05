@@ -17,6 +17,9 @@ import com.info25.journalindex.repositories.FileRepository;
 import com.info25.journalindex.util.DateUtils;
 import com.info25.journalindex.util.FsUtils;
 
+/**
+ * Functions for the online editor
+ */
 @RestController
 public class OnlineEditor {
     @Autowired
@@ -30,6 +33,12 @@ public class OnlineEditor {
             <style> * { font-family: 'Roboto' }</style>
                                 """;
 
+    /**
+     * Creates a blank html file in the filesystem and db
+     * @param date what date to create the file under
+     * @param path the name of the file
+     * @return the id of the new file created in the db
+     */
     @PostMapping("/api/onlineEditor/init")
     public String initOnlineEditor(@RequestParam("date") String date, @RequestParam("path") String path) {
         LocalDate parsedDate = DateUtils.parseFromString(date);
@@ -49,6 +58,12 @@ public class OnlineEditor {
         return String.valueOf(fileModel.getId());
     }
 
+    /**
+     * Writes new content to an html file
+     * @param id the id of the html file
+     * @param content what content to write
+     * @return OK
+     */
     @PostMapping("/api/onlineEditor/save")
     public String saveOnlineEditor(@RequestParam("id") int id, @RequestParam("content") String content) {
         File file = fileRepository.getById(id);
@@ -70,6 +85,11 @@ public class OnlineEditor {
 
     }
 
+    /**
+     * gets text from the html file
+     * @param id the id of the html file
+     * @return the html file's contents
+     */
     @PostMapping("/api/onlineEditor/get")
     public String getOnlineEditor(@RequestParam("id") int id) {
         File file = fileRepository.getById(id);
@@ -83,6 +103,12 @@ public class OnlineEditor {
         }
     }
 
+    /**
+     * Uploads a file to the journal -- used when uploading from tinyMCE
+     * @param file the raw file data
+     * @param date what date to upload the file to
+     * @return a JSON object for tinyMCE to know the url of the file
+     */
     @PostMapping("/api/onlineEditor/{date}/upload")
     public String uploadFile(@RequestParam("file") MultipartFile file,
             @PathVariable("date") String date) {

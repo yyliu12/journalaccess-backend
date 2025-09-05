@@ -6,6 +6,9 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.info25.journalindex.models.File;
 
+/**
+ * Mapper to create FileModifyDtos
+ */
 @Mapper(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface FileModifyDtoMapper {
     File fileModifyDtoToFile(FileModifyDto file);

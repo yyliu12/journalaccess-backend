@@ -8,7 +8,9 @@ import com.info25.journalindex.models.File.Location;
 
 import lombok.Data;
 
-
+/**
+ * DTO used for modifying files
+ */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FileModifyDto {

@@ -7,6 +7,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * File data returned to the client used for searching
+ */
 public class FileSearchDto {
     int id;
     String path;

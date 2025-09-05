@@ -10,9 +10,10 @@ import com.info25.journalindex.models.File;
 import com.info25.journalindex.repositories.FileRepository;
 import com.info25.journalindex.services.OCRServerClient;
 import com.info25.journalindex.services.TextExtractionService;
-import com.info25.journalindex.util.ContentType;
-import com.info25.journalindex.util.FileTypes;
 
+/**
+ * API used to extract text from files
+ */
 @RestController
 @RequestMapping("/api/ocrserver")
 public class OCRServerApi {
@@ -25,6 +26,12 @@ public class OCRServerApi {
     @Autowired
     TextExtractionService textExtractionService;
 
+    /**
+     * Gets text of PDF
+     * @param fileId the id of the file
+     * @param includePdfTextLayer whether to include the existing text layer on the pdf or not
+     * @return the text of the pdf
+     */
     @PostMapping("/getTextOfPdf")
     public String getTextOfPdf(
         @RequestParam("id") int fileId, 
@@ -35,6 +42,11 @@ public class OCRServerApi {
         return ocrServerClient.getTextOfPDF(f, includePdfTextLayer);
     }
 
+    /**
+     * Gets text of image
+     * @param fileId the id of the file
+     * @return the text of the image
+     */
     @PostMapping("/getTextOfImage")
     public String getTextOfImage(@RequestParam("id") int fileId) {
         File f = fileRepository.getById(fileId);
@@ -42,6 +54,14 @@ public class OCRServerApi {
         return ocrServerClient.getTextOfImage(f);
     }
 
+    /**
+     * Gets text of the file; takes appropriate action based on file type
+     * utilizes the TextExtractionService
+     * 
+     * @param fileId the id of the file
+     * @param includePdfTextLayer only valid for PDFs; whether to include the existing text layer on the pdf or not
+     * @return the text of the file
+     */
     @PostMapping("/getText")
     public String getText(
         @RequestParam("id") int fileId,

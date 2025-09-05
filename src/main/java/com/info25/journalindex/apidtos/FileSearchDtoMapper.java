@@ -1,20 +1,20 @@
 package com.info25.journalindex.apidtos;
 
-import com.info25.journalindex.models.EventFile;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.models.Tag;
 import com.info25.journalindex.repositories.BacklinkRepository;
-import com.info25.journalindex.repositories.EventFileRepository;
 import com.info25.journalindex.repositories.EventRepository;
 import com.info25.journalindex.repositories.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Mapper class used for creating FileSearchDtos.
+ */
 @Component
 public class FileSearchDtoMapper {
     @Autowired
@@ -27,6 +27,7 @@ public class FileSearchDtoMapper {
     @Autowired
     EventRepository eventRepository;
 
+    // creates a FileSearchDto and populates it with the appropriate fields
     public FileSearchDto toDto(File f) {
         FileSearchDto dto = new FileSearchDto();
         dto.setId(f.getId());
@@ -53,12 +54,14 @@ public class FileSearchDtoMapper {
         return dto;
     }
 
+    // creates a filesearchdto with highlight data returned from solr
     public FileSearchDto toDtoWithHighlight(File f, String highlight) {
         FileSearchDto dto = toDto(f);
         dto.setHighlight(highlight);
         return dto;
     }
 
+    // bulk action for creating filesearchdtos
     public List<FileSearchDto> toDtoList(List<File> files) {
         List<FileSearchDto> dtos = new ArrayList<>(files.size());
         for (File f : files) {

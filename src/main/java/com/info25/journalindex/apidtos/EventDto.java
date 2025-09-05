@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * Represents event data sent to the client
+ */
 @Data
 @Builder
 public class EventDto {

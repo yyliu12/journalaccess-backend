@@ -2,8 +2,6 @@ package com.info25.journalindex.controllers;
 
 import java.io.IOException;
 import java.net.URLDecoder;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +33,6 @@ import com.info25.journalindex.services.TextExtractionService;
 import com.info25.journalindex.util.ContentType;
 import com.info25.journalindex.util.DateUtils;
 import com.info25.journalindex.util.FsUtils;
-import com.info25.journalindex.util.FileTypes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;

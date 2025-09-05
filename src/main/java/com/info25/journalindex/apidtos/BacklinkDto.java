@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents backlink data sent to the client
+ */
 @Data
 @Builder(toBuilder = true)
 @NoArgsConstructor
@@ -14,6 +17,7 @@ public class BacklinkDto {
     private int from;
     private int to;
     private String annotation;
+    // data on the backlink's file target
     private FileModifyDto toFile;
     private boolean display;
 }
