@@ -23,6 +23,10 @@ class CustomBacklinkRepositoryImpl implements CustomBacklinkRepository {
     @Autowired
     FileModifyDtoMapper fileSearchDtoMapper;
 
+    /**
+     * With a FileSearchDto object, populates the Backlink field of the object
+     * with backlinks that go TO the specific file
+     */
     @Override
     public void populateBacklinks(FileSearchDto f) {
         // Find all backlinks going to this file

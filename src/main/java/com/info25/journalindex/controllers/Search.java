@@ -25,8 +25,12 @@ import com.info25.journalindex.repositories.TagRepository;
 import com.info25.journalindex.repositories.FileRepository.SolrFileResponse;
 import com.info25.journalindex.util.SolrSelectQuery;
 
+/**
+ * Collection of functions responsible for searching, that is, discovering files
+ */
 @RestController
 public class Search {
+    // the start & end search dates for the on this day function
     final int OTD_START_YEAR = 2022;
     final int OTD_END_YEAR = 2050;
 
@@ -42,6 +46,15 @@ public class Search {
     @Autowired
     FileSearchDtoMapper fileSearchDtoMapper;
 
+	/**
+	 * Main searching function used for discovering files on the search and map screen
+     * 
+     * query is converted to a SearchOptions object
+     * page notates which page of results to get -- this is ignored when a boundsQuery is specified
+     *      as pagination does not make sense on the map screen
+     * boundsQuery specifies a specific bounding box for the location property -- if this is specified
+     *      this is being queried from the map screen
+	 */
     @PostMapping("/api/files/search")
     public SearchResponseDto search(@RequestParam(name = "query", required = false) JsonNode query,
                                    @RequestParam(name = "page", defaultValue = "0") int page,
@@ -60,36 +73,44 @@ public class Search {
                 .setHlFl("content")
                 .setSort(so.getSort());
         SolrQueryAssembler assembler = new SolrQueryAssembler();
+        // if there is a bound query
         if (boundsQuery != null) {
-
             assembler.addTerm("location: [" +
                     boundsQuery.get("boundsSwLat").asDouble() + "," +
                     boundsQuery.get("boundsSwLng").asDouble() + " TO " +
                     boundsQuery.get("boundsNeLat").asDouble() + "," +
                     boundsQuery.get("boundsNeLng").asDouble() + "]");
+            // 2147 is the max number of results that Solr can contain --
+            // we want to return this many results because we pagination doesn't
+            // exist on the map screen
             selectQuery.setRows(2147483647);
+            // we don't need highlights data on the map screen because there
+            // is no way to display it
             selectQuery.setHl("false");
         }
 
         if (tagSearchOptions.getTags().size() > 0) {
             Set<Integer> tagIds = new HashSet<Integer>(tagSearchOptions.getTags());
+            // for each tag get and add the tag id to a list
             for (Integer tag : tagSearchOptions.getTags()) {
+                // if we're recursively searching let's also call the find recursively in the tag repository
                 if (tagSearchOptions.isRecursivelySearch()) {
                     tagIds.addAll(tagRepository.findRecursively(tag, tagSearchOptions.isIncludeFolders())
                             .stream().map(t -> t.getId()).toList());
                 }
                 tagIds.add(tag);
             }
-
+            // create a solr query using the combining term
             assembler.addTerm("tags: (" + String.join(" " + tagSearchOptions.getCombiningTerm() + " ",
                     tagIds.stream().map(String::valueOf).toList()) + ")");
         }
 
+        // if there are events selected, get the event ids and add them to a list
         if (so.getEvents() != null && so.getEvents().size() > 0) {
             assembler.addTerm("events: (" + String.join(" OR ", so.getEvents().stream()
                     .map(String::valueOf).toList()) + ")");
         }
-
+        // date filtering
         if (so.isDateFilteringEnabled()) {
             assembler.addTerm("date: [" +
                     DateUtils.localDateToTimestamp(so.getStartDate()) + " TO " +
@@ -112,9 +133,14 @@ public class Search {
             resp.setNumFound(dbResp.getNumFound());
             List<FileSearchDto> results = new ArrayList<>();
             JsonNode highlights = dbResp.getHighlights();
+            // if we have highlights
             if (highlights != null) {
                 for (File f : dbResp.getFiles()) {
                     JsonNode highlight = highlights.get(String.valueOf(f.getId())).get("content"); // all solr ids are strings
+                    // there may be a highlights object but each highlight for each file
+                    // may be null. this happens when searching by tags, for example --
+                    // there is nothing for solr to highlight
+
                     if (highlight != null) {
                         FileSearchDto dto = fileSearchDtoMapper.toDtoWithHighlight(f,
                                 highlight.get(0).asText());
@@ -136,7 +162,11 @@ public class Search {
 
         return resp;
     }
-
+    /**
+     * Gets files by date
+     * @param date the date to get files for
+     * @return a list of files on the specified date
+     */
     @PostMapping("/api/files/byDate")
     public List<FileSearchDto> byDate(@RequestParam("date") String date) {
         LocalDate dateTime = DateUtils.parseFromString(date);
@@ -145,6 +175,11 @@ public class Search {
         return fileSearchDtoMapper.toDtoList(results);
     }
 
+    /**
+     * Retrieves a specific file by id
+     * @param id the id of the file to retrieve
+     * @return the file data
+     */
     @PostMapping("/api/files/byId")
     public File getFile(@RequestParam("id") int id) {
         File f = fileRepository.getById(id);
@@ -152,12 +187,23 @@ public class Search {
         return f;
     }
 
+    /**
+     * Retrieves dates with files in the specific month and year
+     * @param month the month to get dates with files for
+     * @param year the year to get dates with files for
+     * @return a list of dates with files
+     */
     @PostMapping("/api/files/datesWithFiles")
     public List<LocalDate> datesWithFiles(@RequestParam("month") int month,
                                           @RequestParam("year") int year) {
         return fileRepository.getDatesWithFiles(month, year);
     }
 
+    /**
+     * Gets files with the same month and day
+     * @param date the date to get files with the same month and day for
+     * @return a list of files with the same month and day
+     */
     @PostMapping("/api/files/onThisDate")
     public List<FileSearchDto> onThisDate(@RequestParam("date") String date) {
         LocalDate dateTime = DateUtils.parseFromString(date);
@@ -178,6 +224,11 @@ public class Search {
         return results;
     }
 
+    /**
+     * gets attachments for a file id
+     * @param id the id of the file
+     * @return a list of file data, including the file itself as well file data for its attachments
+     */
     @PostMapping("/api/files/getAttachments")
     public List<FileSearchDto> getAttachments(@RequestParam("id") int id) {
         List<File> files = fileRepository.getAttachmentsAndFile(id);

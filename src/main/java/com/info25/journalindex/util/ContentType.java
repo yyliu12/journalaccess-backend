@@ -1,6 +1,5 @@
 package com.info25.journalindex.util;
 
-import org.apache.pdfbox.util.filetypedetector.FileType;
 import org.springframework.http.MediaType;
 
 import com.info25.journalindex.models.File;
@@ -8,9 +7,13 @@ import com.info25.journalindex.models.File;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * ContentType utils
+ */
 public class ContentType {
     public static Map<String, MediaType> contentTypeMap = new HashMap<>();
 
+    // HTML mediatype to extension associations
     static {
         contentTypeMap.put("html", MediaType.TEXT_HTML);
         contentTypeMap.put("pdf", MediaType.APPLICATION_PDF);
@@ -23,10 +26,20 @@ public class ContentType {
         return contentTypeMap.get(extension.toLowerCase());
     }
 
+    /**
+     * Gets file extension of a File object
+     * @param f
+     * @return
+     */
     public static String getFileExt(File f) {
         return getFileExt(f.getPath());
     }
 
+    /**
+     * Gets file extension based on a file name. Always makes file name lowercase
+     * @param fileName
+     * @return
+     */
     public static String getFileExt(String fileName) {
         int lastDotIndex = fileName.lastIndexOf('.');
         if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
@@ -35,11 +48,15 @@ public class ContentType {
         return "";
     }
 
+    /**
+     * Gets a MediaType object based on the filename
+     */
     public static MediaType getContentTypeFromFileName(String fileName) {
         String ext = getFileExt(fileName);
         return getContentType(ext);
     }
 
+    // Returns the internal Journal Access FileType based on a file name
     public static FileTypes getFileType(File f) {
         switch (ContentType.getFileExt(f.getPath())) {
             case "pdf":

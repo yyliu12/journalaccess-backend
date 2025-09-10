@@ -35,8 +35,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * This class is responsible for saving files to Solr and SQL.
- * <p>
+ * 
  * Complicated. Be careful.
+ * 
+ * How the database works is like this: All pieces of data are
+ * saved to the PostgreSQL database. Whenever the data changes
+ * we take a copy of that data and send it to solr. Yes, this
+ * duplicates data, but it also prevents complicated data access
+ * screnarios when we have to retrieve data from two sources.
  */
 @Component
 public class FileRepository {
@@ -180,7 +186,7 @@ public class FileRepository {
         } else {
             curDate = f.getDate();
         }
-
+        // move file to its modified path first
         if (f.__isPathModified()) {
             java.io.File fsFile = new java.io.File(fsUtils.getFileByDateAndPath(curDate, f.__getOriginalPath()));
             fsFile.renameTo(new java.io.File(fsUtils.getFileByDateAndPath(curDate, null)));
@@ -199,6 +205,10 @@ public class FileRepository {
         f.__savedByRepository();
     }
 
+    /**
+     * Deletes the given file in the database
+     * @param f
+     */
     public void delete(File f) {
         __deleteFromSql(f);
         __deleteFromSolr(f);
@@ -218,10 +228,21 @@ public class FileRepository {
 
     }
 
+    /**
+     * Gets the connection object of the jdbc database
+     * @return
+     * @throws SQLException
+     */
     private Connection getConnection() throws SQLException {
         return jdbcTemplate.getDataSource().getConnection();
     }
 
+    /**
+     * Prepares a PreparedStatement object based on a file object
+     * @param ps the preparedstatement to prepare
+     * @param f the file object with which to prepare the preparedstatement
+     * @throws SQLException
+     */
     private void preparedStatementFromFile(PreparedStatement ps, File f) throws SQLException {
         ps.setString(1, f.getUuid());
         ps.setString(2, f.getPath());
@@ -254,10 +275,13 @@ public class FileRepository {
         // sql statement requires the id at the end
     }
 
+    /**
+     * Assembles an SQL commant based on the preparedStatement
+     */
     private void __saveToSql(File f) {
         int id = f.getId();
         boolean newEntry = id == -1;
-
+        // This is for new files
         if (id != -1) {
             String sql = "UPDATE files SET uuid = ?, path = ?, " +
                     "date = ?, annotation = ?, content = ?, tags = ?, " +
@@ -266,9 +290,12 @@ public class FileRepository {
                     "parent = ?, attachment_code = ? WHERE id = ?";
             jdbcTemplate.update(sql, ps -> {
                 preparedStatementFromFile(ps, f);
+                // modifying files also requires the file id, which is not set by
+                // the function in case we are actually creating a file
                 ps.setInt(14, f.getId());
             });
         } else {
+            // This is for existing files
             String sql = "INSERT INTO files (uuid, path, date, annotation, content," +
                     "tags, location_coordinates, location_address," +
                     "location_buildingname, title, description, parent, attachment_code) VALUES (?, ?, ?, ?," +
@@ -285,6 +312,10 @@ public class FileRepository {
         }
     }
 
+    /**
+     * Sends a solr update command
+     * @param f the file with which to update in solr
+     */
     private void __saveToSolr(File f) {
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode rootNode = mapper.createArrayNode();
@@ -293,16 +324,30 @@ public class FileRepository {
         solrClient.modify(rootNode);
     }
 
+    /**
+     * Deletes a file from Sql
+     * @param f
+     */
     private void __deleteFromSql(File f) {
         String sql = "DELETE FROM files WHERE id = ?";
         jdbcTemplate.update(sql, f.getId());
     }
 
+    /**
+     * Deletes a file from Solr
+     * @param f
+     */
     private void __deleteFromSolr(File f) {
         String query = "id:" + f.getId();
         solrClient.delete(query);
     }
 
+    /**
+     * Gets dates where there exists files in given month and year
+     * @param month
+     * @param year
+     * @return a list of dates
+     */
     public List<LocalDate> getDatesWithFiles(int month, int year) {
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
@@ -341,6 +386,7 @@ public class FileRepository {
             Array addresses = rs.getArray("location_address");
             Array buildingNames = rs.getArray("location_buildingname");
 
+            // assemble location objects out of the three array objects stored in SQL
             ArrayList<Location> locations = new ArrayList<>();
             if (coordinates != null && addresses != null && buildingNames != null) {
                 String[] coords = (String[]) coordinates.getArray();
@@ -362,6 +408,7 @@ public class FileRepository {
         }
     }
 
+    // helper class to add the number of files found and if there is a solr error
     @Data
     public static class SolrFileResponse {
         @JsonProperty("numFound")

@@ -6,7 +6,9 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.info25.journalindex.apidtos.FileModifyDto;
 
-
+/**
+ * converts from strings to FileModifyDtos
+ */
 @Component
 public class FileModifyDtoConverter implements Converter<String, FileModifyDto> {
     @Override

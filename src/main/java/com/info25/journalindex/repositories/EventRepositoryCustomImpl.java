@@ -26,12 +26,15 @@ public class EventRepositoryCustomImpl implements EventRepositoryCustom {
     @Autowired
     private EventRepository eventRepository;
 
+	// Updates all children in a (soon to be deleted) parent to have a new parent
+	// of the original parent's parent
     @Override
     public int moveChildrenToNewParent(int oldParent, int newParent) {
         String sql = "UPDATE events SET parent = ? WHERE parent = ?";
         return jdbcTemplate.update(sql, newParent, oldParent);
     }
 
+	// Function to populate the events field of a FileSearchDto object.
     public void populateEventDtos(FileSearchDto f) {
         List<EventFile> events = eventFileRepository.findByFile(f.getId());
         for (EventFile event : events) {

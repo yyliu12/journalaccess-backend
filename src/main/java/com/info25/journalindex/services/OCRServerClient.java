@@ -24,12 +24,17 @@ import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * Responsible for interacting with the swift-based server to extract text
+ */
 @Component
 public class OCRServerClient {
     @Autowired
     FsUtils fsUtils;
 
+    // the url of where the ocr server is located
     String OCRSERVER_URL;
+    // the secret, provided with every ocr request to authenticate
     String OCRSERVER_SECRET;
 
     CloseableHttpClient client = HttpClientBuilder.create().build();
@@ -39,6 +44,12 @@ public class OCRServerClient {
         OCRSERVER_SECRET = configService.getConfigOption("ocrServerSecret");
     }
 
+    /**
+     * Sends a request requesting the text of a pdf
+     * @param f the file in the database
+     * @param includePdfTextLayer whether to include the existing text layer on a pdf or not
+     * @return the text read using OCR
+     */
     public String getTextOfPDF(File f, boolean includePdfTextLayer) {
         try {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
@@ -61,6 +72,11 @@ public class OCRServerClient {
         }
     }
 
+    /**
+     * Sends a request requesting the text of an image
+     * @param f the file in the database
+     * @return the text read using OCR
+     */
     public String getTextOfImage(File f) {
         try {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();

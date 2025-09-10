@@ -5,6 +5,9 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
+/**
+ * Collection of functions for interacting with event and file relationships
+ */
 public interface EventFileRepository extends CrudRepository<EventFile, Integer> {
     EventFile findById(int id);
     void deleteById(int id);

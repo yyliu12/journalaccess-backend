@@ -1,5 +1,8 @@
 package com.info25.journalindex.util;
 
+/**
+ * A class to store properties that can be given in a Solr search
+ */
 public class SolrSelectQuery {
     String q;
     String fl;

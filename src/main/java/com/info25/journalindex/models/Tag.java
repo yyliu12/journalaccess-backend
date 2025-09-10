@@ -6,6 +6,9 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import lombok.Data;
 
+/**
+ * Represents a tag
+ */
 @Data
 @Table("tags")
 public class Tag {

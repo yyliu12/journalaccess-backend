@@ -11,6 +11,9 @@ import com.ibm.icu.text.CharsetDetector;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.services.ConfigService;
 
+/**
+ * A class with useful filesystem functions
+ */
 @Component
 public class FsUtils {
     Path rootPath;
@@ -20,6 +23,12 @@ public class FsUtils {
         rootPath = Paths.get(configService.getConfigOption("fsRoot"));
     }
 
+    /**
+     * Gets where a file should be stored based on its date and path
+     * @param date
+     * @param path
+     * @return
+     */
     public String getFileByDateAndPath(LocalDate date, String path) {
         Path p = rootPath.resolve(
                 date.getYear() + sep + date.getMonthValue() + sep + date.getDayOfMonth())
@@ -28,15 +37,30 @@ public class FsUtils {
         return p.toAbsolutePath().toString();
     }
 
+    /**
+     * Gets where a file should be stored
+     * @param f
+     * @return
+     */
     public String getFilePathByFile(File f) {
         return getFileByDateAndPath(f.getDate(), f.getPath());
     }
 
+    /**
+     * Gets the folder of files stored in a specific date
+     * @param date
+     * @return
+     */
     public String getFolderByDate(LocalDate date) {
         return rootPath.resolve(
                 date.getYear() + sep + date.getMonthValue() + sep + date.getDayOfMonth()).toAbsolutePath().toString();
     }
 
+    /**
+     * Removes the last folder/file from a path
+     * @param path
+     * @return
+     */
     public static String removeFirstFolderFromPath(String path) {
         Path p = Paths.get(path);
         if (p.getNameCount() > 0) {
@@ -46,6 +70,11 @@ public class FsUtils {
         }
     }
 
+    /**
+     * Reads a file to text using ICU's ICU4J library
+     * @param bytes
+     * @return
+     */
     public String decodeBytesWithCharset(byte[] bytes) {
         CharsetDetector detector = new CharsetDetector();
         detector.setText(bytes);
@@ -54,6 +83,12 @@ public class FsUtils {
         return new String(bytes, Charset.forName(charset));
     }
 
+    /**
+     * Changes the extension to a new new extension
+     * @param path the original path
+     * @param newExtension the new extension
+     * @return the new path
+     */
     public String changeExtension(String path, String newExtension) {
         if (path.endsWith(newExtension)) {
             return path;

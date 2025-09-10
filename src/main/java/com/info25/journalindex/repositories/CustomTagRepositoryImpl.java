@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import com.info25.journalindex.models.Tag;
 
@@ -21,6 +22,9 @@ public class CustomTagRepositoryImpl implements CustomTagRepository {
     @Lazy
     FileRepository fileRepository;
 
+    /**
+     * Returns a list of tag data by a list of ids
+     */
     @Override
     public List<Tag> findByManyIds(List<Integer> ids) {
         String sql = "SELECT * FROM tags WHERE id IN (" + String.join(",", ids.stream().map(String::valueOf).collect(Collectors.toList())) + ")";
@@ -28,6 +32,9 @@ public class CustomTagRepositoryImpl implements CustomTagRepository {
         return jdbcTemplate.query(sql, new TagRowMapper());
     }
 
+    /**
+     * Returns tag data when the name string appears in either the name or full_name field
+     */
     @Override
     public List<Tag> findByName(String name) {
         // ILIKE = case-insensitive like
@@ -37,6 +44,9 @@ public class CustomTagRepositoryImpl implements CustomTagRepository {
         return jdbcTemplate.query(sql, new Object[]{searchPattern, searchPattern}, new TagRowMapper());
     }
 
+    /**
+     * True or false: whether the tag has children
+     */
     @Override
     public boolean hasChildren(int id) {
         String sql = "SELECT COUNT(*) FROM tags WHERE parent = ?";
@@ -44,6 +54,9 @@ public class CustomTagRepositoryImpl implements CustomTagRepository {
         return count != null && count > 0;
     }
 
+    /**
+     * Recursively finds tags under a given tag id. 
+     */
     @Override
     public List<Tag> findRecursively(int id, boolean includeFolders) {
         String sql = "WITH RECURSIVE tag_tree AS (" +
@@ -61,7 +74,7 @@ public class CustomTagRepositoryImpl implements CustomTagRepository {
         return tags;
     }
 
-    public class TagRowMapper implements org.springframework.jdbc.core.RowMapper<Tag> {
+    public class TagRowMapper implements RowMapper<Tag> {
         @Override
         public Tag mapRow(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
             Tag tag = new Tag();

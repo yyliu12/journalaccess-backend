@@ -19,7 +19,14 @@ public class TextExtractionService {
 
     @Autowired
     FsUtils fsUtils;
-
+    /**
+     * Gets text from a file. Supports all types of files allowed in Journal access.
+     * 
+     * Picks the right function for extracting text automatically.
+     * @param f what file in the db to extract text from
+     * @param includePdfTextLayer whether to include the existing pdf text layer or not. ignored if the file is not a pdf
+     * @return
+     */
     public String getText(File f, boolean includePdfTextLayer) {
         switch (ContentType.getFileType(f)) {
             case FileTypes.IMAGE:
@@ -28,6 +35,8 @@ public class TextExtractionService {
                 return ocrServerClient.getTextOfPDF(f, includePdfTextLayer);
             case FileTypes.WEBPAGE:
                 try {
+                    // Jsoup html text parsing
+                    
                     byte[] fileData = Files.readAllBytes(Paths.get(fsUtils.getFilePathByFile(f)));
                     return Jsoup.parse(fsUtils.decodeBytesWithCharset(fileData)).body().wholeText();
                 } catch (Exception e) {
