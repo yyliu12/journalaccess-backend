@@ -117,6 +117,21 @@ public class FileRepository {
     }
 
     /**
+     * This function retrieves all files within a date range
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public List<File> getFilesByDateRange(LocalDate startDate, LocalDate endDate) {
+        String sql = "SELECT * FROM files WHERE date BETWEEN ? AND ? ORDER BY date ASC";
+        List<File> files = jdbcTemplate.query(sql, new FileRowMapper(),
+                DateUtils.localDateToTimestamp(startDate),
+                DateUtils.localDateToTimestamp(endDate));
+        
+        return files;
+    }
+
+    /**
      * Retrieves the file and its attachments by file id.
      */
     public List<File> getAttachmentsAndFile(int id) {

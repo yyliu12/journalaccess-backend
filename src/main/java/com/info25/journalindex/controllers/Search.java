@@ -1,6 +1,7 @@
 package com.info25.journalindex.controllers;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -239,4 +240,16 @@ public class Search {
         return dtos;
     }
 
+    /**
+     * Get files by month and year
+     * @param LocalDate
+     */
+    @PostMapping("/api/files/byMonthAndYear")
+    public List<FileSearchDto> getByMonthAndYear(@RequestParam("month") int month, 
+                                                 @RequestParam("year") int year) {
+        YearMonth ym = YearMonth.of(year, month);
+        List<File> files = fileRepository.getFilesByDateRange(ym.atDay(1), ym.atEndOfMonth());
+
+        return fileSearchDtoMapper.toDtoList(files);
+    }
 }
