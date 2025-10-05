@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.info25.journalindex.models.Backlink;
+import com.info25.journalindex.models.EventFile;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.models.File.Location;
 import com.info25.journalindex.services.SolrClient;
@@ -65,6 +66,9 @@ public class FileRepository {
 
     @Autowired
     FsUtils fsUtils;
+
+    @Autowired
+    EventFileRepository eventFileRepository;
 
     /**
      * This function returns a file with SQL and Solr data baesd on id.
@@ -230,16 +234,14 @@ public class FileRepository {
 
         // deletion of backlinks
         HashSet<Integer> involvedIn = new HashSet<Integer>();
-        for (Backlink b : backlinkRepository.findByFrom(f.getId())) {
-            involvedIn.add(b.getTo());
-        }
-        for (Backlink b : backlinkRepository.findByTo(f.getId())) {
-            involvedIn.add(b.getFrom());
-        }
+        involvedIn.addAll(backlinkRepository.findByFrom(f.getId()).stream().map(x -> x.getId()).toList());
+        involvedIn.addAll(backlinkRepository.findByFrom(f.getId()).stream().map(x -> x.getId()).toList());
 
         for (Integer id : involvedIn) {
             backlinkRepository.deleteById(id);
         }
+
+        eventFileRepository.deleteByFile(f.getId());
 
     }
 

@@ -14,4 +14,5 @@ public interface EventFileRepository extends CrudRepository<EventFile, Integer> 
     List<EventFile> findByEvent(int eventId);
     List<EventFile> findByFile(int fileId);
     void deleteByEvent(int eventId);
+    void deleteByFile(int fileId);
 }
