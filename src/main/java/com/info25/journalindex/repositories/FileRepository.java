@@ -243,6 +243,9 @@ public class FileRepository {
 
         eventFileRepository.deleteByFile(f.getId());
 
+        // Clear all parent file associations
+        String sql = "UPDATE files SET parent = -1, attachment_code = '' WHERE parent = ?";
+        jdbcTemplate.execute(sql);
     }
 
     /**
