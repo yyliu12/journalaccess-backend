@@ -115,7 +115,7 @@ public class AnnotationController {
             xfdfObject = factory.createXfdfObject(new ByteArrayInputStream(
                     f.getAnnotation().getBytes()));
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         // no annotations for doc if null, just close the pdfDoc

@@ -128,6 +128,55 @@ public class FileCrud {
         return "OK";
     }
 
+    @PostMapping("/api/files/replaceFile")
+    public String replaceFile(@RequestParam("files") MultipartFile[] files, @RequestParam("id") int id) {
+        File f = fileRepository.getById(id);
+
+        for (MultipartFile uploadedFile : files) {
+            String fileName = uploadedFile.getOriginalFilename().strip();
+
+            // this is the actual content file
+            if (fileName.endsWith(".pdf") &&
+                    fileName.endsWith(".html") &&
+                    fileName.endsWith(".jpg") &&
+                    fileName.endsWith(".jpeg") &&
+                    fileName.endsWith(".png")) {
+                java.io.File originalFile = new java.io.File(fsUtils.getFilePathByFile(f));
+                originalFile.delete();
+
+                fileName = fileName.replace("/", "\\"); // use windows style slashes to keep consistent with existing
+                                                        // data
+                f.setPath(fileName);
+
+                java.io.File osFile = new java.io.File(fsUtils.getFilePathByFile(f));
+
+                try {
+                    uploadedFile.transferTo(osFile);
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+
+                if (fileName.endsWith(".html")) {
+                    Document doc = null;
+                    try {
+                        doc = Jsoup.parse(fsUtils.decodeBytesWithCharset(file.getBytes()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    f.setContent(doc.body().wholeText());
+                }
+            }
+
+            if (fileName.endsWith(".txt")) {
+                try {
+                    f.setContent(fsUtils.decodeBytesWithCharset(uploadedFile.getBytes()));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     @PostMapping("/api/files/upload")
     public FileUploadResult uploadFile(@RequestParam("files") MultipartFile[] files,
             @RequestParam("date") String date,
