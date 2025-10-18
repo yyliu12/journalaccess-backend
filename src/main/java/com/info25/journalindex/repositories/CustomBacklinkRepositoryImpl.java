@@ -20,9 +20,6 @@ class CustomBacklinkRepositoryImpl implements CustomBacklinkRepository {
     @Autowired
     FileRepository fileRepository;
 
-    @Autowired
-    FileModifyDtoMapper fileSearchDtoMapper;
-
     /**
      * With a FileSearchDto object, populates the Backlink field of the object
      * with backlinks that go TO the specific file
@@ -41,9 +38,14 @@ class CustomBacklinkRepositoryImpl implements CustomBacklinkRepository {
             FileModifyDto fileModifyDto = new FileModifyDto();
 
             // we only need a limited set of properties here
+            // I'm avoiding using the modify dto mapper b/c it can cause
+            // an infinite loop if two files backlink to each other lol
+            // besides, the backlink modal is not supposed to display another level
+            // of backlinks
             fileModifyDto.setId(fromFile.getId());
             fileModifyDto.setPath(fromFile.getPath());
             fileModifyDto.setDate(fromFile.getDate());
+            fileModifyDto.setTitle(fromFile.getTitle());
 
             f.getBacklinks().add(
                 BacklinkDto.builder()
