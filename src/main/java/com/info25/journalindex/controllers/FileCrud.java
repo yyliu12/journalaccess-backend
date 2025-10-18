@@ -136,10 +136,10 @@ public class FileCrud {
             String fileName = uploadedFile.getOriginalFilename().strip();
 
             // this is the actual content file
-            if (fileName.endsWith(".pdf") &&
-                    fileName.endsWith(".html") &&
-                    fileName.endsWith(".jpg") &&
-                    fileName.endsWith(".jpeg") &&
+            if (fileName.endsWith(".pdf") ||
+                    fileName.endsWith(".html") ||
+                    fileName.endsWith(".jpg") ||
+                    fileName.endsWith(".jpeg") ||
                     fileName.endsWith(".png")) {
                 java.io.File originalFile = new java.io.File(fsUtils.getFilePathByFile(f));
                 originalFile.delete();
@@ -147,6 +147,10 @@ public class FileCrud {
                 fileName = fileName.replace("/", "\\"); // use windows style slashes to keep consistent with existing
                                                         // data
                 f.setPath(fileName);
+                // We call this supposedly internal function b/c we are moving the file
+                // on disk ourselves; otherwise the fileRepository, when saving, attempts
+                // to move the file and it ersults in an error
+                f.__savedByRepository();
 
                 java.io.File osFile = new java.io.File(fsUtils.getFilePathByFile(f));
 
@@ -159,7 +163,7 @@ public class FileCrud {
                 if (fileName.endsWith(".html")) {
                     Document doc = null;
                     try {
-                        doc = Jsoup.parse(fsUtils.decodeBytesWithCharset(file.getBytes()));
+                        doc = Jsoup.parse(fsUtils.decodeBytesWithCharset(uploadedFile.getBytes()));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -175,6 +179,10 @@ public class FileCrud {
                 }
             }
         }
+
+        fileRepository.save(f);
+
+        return "OK";
     }
 
     @PostMapping("/api/files/upload")
