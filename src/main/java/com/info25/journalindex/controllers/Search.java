@@ -121,7 +121,7 @@ public class Search {
         selectQuery.setFq(assembler.getFullQuery());
 
         if (searchQuery != "") {
-            selectQuery.setQ(searchQuery);
+            selectQuery.setQ("content:(" + searchQuery + ")");
         }
 
         SolrFileResponse dbResp = fileRepository.solrQueryForApi(selectQuery);
@@ -242,7 +242,6 @@ public class Search {
 
     /**
      * Get files by month and year
-     * @param LocalDate
      */
     @PostMapping("/api/files/byMonthAndYear")
     public List<FileSearchDto> getByMonthAndYear(@RequestParam("month") int month, 
