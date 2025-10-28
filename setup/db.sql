@@ -8,8 +8,11 @@ CREATE TABLE files (
     location_buildingname text[],
     path text,
     tags integer[],
-    uuid text
+    uuid text,
+	journal_id integer
 );
+
+CREATE INDEX journal_index on files(journal_id);
 
 CREATE INDEX date_index on files(date);
 
@@ -54,3 +57,10 @@ CREATE INDEX events_file_file ON events_file(file);
 CREATE INDEX events_file_event ON events_file(event);
 
 
+CREATE TABLE journals (
+	id serial primary key,
+	name text,
+	description text
+);
+
+INSERT INTO journals(name) VALUES ('Default Journal');

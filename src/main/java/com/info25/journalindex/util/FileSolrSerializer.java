@@ -40,6 +40,7 @@ public class FileSolrSerializer {
                 .toList()
         )));
         rootNode.set("tags", createSet(mapper.valueToTree(f.getTags())));
+        rootNode.set("journal_id", mapper.valueToTree(f.getJournalId()));
         return rootNode;
     }
 

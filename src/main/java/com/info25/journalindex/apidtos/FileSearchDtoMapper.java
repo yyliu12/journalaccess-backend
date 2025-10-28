@@ -43,6 +43,7 @@ public class FileSearchDtoMapper {
         dto.setDescription(f.getDescription());
         dto.setParent(f.getParent());
         dto.setAttachmentCode(f.getAttachmentCode());
+        dto.setJournalId(f.getJournalId());
 
         List<Tag> tags = getTagsByIdsWithCaching(f.getTags(), tagCache);
         dto.setTags(tags);

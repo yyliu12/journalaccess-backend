@@ -2,10 +2,7 @@ package com.info25.journalindex.controllers;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +11,7 @@ import com.info25.journalindex.apidtos.*;
 import com.info25.journalindex.util.DateUtils;
 import com.info25.journalindex.util.SolrQueryAssembler;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -59,7 +57,8 @@ public class Search {
     @PostMapping("/api/files/search")
     public SearchResponseDto search(@RequestParam(name = "query", required = false) JsonNode query,
                                    @RequestParam(name = "page", defaultValue = "0") int page,
-                                   @RequestParam(name = "bounds", required = false) JsonNode boundsQuery) {
+                                   @RequestParam(name = "bounds", required = false) JsonNode boundsQuery,
+                                   @RequestParam(name = "journals") int[] journals) {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -111,6 +110,13 @@ public class Search {
             assembler.addTerm("events: (" + String.join(" OR ", so.getEvents().stream()
                     .map(String::valueOf).toList()) + ")");
         }
+
+        // journal filtering
+        if (journals.length > 0) {
+            assembler.addTerm("journal_id: (" + String.join(" OR ", Arrays.stream(journals)
+                    .mapToObj(String::valueOf).toList()) + ")");
+        }
+
         // date filtering
         if (so.isDateFilteringEnabled()) {
             assembler.addTerm("date: [" +
@@ -169,9 +175,15 @@ public class Search {
      * @return a list of files on the specified date
      */
     @PostMapping("/api/files/byDate")
-    public List<FileSearchDto> byDate(@RequestParam("date") String date) {
+    public List<FileSearchDto> byDate(@RequestParam("date") String date,
+                                      @RequestParam("journals") int[] journals) {
         LocalDate dateTime = DateUtils.parseFromString(date);
-        List<File> results = fileRepository.getFilesByDate(dateTime);
+
+        List<File> results;
+        if (journals.length == 0)
+            results = fileRepository.getFilesByDate(dateTime, null);
+        else
+            results = fileRepository.getFilesByDate(dateTime, journals);
 
         return fileSearchDtoMapper.toDtoList(results);
     }
@@ -196,8 +208,13 @@ public class Search {
      */
     @PostMapping("/api/files/datesWithFiles")
     public List<LocalDate> datesWithFiles(@RequestParam("month") int month,
-                                          @RequestParam("year") int year) {
-        return fileRepository.getDatesWithFiles(month, year);
+                                          @RequestParam("year") int year,
+                                          @RequestParam("journals") int[] journals) {
+        if (journals.length == 0)
+            return fileRepository.getDatesWithFilesInJournals(month, year, null);
+        else
+            return fileRepository.getDatesWithFilesInJournals(month, year, journals);
+
     }
 
     /**
@@ -206,17 +223,24 @@ public class Search {
      * @return a list of files with the same month and day
      */
     @PostMapping("/api/files/onThisDate")
-    public List<FileSearchDto> onThisDate(@RequestParam("date") String date) {
+    public List<FileSearchDto> onThisDate(@RequestParam("date") String date,
+                                          @RequestParam("journals") int[] journals) {
         LocalDate dateTime = DateUtils.parseFromString(date);
         ArrayList<FileSearchDto> results = new ArrayList<>();
 
         for (int year = OTD_START_YEAR; year <= OTD_END_YEAR; year++) {
             results.addAll(
                     fileSearchDtoMapper.toDtoList(
-                            fileRepository.getFilesByDate(
+                            journals.length > 0 ? fileRepository.getFilesByDate(
                                     LocalDate.of(year, dateTime.getMonth(),
                                             dateTime.getDayOfMonth()
-                                    )
+                                    ),
+                                    journals
+                            ) :  fileRepository.getFilesByDate(
+                                    LocalDate.of(year, dateTime.getMonth(),
+                                            dateTime.getDayOfMonth()
+                                    ),
+                                    null
                             )
                     )
             );
@@ -245,9 +269,14 @@ public class Search {
      */
     @PostMapping("/api/files/byMonthAndYear")
     public List<FileSearchDto> getByMonthAndYear(@RequestParam("month") int month, 
-                                                 @RequestParam("year") int year) {
+                                                 @RequestParam("year") int year,
+                                                 @RequestParam("journals") int[] journals) {
         YearMonth ym = YearMonth.of(year, month);
-        List<File> files = fileRepository.getFilesByDateRange(ym.atDay(1), ym.atEndOfMonth());
+        List<File> files;
+        if (journals.length == 0)
+            files = fileRepository.getFilesByDateRange(ym.atDay(1), ym.atEndOfMonth(), null);
+        else
+            files = fileRepository.getFilesByDateRange(ym.atDay(1), ym.atEndOfMonth(), journals);
 
         return fileSearchDtoMapper.toDtoList(files);
     }

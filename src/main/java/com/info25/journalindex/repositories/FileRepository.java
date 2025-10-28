@@ -9,9 +9,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -93,6 +96,11 @@ public class FileRepository {
         jdbcTemplate.update(sql, tagId);
     }
 
+    public void deleteJournalIdFromFiles(int journalId) {
+        String sql = "UPDATE files SET journal_id = 1 WHERE journal_id = ?";
+        jdbcTemplate.update(sql, journalId);
+    }
+
     /**
      * This function checks if a file with the given date and path exists.
      *
@@ -113,9 +121,16 @@ public class FileRepository {
      * @param date The date of the files.
      * @return A list of files for the specified date.
      */
-    public List<File> getFilesByDate(LocalDate date) {
-        String sql = "SELECT * FROM files WHERE date = ?";
-        List<File> files = jdbcTemplate.query(sql, new FileRowMapper(), DateUtils.localDateToTimestamp(date));
+    public List<File> getFilesByDate(LocalDate date, int[] journals) {
+        List<File> files;
+
+        if (journals == null) {
+            String sql = "SELECT * FROM files WHERE date = ?";
+            files = jdbcTemplate.query(sql, new FileRowMapper(), DateUtils.localDateToTimestamp(date));
+        } else {
+            String sql = "SELECT * FROM files WHERE date = ? AND journal_id = ANY (?)";
+            files = jdbcTemplate.query(sql, new FileRowMapper(), DateUtils.localDateToTimestamp(date), journals);
+        }
 
         return files;
     }
@@ -126,12 +141,22 @@ public class FileRepository {
      * @param endDate
      * @return
      */
-    public List<File> getFilesByDateRange(LocalDate startDate, LocalDate endDate) {
-        String sql = "SELECT * FROM files WHERE date BETWEEN ? AND ? ORDER BY date ASC";
-        List<File> files = jdbcTemplate.query(sql, new FileRowMapper(),
-                DateUtils.localDateToTimestamp(startDate),
-                DateUtils.localDateToTimestamp(endDate));
-        
+    public List<File> getFilesByDateRange(LocalDate startDate, LocalDate endDate, int[] journals) {
+
+
+        List<File> files;
+        if (journals == null) {
+            String sql = "SELECT * FROM files WHERE date BETWEEN ? AND ? ORDER BY date ASC";
+            files = jdbcTemplate.query(sql, new FileRowMapper(),
+                    DateUtils.localDateToTimestamp(startDate),
+                    DateUtils.localDateToTimestamp(endDate));
+        } else {
+            String sql = "SELECT * FROM files WHERE (date BETWEEN ? AND ?) AND (journal_id = ANY (?)) ORDER BY date ASC";
+            files = jdbcTemplate.query(sql, new FileRowMapper(),
+                    DateUtils.localDateToTimestamp(startDate),
+                    DateUtils.localDateToTimestamp(endDate), journals);
+        }
+
         return files;
     }
 
@@ -189,9 +214,7 @@ public class FileRepository {
         if (f.getUuid() == null) {
             f.setUuid(UUID.randomUUID().toString());
         }
-        System.out.println("saving to sql");
         __saveToSql(f);
-        System.out.println("Saving to solr");
         __saveToSolr(f);
         __saveToFilesystem(f);
     }
@@ -253,8 +276,12 @@ public class FileRepository {
      * @return
      * @throws SQLException
      */
-    private Connection getConnection() throws SQLException {
-        return jdbcTemplate.getDataSource().getConnection();
+    private Connection getConnection() {
+        try {
+            return jdbcTemplate.getDataSource().getConnection();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
@@ -291,6 +318,7 @@ public class FileRepository {
         ps.setString(11, f.getDescription());
         ps.setInt(12, f.getParent());
         ps.setString(13, f.getAttachmentCode());
+        ps.setInt(14, f.getJournalId());
         // update ps.setInt in id == -1 when adding new statements -- the update
         // sql statement requires the id at the end
     }
@@ -307,19 +335,19 @@ public class FileRepository {
                     "date = ?, annotation = ?, content = ?, tags = ?, " +
                     "location_coordinates = ?, location_address = ?, " +
                     "location_buildingname = ?, title = ?, description = ?, " + 
-                    "parent = ?, attachment_code = ? WHERE id = ?";
+                    "parent = ?, attachment_code = ?, journal_id = ? WHERE id = ?";
             jdbcTemplate.update(sql, ps -> {
                 preparedStatementFromFile(ps, f);
                 // modifying files also requires the file id, which is not set by
                 // the function in case we are actually creating a file
-                ps.setInt(14, f.getId());
+                ps.setInt(15, f.getId());
             });
         } else {
             // This is for existing files
             String sql = "INSERT INTO files (uuid, path, date, annotation, content," +
                     "tags, location_coordinates, location_address," +
-                    "location_buildingname, title, description, parent, attachment_code) VALUES (?, ?, ?, ?," +
-                    "?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                    "location_buildingname, title, description, parent, attachment_code," +
+                    "journal_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -368,14 +396,20 @@ public class FileRepository {
      * @param year
      * @return a list of dates
      */
-    public List<LocalDate> getDatesWithFiles(int month, int year) {
+    public List<LocalDate> getDatesWithFilesInJournals(int month, int year, int[] journals) {
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
         long startDateTimestamp = DateUtils.localDateToTimestamp(startDate);
         long endDateTimestamp = DateUtils.localDateToTimestamp(endDate);
+        List<Long> dates;
+        if (journals != null) {
+            String sql = "SELECT DISTINCT date FROM files WHERE (date BETWEEN ? AND ?) AND (journal_id = ANY (?))";
+            dates = jdbcTemplate.queryForList(sql, Long.class, startDateTimestamp, endDateTimestamp, journals);
+        } else {
+            String sql = "SELECT DISTINCT date FROM files WHERE date BETWEEN ? AND ?";
+            dates = jdbcTemplate.queryForList(sql, Long.class, startDateTimestamp, endDateTimestamp);
+        }
 
-        String sql = "SELECT DISTINCT date FROM files WHERE date BETWEEN ? AND ?";
-        List<Long> dates = jdbcTemplate.queryForList(sql, Long.class, startDateTimestamp, endDateTimestamp);
         return dates.stream()
                 .map(DateUtils::timestampToLocalDate)
                 .collect(Collectors.toList());
@@ -395,6 +429,7 @@ public class FileRepository {
             file.setDescription(rs.getString("description"));
             file.setParent(rs.getInt("parent"));
             file.setAttachmentCode(rs.getString("attachment_code"));
+            file.setJournalId(rs.getInt("journal_id"));
             Array tags = rs.getArray("tags");
             if (tags != null) {
                 Integer[] tagIds = (Integer[]) tags.getArray();
@@ -425,6 +460,17 @@ public class FileRepository {
             file.setLocations(locations);
 
             return file;
+        }
+
+        public List<File> extractData(ResultSet rs) throws SQLException {
+            List<File> files = new ArrayList<>();
+
+            while (!rs.isAfterLast()) {
+                files.add(mapRow(rs, 0));
+                rs.next();
+            }
+
+            return files;
         }
     }
 
