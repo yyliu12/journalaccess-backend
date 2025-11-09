@@ -46,6 +46,7 @@ class CustomBacklinkRepositoryImpl implements CustomBacklinkRepository {
             fileModifyDto.setPath(fromFile.getPath());
             fileModifyDto.setDate(fromFile.getDate());
             fileModifyDto.setTitle(fromFile.getTitle());
+			fileModifyDto.setJournalId(fromFile.getJournalId());
 
             f.getBacklinks().add(
                 BacklinkDto.builder()

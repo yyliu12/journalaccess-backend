@@ -60,7 +60,8 @@ CREATE INDEX events_file_event ON events_file(event);
 CREATE TABLE journals (
 	id serial primary key,
 	name text,
-	description text
+	description text,
+    color integer
 );
 
 INSERT INTO journals(name) VALUES ('Default Journal');

@@ -12,4 +12,5 @@ public class Journal {
     int id;
     String name;
     String description;
+    int color = 1;
 }

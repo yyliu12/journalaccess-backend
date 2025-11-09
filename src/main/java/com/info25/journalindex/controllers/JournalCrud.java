@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import org.springframework.web.bind.annotation.RequestBody;
-
 
 @RestController
 @RequestMapping("/api/journal/")
@@ -29,10 +27,13 @@ public class JournalCrud {
     }
 
     @PostMapping("create")
-    public int create(@RequestParam("name") String name, @RequestParam("description") String description) {
+    public int create(@RequestParam("name") String name, 
+                      @RequestParam("description") String description,
+                      @RequestParam("color") int color) {
         Journal journal = new Journal();
         journal.setName(name);
         journal.setDescription(description);
+        journal.setColor(color);
         journalRepository.save(journal);
 		
 		return journal.getId();
@@ -47,10 +48,12 @@ public class JournalCrud {
     @PostMapping("update")
     public void update(@RequestParam("id") int id, 
                        @RequestParam("name") String name, 
-                       @RequestParam("description") String description) {
+                       @RequestParam("description") String description,
+                       @RequestParam("color") int color) {
         Journal journal = journalRepository.findById(id);
         journal.setName(name);
         journal.setDescription(description);
+        journal.setColor(color);
         journalRepository.save(journal);
     }
 }
