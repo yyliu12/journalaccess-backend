@@ -173,6 +173,28 @@ public class FileRepository {
         return files;
     }
 
+    public int totalEntries(int[] journals) {
+        if (journals != null) {
+            String sql = "SELECT COUNT(*) FROM files WHERE journal_id = ANY(?)";
+            return jdbcTemplate.queryForObject(sql, Integer.class, journals);
+        } else {
+            String sql = "SELECT COUNT(*) FROM files";
+            return jdbcTemplate.queryForObject(sql, Integer.class);
+
+        }
+    }
+
+    public int totalDates(int[] journals) {
+        if (journals != null) {
+            String sql = "SELECT COUNT(DISTINCT date) FROM files WHERE journal_id = ANY(?)";
+            return jdbcTemplate.queryForObject(sql, Integer.class, journals);
+        } else {
+            String sql = "SELECT COUNT(DISTINCT date) FROM files";
+            return jdbcTemplate.queryForObject(sql, Integer.class);
+        }
+
+    }
+
     /**
      * This function performs a Solr query and returns files with both Solr and SQL
      * data.
