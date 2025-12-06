@@ -65,3 +65,10 @@ CREATE TABLE journals (
 );
 
 INSERT INTO journals(name) VALUES ('Default Journal');
+
+
+
+
+
+
+
