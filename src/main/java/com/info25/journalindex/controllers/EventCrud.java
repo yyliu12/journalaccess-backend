@@ -113,7 +113,7 @@ public class EventCrud {
         eventRepository.moveChildrenToNewParent(id, event.getParent());
 
         eventRepository.deleteById(id);
-        eventFileRepository.deleteByEvent(id);
+        eventFileRepository.deleteByEventSafe(id);
 
         return "OK";
     }

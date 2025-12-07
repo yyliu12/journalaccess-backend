@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Collection of functions for interacting with event and file relationships
  */
-public interface EventFileRepository extends CrudRepository<EventFile, Integer> {
+public interface EventFileRepository extends CrudRepository<EventFile, Integer>, EventFileRepositoryCustom {
     EventFile findById(int id);
     void deleteById(int id);
     List<EventFile> findByEvent(int eventId);

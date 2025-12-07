@@ -75,7 +75,7 @@ public class EventFileCrud {
     public String removeEventFile(@RequestParam("id") int id) {
         EventFile eventFile = eventFileRepository.findById(id);
         if (eventFile != null) {
-            eventFileRepository.delete(eventFile);
+            eventFileRepository.deleteSafe(eventFile);
         }
 
         return "OK";

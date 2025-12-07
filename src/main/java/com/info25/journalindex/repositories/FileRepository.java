@@ -33,6 +33,7 @@ import com.info25.journalindex.util.DateUtils;
 import com.info25.journalindex.util.FileSolrSerializer;
 import com.info25.journalindex.util.FsUtils;
 import com.info25.journalindex.util.SolrSelectQuery;
+import com.info25.journalindex.util.SolrUpdateBuffer;
 
 import lombok.Data;
 import org.springframework.transaction.annotation.Transactional;
@@ -239,6 +240,21 @@ public class FileRepository {
         __saveToSql(f);
         __saveToSolr(f);
         __saveToFilesystem(f);
+    }
+
+    public void saveToSolrBuffer(int id, SolrUpdateBuffer buffer) {
+        saveToSolrBuffer(getById(id), buffer);
+    }
+
+    public void saveToSolrBuffer(File f, SolrUpdateBuffer buffer) {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode serialization = fileSolrSerializer.serializeForSolrModifyQuery(f);
+        buffer.addToBuffer(serialization);
+    }
+
+    public void saveSolrBuffer(SolrUpdateBuffer buffer) {
+        ArrayNode rootNode = buffer.getUpdateBuffer();
+        solrClient.modify(rootNode);
     }
 
     // if more properties arise then you need to figure out a better
