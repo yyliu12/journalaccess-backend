@@ -3,6 +3,7 @@ package com.info25.journalindex.repositories;
 import com.info25.journalindex.models.EventFile;
 import com.info25.journalindex.util.SolrUpdateBuffer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -11,9 +12,11 @@ import java.util.List;
 @Repository
 public class EventFileRepositoryCustomImpl implements EventFileRepositoryCustom {
     @Autowired
+    @Lazy
     EventFileRepository eventFileRepository;
 
     @Autowired
+    @Lazy
     FileRepository fileRepository;
 
     @Autowired
@@ -48,5 +51,11 @@ public class EventFileRepositoryCustomImpl implements EventFileRepositoryCustom 
         eventFileRepository.delete(ef);
 
         fileRepository.save(fileRepository.getById(fileId));
+    }
+
+    @Override
+    public void saveSafe(EventFile ef) {
+        eventFileRepository.save(ef);
+        fileRepository.save(fileRepository.getById(ef.getFile()));
     }
 }

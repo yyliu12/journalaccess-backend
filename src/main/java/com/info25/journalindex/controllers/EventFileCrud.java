@@ -62,7 +62,7 @@ public class EventFileCrud {
         EventFile eventFile = new EventFile();
         eventFile.setEvent(eventId);
         eventFile.setFile(fileId);
-        eventFileRepository.save(eventFile);
+        eventFileRepository.saveSafe(eventFile);
         return eventFile.getId();
     }
 
