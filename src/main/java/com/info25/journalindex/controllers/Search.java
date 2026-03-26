@@ -11,7 +11,6 @@ import com.info25.journalindex.apidtos.*;
 import com.info25.journalindex.util.DateUtils;
 import com.info25.journalindex.util.SolrQueryAssembler;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -56,9 +55,11 @@ public class Search {
 	 */
     @PostMapping("/api/files/search")
     public SearchResponseDto search(@RequestParam(name = "query", required = false) JsonNode query,
-                                   @RequestParam(name = "page", defaultValue = "0") int page,
-                                   @RequestParam(name = "bounds", required = false) JsonNode boundsQuery,
-                                   @RequestParam(name = "journals") int[] journals) {
+                                @RequestParam(name = "page", defaultValue = "0") int page,
+                                @RequestParam(name = "bounds", required = false) JsonNode boundsQuery,
+                                @RequestParam(name = "journals") int[] journals,
+                                @RequestParam(name = "month", defaultValue = "0") int month,
+                                @RequestParam(name = "year", defaultValue = "0") int year) {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -118,10 +119,20 @@ public class Search {
         }
 
         // date filtering
-        if (so.isDateFilteringEnabled()) {
+        if (so.getDateOptions().isDateFilteringEnabled()) {
             assembler.addTerm("date: [" +
-                    DateUtils.localDateToTimestamp(so.getStartDate()) + " TO " +
-                    DateUtils.localDateToTimestamp(so.getEndDate()) + "]");
+                    DateUtils.localDateToTimestamp(so.getDateOptions().getStartDate()) + " TO " +
+                    DateUtils.localDateToTimestamp(so.getDateOptions().getEndDate()) + "]");
+        }
+
+        // calendar month year filtering
+        if (month != 0 && year != 0) {
+            assembler.addTerm("date: [" +
+                    DateUtils.localDateToTimestamp(LocalDate.of(year, month, 1)) + " TO " +
+                    DateUtils.localDateToTimestamp(LocalDate.of(year, month, LocalDate.of(year, month, 1).lengthOfMonth())) + "]");
+            
+            selectQuery.setRows(2147483647);
+            selectQuery.setHl("false");
         }
 
         selectQuery.setFq(assembler.getFullQuery());
@@ -229,21 +240,26 @@ public class Search {
         ArrayList<FileSearchDto> results = new ArrayList<>();
 
         for (int year = OTD_START_YEAR; year <= OTD_END_YEAR; year++) {
-            results.addAll(
-                    fileSearchDtoMapper.toDtoList(
-                            journals.length > 0 ? fileRepository.getFilesByDate(
-                                    LocalDate.of(year, dateTime.getMonth(),
-                                            dateTime.getDayOfMonth()
-                                    ),
-                                    journals
-                            ) :  fileRepository.getFilesByDate(
-                                    LocalDate.of(year, dateTime.getMonth(),
-                                            dateTime.getDayOfMonth()
-                                    ),
-                                    null
-                            )
-                    )
-            );
+            try {
+                results.addAll(
+                        fileSearchDtoMapper.toDtoList(
+                                journals.length > 0 ? fileRepository.getFilesByDate(
+                                        LocalDate.of(year, dateTime.getMonth(),
+                                                dateTime.getDayOfMonth()
+                                        ),
+                                        journals
+                                ) :  fileRepository.getFilesByDate(
+                                        LocalDate.of(year, dateTime.getMonth(),
+                                                dateTime.getDayOfMonth()
+                                        ),
+                                        null
+                                )
+                        )
+                );
+            } catch (Exception e) {
+                // invalid date
+                continue;
+            }
         }
 
         return results;
