@@ -12,11 +12,8 @@ import lombok.Data;
 @Data
 public class SearchOptions {
     TagSearchOptions tags;
+    DateSearchOptions dateOptions;
     List<Integer> events;
     String sort;
     String query;
-    // these are inclusive
-    boolean dateFilteringEnabled;
-    LocalDate startDate;
-    LocalDate endDate;
 }
