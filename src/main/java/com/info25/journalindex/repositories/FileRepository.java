@@ -309,10 +309,12 @@ public class FileRepository {
         eventFileRepository.deleteByFile(f.getId());
 
         // trash ooFile object
-        OOFile ooFile = ooFileRepository.findById(f.getOOFileId());
-        ooFileRepository.deleteById(ooFile.getId());
+        if (f.getOOFileId() != -1) {
+            OOFile ooFile = ooFileRepository.findById(f.getOOFileId());
+            ooFileRepository.deleteById(ooFile.getId());
+            new java.io.File(fsUtils.getOOFilePath(ooFile)).delete();
+        }
 
-        new java.io.File(fsUtils.getOOFilePath(ooFile)).delete();
 
 
         // Clear all parent file associations
