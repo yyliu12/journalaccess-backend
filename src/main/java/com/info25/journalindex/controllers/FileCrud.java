@@ -172,12 +172,16 @@ public class FileCrud {
                     }
                     f.setContent(doc.body().wholeText());
                 }
-            }
-
-            if (fileName.endsWith(".txt")) {
+            } else if (fileName.endsWith(".txt")) {
                 try {
                     f.setContent(fsUtils.decodeBytesWithCharset(uploadedFile.getBytes()));
                 } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                try {
+                    f.setContent(tikaTextExtractor.extractText(uploadedFile.getBytes()));
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
