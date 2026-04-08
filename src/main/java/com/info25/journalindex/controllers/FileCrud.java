@@ -1,5 +1,6 @@
 package com.info25.journalindex.controllers;
 
+import com.info25.journalindex.util.TikaTextExtractor;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.time.LocalDate;
@@ -39,6 +40,8 @@ import lombok.Data;
 
 @RestController
 public class FileCrud {
+    private final TikaTextExtractor tikaTextExtractor;
+
     @Autowired
     FileModifyDtoMapper fileMapper;
 
@@ -53,6 +56,10 @@ public class FileCrud {
 
     @Autowired
     TextExtractionService textExtractionService;
+
+    FileCrud(TikaTextExtractor tikaTextExtractor) {
+        this.tikaTextExtractor = tikaTextExtractor;
+    }
 
     @GetMapping("/api/files/getFile/byId/{id}")
     public ResponseEntity<FileSystemResource> getFileById(@PathVariable("id") int id) throws IOException {
@@ -136,11 +143,7 @@ public class FileCrud {
             String fileName = uploadedFile.getOriginalFilename().strip();
 
             // this is the actual content file
-            if (fileName.endsWith(".pdf") ||
-                    fileName.endsWith(".html") ||
-                    fileName.endsWith(".jpg") ||
-                    fileName.endsWith(".jpeg") ||
-                    fileName.endsWith(".png")) {
+            if (ContentType.isJournalAccessType(fileName)) {
                 java.io.File originalFile = new java.io.File(fsUtils.getFilePathByFile(f));
                 originalFile.delete();
 
@@ -213,7 +216,6 @@ public class FileCrud {
         }
 
         // now we are sure we won't be overwriting data
-
         List<FileModifyDto> fileDtos = new ArrayList<>();
 
         for (MultipartFile file : files) {
@@ -224,11 +226,7 @@ public class FileCrud {
                 fileName = file.getOriginalFilename().strip();
             }
 
-            if (!fileName.endsWith(".pdf") &&
-                    !fileName.endsWith(".html") &&
-                    !fileName.endsWith(".jpg") &&
-                    !fileName.endsWith(".jpeg") &&
-                    !fileName.endsWith(".png")) {
+            if (!ContentType.isJournalAccessType(fileName)) {
                 continue;
             }
 
@@ -240,11 +238,14 @@ public class FileCrud {
             newFile.setContent("");
 
             // attempt to read both a.pdf.txt and a.txt (as an example)
-            String[] attemptedContent = new String[3];
+            String[] attemptedContent = new String[5];
 
             attemptedContent[0] = attemptReadText(fileMap, file.getOriginalFilename() + ".txt");
             attemptedContent[1] = attemptReadText(fileMap, fsUtils.changeExtension(file.getOriginalFilename(), ".txt"));
             attemptedContent[2] = attemptReadText(fileMap, fsUtils.changeExtension(file.getOriginalFilename(), ".TXT"));
+            attemptedContent[3] = attemptTikaExtraction(fileMap, file.getOriginalFilename());
+            if (fileMap.size() == 2)
+                attemptedContent[4] = attemptSingularFileExtraction(fileMap, file.getOriginalFilename());
 
             for (String attempt : attemptedContent) {
                 if (attempt != null)
@@ -289,6 +290,55 @@ public class FileCrud {
             }
         }
         return content;
+    }
+
+    private String attemptTikaExtraction(HashMap<String, MultipartFile> fileMap, String fileName) {
+        String content = null;
+
+        String baseFileName = ContentType.removeFileExt(fileName);
+
+        for (String key : fileMap.keySet()) {
+            if (ContentType.isJournalAccessType(key)) {
+                continue;
+            }
+
+            if (ContentType.removeFileExt(key).equals(baseFileName)) {
+                try {
+                    content = tikaTextExtractor.extractText(fileMap.get(key).getBytes());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return content;
+    }
+
+    public String attemptSingularFileExtraction(HashMap<String, MultipartFile> fileMap, String fileName) {
+        if (fileMap.size() > 2) {
+            return null;
+        }
+
+        for (String key : fileMap.keySet()) {
+            if (ContentType.isJournalAccessType(key)) {
+                continue;
+            }
+
+            if (ContentType.getFileExt(key).equals("txt")) {
+                try {
+                    return fsUtils.decodeBytesWithCharset(fileMap.get(key).getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                try {
+                    return tikaTextExtractor.extractText(fileMap.get(key).getBytes());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
     }
 
     @Data

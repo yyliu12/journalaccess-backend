@@ -48,6 +48,19 @@ public class ContentType {
         return "";
     }
 
+    public static boolean isJournalAccessType(String fileName) {
+        String ext = getFileExt(fileName);
+        return ext.equals("pdf") || ext.equals("html") || ext.equals("jpg") || ext.equals("jpeg") || ext.equals("png");
+    }
+
+    public static String removeFileExt(String fileName) {
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex > 0) {
+            return fileName.substring(0, lastDotIndex);
+        }
+        return fileName; // no extension found, return original name
+    }
+
     /**
      * Gets a MediaType object based on the filename
      */

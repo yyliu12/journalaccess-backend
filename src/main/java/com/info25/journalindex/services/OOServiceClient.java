@@ -5,6 +5,8 @@ import com.info25.journalindex.models.OOFile;
 import com.info25.journalindex.repositories.FileRepository;
 import com.info25.journalindex.repositories.OOFileRepository;
 import com.info25.journalindex.util.FsUtils;
+import com.info25.journalindex.util.TikaTextExtractor;
+
 import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
 import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
 import org.apache.hc.client5.http.async.methods.SimpleRequestProducer;
@@ -65,10 +67,15 @@ public class OOServiceClient {
 
     @Autowired
     FsUtils fsUtils;
+
     @Autowired
     private FileRepository fileRepository;
+    
     @Autowired
     private OOFileRepository oOFileRepository;
+
+    @Autowired
+    TikaTextExtractor tikaTextExtractor;
 
 
     public OOServiceClient(ConfigService configService) {
@@ -155,32 +162,16 @@ public class OOServiceClient {
                                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
                                 if (cd.getName().strip().equals("raw")) {
-                                    /*ms.readBodyData(new FileOutputStream(
-                                            fsUtils.getOOFilePath(ooFile)
-                                    ));*/
-
                                     ms.readBodyData(baos);
 
                                     baos.writeTo(new FileOutputStream(fsUtils.getOOFilePath(ooFile)));
 
-                                    AutoDetectParser parser = new AutoDetectParser();
-                                    BodyContentHandler contentHandler = new BodyContentHandler();
-                                    Metadata metadata = new Metadata();
-                                    ParseContext context = new ParseContext();
-                                    TesseractOCRConfig config = new TesseractOCRConfig();
-                                    config.setSkipOcr(true);
-                                    context.set(TesseractOCRConfig.class, config);
 
-                                    parser.parse(new ByteArrayInputStream(baos.toByteArray()), contentHandler, metadata, context);
-                                    String extractedText = contentHandler.toString();
-                                
+                                    String extractedText = tikaTextExtractor.extractText(baos.toByteArray());
 
                                     f.setContent(extractedText);
                                     
-                                    fileRepository.save(f);
-                                    System.out.println("EXTRACTED TEXT:" + extractedText);
-
-                                    
+                                    fileRepository.save(f);                                    
 
                                 } else if (cd.getName().strip().equals("pdf")) {
                                     ms.readBodyData(new FileOutputStream(
@@ -189,7 +180,7 @@ public class OOServiceClient {
                                 }
 
                                 nextPart = ms.readBoundary();
-                            } catch (IOException | TikaException | SAXException e) {
+                            } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
 
