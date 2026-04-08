@@ -24,8 +24,8 @@
 
         .btn-floating {
             position: absolute;
-            bottom: 36px;
-            left: 20px;
+            top: 0px;
+            left: 0px;
         }
     </style>
 </head>
@@ -44,7 +44,7 @@
     </button>
 
 
-    <div aria-hidden="true" class="modal fade" id="savingModal" tabindex="-1">
+    <div aria-hidden="true" class="modal fade" id="savingModal" tabindex="-1" data-mdb-backdrop="static">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -60,13 +60,11 @@
         </div>
     </div>
 
-    <div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal fade" id="successModal" tabindex="-1" data-mdb-backdrop="static">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Success</h5>
-                    <button type="button" class="btn-close" data-mdb-ripple-init data-mdb-dismiss="modal"
-                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">Document saved successfully.</div>
                 <div class="modal-footer">
