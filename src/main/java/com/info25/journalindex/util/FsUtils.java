@@ -5,6 +5,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 
+import com.info25.journalindex.models.OOFile;
+import com.info25.journalindex.repositories.OOFileRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.ibm.icu.text.CharsetDetector;
@@ -99,4 +102,18 @@ public class FsUtils {
             return path + newExtension;
         }
     }
+
+    public String getOOFilePath(OOFile ooFile) {
+
+
+        int ooFileId = ooFile.getId();
+
+        return rootPath
+                .resolve("oofs")
+                .resolve(Integer.toString(ooFileId / 100))
+                .resolve(ooFileId + "." + ooFile.getFileExtension())
+                .toAbsolutePath()
+                .toString();
+    }
+
 }

@@ -5,6 +5,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Base64;
 
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,7 @@ public class SolrClient {
     String SOLR_URL;
     // the core name that is storing journal data
     String coreName;
+    String SOLR_SECRET;
 
     HttpClient client;
 
@@ -33,6 +35,7 @@ public class SolrClient {
         
         SOLR_URL = configService.getConfigOption("solrUrl");
         coreName = configService.getConfigOption("solrCoreName");
+        SOLR_SECRET = configService.getConfigOption("solrSecret");
     }
 
     /**
@@ -45,6 +48,7 @@ public class SolrClient {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(SOLR_URL + url))
                 .header("Content-Type", "application/json")
+                .header("Authorization", "Basic " + Base64.getEncoder().encodeToString(("solr:" + SOLR_SECRET).getBytes()))
                 .POST(HttpRequest.BodyPublishers.ofString(postBody))
                 .build();
 

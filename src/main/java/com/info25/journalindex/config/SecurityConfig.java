@@ -1,5 +1,6 @@
 package com.info25.journalindex.config;
 
+import org.springframework.boot.web.servlet.server.CookieSameSiteSupplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -15,6 +16,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+
+import com.info25.journalindex.services.ConfigService;
 
 /**
  * This configures security for the application. Our main goal with authentication
@@ -37,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/static/**").permitAll()
                         .requestMatchers("/login").permitAll()
                         .requestMatchers("/loginBg.jpg").permitAll()
+                        .requestMatchers("/**").permitAll()
                 )
                 .formLogin(f -> f.loginPage("/login").loginProcessingUrl("/login"))
                 .headers(headers -> headers.disable())
@@ -50,10 +54,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    UserDetailsService userDetailsService() {
+    UserDetailsService userDetailsService(ConfigService configService) {
         UserDetails user = User.builder()
                 .username("admin")
-                .password(passwordEncoder().encode("pass"))
+                .password(passwordEncoder().encode(configService.getConfigOption("loginPassword")))
                 .build();
         return new InMemoryUserDetailsManager(user);
     }
@@ -64,6 +68,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true); // you USUALLY want this
         config.addAllowedOrigin("http://localhost:5173"); // Allow requests from this origin
+		config.addAllowedOrigin("http://172.16.153.1:8080"); // Allow requests from this origin
         config.addAllowedHeader("*");
         config.addAllowedMethod("OPTIONS");
         config.addAllowedMethod("HEAD");
@@ -74,6 +79,11 @@ public class SecurityConfig {
         config.addAllowedMethod("PATCH");
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
+    }
+
+    @Bean
+    public CookieSameSiteSupplier cookieSameSiteSupplier() {
+        return CookieSameSiteSupplier.ofStrict();
     }
 
 }

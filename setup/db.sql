@@ -9,12 +9,15 @@ CREATE TABLE files (
     path text,
     tags integer[],
     uuid text,
-	journal_id integer
+	journal_id integer,
+    oo_file_id integer DEFAULT -1
 );
 
 CREATE INDEX journal_index on files(journal_id);
 
 CREATE INDEX date_index on files(date);
+
+CREATE INDEX oo_file_index on files(oo_file_id);
 
 CREATE TABLE tags (
     id serial primary key,
@@ -67,7 +70,10 @@ CREATE TABLE journals (
 INSERT INTO journals(name) VALUES ('Default Journal');
 
 
-
+CREATE TABLE oo_files (
+    id serial primary key,
+    type integer
+);
 
 
 

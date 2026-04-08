@@ -1,0 +1,16 @@
+<html><body>
+<p style="font-family: Helvetica, Arial">Please wait for Collabora Office to load...</p>
+<form action="https://oo-ja.duckdns.org:9980/browser/4610258811/cool.html?UIMode=compact&WOPISrc=https%3A%2F%2Flocalhost%3A82%2Fwopi%2Ffiles%2F0"
+      th:attrappend="action=${sessionId}"
+      enctype="multipart/form-data"
+      method="post">
+    <input name="access_token" th:value="${ooSecret}" type="hidden"/>
+</form>
+
+<script>
+    // submit form on page load
+    window.onload = function () {
+        document.forms[0].submit();
+    }
+</script>
+</body></html>

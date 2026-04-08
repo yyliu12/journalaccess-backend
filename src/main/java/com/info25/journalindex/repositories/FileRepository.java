@@ -28,6 +28,7 @@ import com.info25.journalindex.models.Backlink;
 import com.info25.journalindex.models.EventFile;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.models.File.Location;
+import com.info25.journalindex.models.OOFile;
 import com.info25.journalindex.services.SolrClient;
 import com.info25.journalindex.util.DateUtils;
 import com.info25.journalindex.util.FileSolrSerializer;
@@ -73,6 +74,9 @@ public class FileRepository {
 
     @Autowired
     EventFileRepository eventFileRepository;
+
+    @Autowired
+    OOFileRepository ooFileRepository;
 
     /**
      * This function returns a file with SQL and Solr data baesd on id.
@@ -304,6 +308,13 @@ public class FileRepository {
 
         eventFileRepository.deleteByFile(f.getId());
 
+        // trash ooFile object
+        OOFile ooFile = ooFileRepository.findById(f.getOOFileId());
+        ooFileRepository.deleteById(ooFile.getId());
+
+        new java.io.File(fsUtils.getOOFilePath(ooFile)).delete();
+
+
         // Clear all parent file associations
         String sql = "UPDATE files SET parent = -1, attachment_code = '' WHERE parent = ?";
         jdbcTemplate.update(sql, f.getId());
@@ -357,6 +368,7 @@ public class FileRepository {
         ps.setInt(12, f.getParent());
         ps.setString(13, f.getAttachmentCode());
         ps.setInt(14, f.getJournalId());
+        ps.setInt(15, f.getOOFileId());
         // update ps.setInt in id == -1 when adding new statements -- the update
         // sql statement requires the id at the end
     }
@@ -373,19 +385,19 @@ public class FileRepository {
                     "date = ?, annotation = ?, content = ?, tags = ?, " +
                     "location_coordinates = ?, location_address = ?, " +
                     "location_buildingname = ?, title = ?, description = ?, " + 
-                    "parent = ?, attachment_code = ?, journal_id = ? WHERE id = ?";
+                    "parent = ?, attachment_code = ?, journal_id = ?, oo_file_id = ? WHERE id = ?";
             jdbcTemplate.update(sql, ps -> {
                 preparedStatementFromFile(ps, f);
                 // modifying files also requires the file id, which is not set by
                 // the function in case we are actually creating a file
-                ps.setInt(15, f.getId());
+                ps.setInt(16, f.getId());
             });
         } else {
             // This is for existing files
             String sql = "INSERT INTO files (uuid, path, date, annotation, content," +
                     "tags, location_coordinates, location_address," +
                     "location_buildingname, title, description, parent, attachment_code," +
-                    "journal_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                    "journal_id, oo_file_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -468,6 +480,7 @@ public class FileRepository {
             file.setParent(rs.getInt("parent"));
             file.setAttachmentCode(rs.getString("attachment_code"));
             file.setJournalId(rs.getInt("journal_id"));
+            file.setOOFileId(rs.getInt("oo_file_id"));
             Array tags = rs.getArray("tags");
             if (tags != null) {
                 Integer[] tagIds = (Integer[]) tags.getArray();

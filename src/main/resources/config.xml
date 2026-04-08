@@ -1,15 +1,23 @@
 <config>
-    <!-- 
-        Where files for the journal are stored
 
-        New journal files are added tp year/month/day
-    -->
+    <loginPassword>AMoreSecurePass</loginPassword>
     <fsRoot>/Users/yuyangliu/Desktop/journalindex/fs</fsRoot>
     <tomtomApiKey>vriuC2gRvgx2Gmr02YzuPxZE7SsslVkl</tomtomApiKey>
     <!-- do not include trailing slash. e.g. http://solr.com -->
     <solrUrl>http://127.0.0.1:8983</solrUrl>
     <solrCoreName>journal_new</solrCoreName>
+    <solrSecret>#*g@BgY&amp;Qgl2</solrSecret>
+
     <!-- do not include trailing slash -->
     <ocrServerUrl>http://127.0.0.1:2009</ocrServerUrl>
     <ocrServerSecret>288Nk8sNbqnfhjI4JQAcAQCcRwZnj5r1</ocrServerSecret>
+
+    <ooServerUrl>https://oo-ja.duckdns.org:82</ooServerUrl>
+    <ooServerSecret>mdbe1tSne0yvm1Fo3u3gNWyU1z8NqkY1</ooServerSecret>
+    <collaboraServerUrl>https://oo-ja.duckdns.org:9980/browser/4610258811/cool.html?WOPISrc=</collaboraServerUrl>
+
+    <postgresSecret>#*g@BgY&amp;Qgl2</postgresSecret>
+
+    <resourcesFolder>/Users/yuyangliu/Desktop/journalindex/backend-resources</resourcesFolder>
+
 </config>

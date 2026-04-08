@@ -26,6 +26,7 @@ public class FileModifyDto {
     int parent;
     String attachmentCode;
     int journalId;
+    int ooFileId;
 
     public FileModifyDto() {}
 }

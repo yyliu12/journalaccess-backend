@@ -66,6 +66,8 @@ public class OCRServerClient {
             CloseableHttpResponse httpResponse = client.execute(request);
             String response = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
 
+            EntityUtils.consume(httpResponse.getEntity());
+
             return response;
         } catch (Exception e) {
             return "An error occurred";
@@ -91,6 +93,8 @@ public class OCRServerClient {
 
             CloseableHttpResponse httpResponse = client.execute(request);
             String response = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
+
+            EntityUtils.consume(httpResponse.getEntity());
 
             return response;
         } catch (Exception e) {

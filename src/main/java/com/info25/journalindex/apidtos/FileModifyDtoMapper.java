@@ -2,6 +2,7 @@ package com.info25.journalindex.apidtos;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.info25.journalindex.models.File;
