@@ -371,6 +371,9 @@ public class FileRepository {
         ps.setString(13, f.getAttachmentCode());
         ps.setInt(14, f.getJournalId());
         ps.setInt(15, f.getOOFileId());
+
+        ps.setBoolean(16, f.isLegacyOnlineEditorFile());
+        ps.setBoolean(17, f.isCKEditorFile());
         // update ps.setInt in id == -1 when adding new statements -- the update
         // sql statement requires the id at the end
     }
@@ -387,19 +390,22 @@ public class FileRepository {
                     "date = ?, annotation = ?, content = ?, tags = ?, " +
                     "location_coordinates = ?, location_address = ?, " +
                     "location_buildingname = ?, title = ?, description = ?, " + 
-                    "parent = ?, attachment_code = ?, journal_id = ?, oo_file_id = ? WHERE id = ?";
+                    "parent = ?, attachment_code = ?, journal_id = ?, oo_file_id = ?, " + 
+                    "isLegacyOnlineEditorFile = ?, isCKEditorFile = ? " +
+                    "WHERE id = ?";
             jdbcTemplate.update(sql, ps -> {
                 preparedStatementFromFile(ps, f);
                 // modifying files also requires the file id, which is not set by
                 // the function in case we are actually creating a file
-                ps.setInt(16, f.getId());
+                ps.setInt(18, f.getId());
             });
         } else {
             // This is for existing files
             String sql = "INSERT INTO files (uuid, path, date, annotation, content," +
                     "tags, location_coordinates, location_address," +
                     "location_buildingname, title, description, parent, attachment_code," +
-                    "journal_id, oo_file_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                    "journal_id, oo_file_id, isLegacyOnlineEditorFile, isCKEditorFile) " + 
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -483,6 +489,10 @@ public class FileRepository {
             file.setAttachmentCode(rs.getString("attachment_code"));
             file.setJournalId(rs.getInt("journal_id"));
             file.setOOFileId(rs.getInt("oo_file_id"));
+
+            file.setLegacyOnlineEditorFile(rs.getBoolean("is_legacy_online_editor_file"));
+            file.setCKEditorFile(rs.getBoolean("is_ck_editor_file"));
+
             Array tags = rs.getArray("tags");
             if (tags != null) {
                 Integer[] tagIds = (Integer[]) tags.getArray();

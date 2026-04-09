@@ -23,6 +23,8 @@ public class File {
     String attachmentCode;
     int journalId = 1;
     int ooFileId = -1;
+    boolean isLegacyOnlineEditorFile = false;
+    boolean isCKEditorFile = false;
     /** 
      * These variables are used to save date and path modifications to the filesystem
      * since we need to know the original date & path in order to rename a file.
@@ -252,5 +254,21 @@ public class File {
 
     public void setOOFileId(int ooFileId) {
         this.ooFileId = ooFileId;
+    }
+
+    public boolean isLegacyOnlineEditorFile() {
+        return isLegacyOnlineEditorFile;
+    }
+
+    public void setLegacyOnlineEditorFile(boolean legacyOnlineEditorFile) {
+        isLegacyOnlineEditorFile = legacyOnlineEditorFile;
+    }
+
+    public boolean isCKEditorFile() {
+        return isCKEditorFile;
+    }
+
+    public void setCKEditorFile(boolean CKEditorFile) {
+        isCKEditorFile = CKEditorFile;
     }
 }

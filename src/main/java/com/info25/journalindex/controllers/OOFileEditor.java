@@ -46,11 +46,14 @@ public class OOFileEditor {
     }
 
     @GetMapping("/frame")
-    public String frame(@RequestParam("id") int id, Model model) {
+    public String frame(@RequestParam("id") int id, @RequestParam(value = "sessionId", required = false, defaultValue = "-1") int sessionId, Model model) {
         File f = fileRepository.getById(id);
         OOFile ooFile = ooFileRepository.findById(f.getOOFileId());
 
-        int sessionId = ooServiceClient.initiateSession(ooFile);
+        if (sessionId == -1) {
+            sessionId = ooServiceClient.initiateSession(ooFile);
+            return "redirect:/api/oofile/frame?id=" + id + "&sessionId=" + sessionId;
+        }
 
         model.addAttribute("sessionId", sessionId);
         model.addAttribute("fileId", id);

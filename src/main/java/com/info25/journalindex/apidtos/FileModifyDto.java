@@ -27,6 +27,8 @@ public class FileModifyDto {
     String attachmentCode;
     int journalId;
     int ooFileId;
+    boolean isLegacyOnlineEditorFile;
+    boolean isCKEditorFile;
 
     public FileModifyDto() {}
 }

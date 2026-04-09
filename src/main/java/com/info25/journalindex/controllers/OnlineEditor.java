@@ -120,6 +120,12 @@ public class OnlineEditor {
         fileRepository.save(fileModel);
 
         java.io.File localFile = new java.io.File(fsUtils.getFilePathByFile(fileModel));
+
+        // Overwrite check
+        if (localFile.exists()) {
+            return "ERROR";
+        }
+
         try {
             file.transferTo(localFile);
             return "{\"location\": \"" + file.getOriginalFilename() + "\"}";
