@@ -391,7 +391,7 @@ public class FileRepository {
                     "location_coordinates = ?, location_address = ?, " +
                     "location_buildingname = ?, title = ?, description = ?, " + 
                     "parent = ?, attachment_code = ?, journal_id = ?, oo_file_id = ?, " + 
-                    "isLegacyOnlineEditorFile = ?, isCKEditorFile = ? " +
+                    "is_legacy_online_editor_file = ?, is_ck_editor_file = ? " +
                     "WHERE id = ?";
             jdbcTemplate.update(sql, ps -> {
                 preparedStatementFromFile(ps, f);
@@ -404,7 +404,7 @@ public class FileRepository {
             String sql = "INSERT INTO files (uuid, path, date, annotation, content," +
                     "tags, location_coordinates, location_address," +
                     "location_buildingname, title, description, parent, attachment_code," +
-                    "journal_id, oo_file_id, isLegacyOnlineEditorFile, isCKEditorFile) " + 
+                    "journal_id, oo_file_id, is_legacy_online_editor_file, is_ck_editor_file) " + 
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {

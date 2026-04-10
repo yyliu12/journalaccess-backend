@@ -126,7 +126,7 @@ public class OOServiceClient {
                     @Override
                     public void completed(SimpleHttpResponse result) {
 
-                        // System.out.println("request finished??");
+                        System.out.println("request finished??");
 
                         byte[] data = result.getBodyBytes();
 
@@ -137,7 +137,7 @@ public class OOServiceClient {
                         try {
                             contentType = result.getHeader("Content-Type").getValue();
                         } catch (ProtocolException e) {
-                            throw new RuntimeException(e);
+                            e.printStackTrace();
                         }
 
                         ContentType ct = ContentType.parse(contentType);
@@ -151,8 +151,11 @@ public class OOServiceClient {
                         try {
                             nextPart = ms.skipPreamble();
                         } catch (IOException e) {
-                            throw new RuntimeException(e);
+                            e.printStackTrace();
                         }
+
+                        System.out.println("now reading parts");
+
                         while (nextPart) {
                             try {
                                 String partHeaders = ms.readHeaders();
@@ -181,11 +184,12 @@ public class OOServiceClient {
 
                                 nextPart = ms.readBoundary();
                             } catch (IOException e) {
-                                throw new RuntimeException(e);
+                                e.printStackTrace();
                             }
 
                         }
-
+                        
+                        System.out.println("Done!");
                         cf.complete("OK");
                     }
 

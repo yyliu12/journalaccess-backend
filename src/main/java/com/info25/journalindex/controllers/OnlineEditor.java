@@ -1,5 +1,7 @@
 package com.info25.journalindex.controllers;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 
@@ -31,7 +33,16 @@ public class OnlineEditor {
     final String HEADER_CSS = """
             <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
             <style> * { font-family: 'Roboto' }</style>
-                                """;
+    """;
+
+    final String V2_HEADER = """
+<link href="https://cdn.jsdelivr.net/gh/yyliu12/ckeditor5-css/ckeditor5-content.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/yyliu12/ckeditor5-css/ckeditor5-premium-features-content.css" rel="stylesheet">
+<div class="ck-content">
+            """;
+    
+    final String V2_FOOTER = """
+</div>""";
 
     /**
      * Creates a blank html file in the filesystem and db
@@ -43,9 +54,20 @@ public class OnlineEditor {
     public String initOnlineEditor(@RequestParam("date") String date, @RequestParam("path") String path) {
         LocalDate parsedDate = DateUtils.parseFromString(date);
         java.io.File file = new java.io.File(fsUtils.getFileByDateAndPath(parsedDate, path));
+
+        if (file.exists()) {
+            return "exists";
+        }
+
         try {
             file.getParentFile().mkdirs();
             file.createNewFile();
+
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+            bw.write(V2_HEADER);
+            bw.write(V2_FOOTER);
+
+            bw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -53,7 +75,10 @@ public class OnlineEditor {
         File fileModel = new File();
         fileModel.setPath(path);
         fileModel.setDate(parsedDate);
+        fileModel.setCKEditorFile(true);
+
         fileRepository.save(fileModel);
+        
 
         return String.valueOf(fileModel.getId());
     }
@@ -71,6 +96,27 @@ public class OnlineEditor {
         java.io.File localFile = new java.io.File(fsUtils.getFilePathByFile(file));
         try {
             java.nio.file.Files.writeString(localFile.toPath(), HEADER_CSS + content);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "ERROR";
+        }
+
+        Document doc = Jsoup.parse(content);
+        file.setContent(doc.body().wholeText());
+        fileRepository.save(file);
+
+        return "OK";
+
+    }
+
+    @PostMapping("/api/onlineEditor/v2/save")
+    public String saveOnlineEditorv2(@RequestParam("id") int id, @RequestParam("content") String content) {
+        File file = fileRepository.getById(id);
+
+        java.io.File localFile = new java.io.File(fsUtils.getFilePathByFile(file));
+        try {
+            java.nio.file.Files.writeString(localFile.toPath(), V2_HEADER + content + V2_FOOTER);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -103,6 +149,34 @@ public class OnlineEditor {
         }
     }
 
+    @PostMapping("/api/onlineEditor/v2/{date}/upload")
+    public String uploadFileCKEditor(@RequestParam("upload") MultipartFile file,
+            @PathVariable("date") String date) {
+        LocalDate parsedDate = DateUtils.parseFromString(date);
+        // TODO: Check if file we are overwriting files
+        File fileModel = new File();
+        fileModel.setDate(parsedDate);
+        fileModel.setPath(file.getOriginalFilename());
+
+
+        java.io.File localFile = new java.io.File(fsUtils.getFilePathByFile(fileModel));
+        // Overwrite check
+        if (localFile.exists()) {
+            return "{\"error\": {\"message\": \"File already exists\"}}";
+        }
+
+        fileRepository.save(fileModel);
+
+
+        try {
+            file.transferTo(localFile);
+            return "{\"url\": \"" + file.getOriginalFilename() + "\"}";
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "{\"error\": {\"message\": \"Upload failed\"}}";
+        }
+    }
+
     /**
      * Uploads a file to the journal -- used when uploading from tinyMCE
      * @param file the raw file data
@@ -117,7 +191,7 @@ public class OnlineEditor {
         File fileModel = new File();
         fileModel.setDate(parsedDate);
         fileModel.setPath(file.getOriginalFilename());
-        fileRepository.save(fileModel);
+
 
         java.io.File localFile = new java.io.File(fsUtils.getFilePathByFile(fileModel));
 
@@ -125,6 +199,7 @@ public class OnlineEditor {
         if (localFile.exists()) {
             return "ERROR";
         }
+        fileRepository.save(fileModel);
 
         try {
             file.transferTo(localFile);

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CKEditor 5 with premium features - Quick start ZIP</title>
+    <link rel="stylesheet" href="/static/ckeditor5/ckeditor5.css">
+    <link rel="stylesheet" href="/static/ckeditor5-premium-features/ckeditor5-premium-features.css">
+    <link rel="stylesheet" href="/static/mdb/mdb.min.css">
+
+    <style>
+        .main-container {
+            width: 795px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <div id="editor" th:utext="${text}">
+        </div>
+
+        <button type="button" class="btn btn-primary mt-3" data-mdb-ripple-init onclick="save()">Save</button>
+        <button type="button" class="btn btn-secondary" onclick="showModal()" data-mdb-ripple-init="">
+            Word Count
+        </button>
+    </div>
+    <script type="importmap">
+			{
+				"imports": {
+					"ckeditor5": "/static/ckeditor5/ckeditor5.js",
+					"ckeditor5/": "/static/ckeditor5/",
+					"ckeditor5-premium-features": "/static/ckeditor5-premium-features/ckeditor5-premium-features.js",
+					"ckeditor5-premium-features/": "/static/ckeditor5-premium-features/"
+				}
+			}
+	</script>
+    <div class="modal" tabindex="-1" id="wordCountModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Word count</h5>
+                    <button type="button" class="btn-close" data-mdb-ripple-init data-mdb-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="wordCountBody">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-mdb-ripple-init
+                        data-mdb-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        /**
+         * This configuration was generated using the CKEditor 5 Builder. You can modify it anytime using this link:
+         * https://ckeditor.com/ckeditor-5/builder/#installation/NodgNARAzAdADDAjBSiAcAmEjEYwNigBYBWIo/RKATgzjxOvzhJGexBbhE5CLRqYmKCAFMAdijhhgiMHOkL5AXUij8AQ0QAjanAjKgA=
+         */
+
+        import {
+            ClassicEditor,
+            Autosave,
+            Essentials,
+            Paragraph,
+            Bold,
+            Italic,
+            Link,
+            AutoLink,
+            Mention,
+            SimpleUploadAdapter,
+            ImageUpload,
+            ImageInsert,
+            ImageInsertViaUrl,
+            AutoImage,
+            ImageBlock,
+            ImageToolbar,
+            Underline,
+            Strikethrough,
+            Code,
+            Subscript,
+            Superscript,
+            FontBackgroundColor,
+            FontColor,
+            FontFamily,
+            FontSize,
+            RemoveFormat,
+            Highlight,
+            Fullscreen,
+            FindAndReplace,
+            Heading,
+            BlockQuote,
+            HorizontalLine,
+            CodeBlock,
+            Indent,
+            IndentBlock,
+            Alignment,
+            Style,
+            GeneralHtmlSupport,
+            ImageInline,
+            ImageResize,
+            ImageStyle,
+            LinkImage,
+            ImageCaption,
+            List,
+            TodoList,
+            ListProperties,
+            Table,
+            TableToolbar,
+            TableLayout,
+            PlainTableOutput,
+            TableProperties,
+            TableCellProperties,
+            TableColumnResize,
+            TableCaption,
+            PageBreak,
+            ShowBlocks,
+            BalloonToolbar,
+            WordCount,
+            Plugin,
+            MenuBarMenuListItemButtonView
+        } from 'ckeditor5';
+        import {
+            FormatPainter,
+            SlashCommand,
+            CaseChange,
+            LineHeight,
+            MultiLevelList,
+            Footnotes,
+            SourceEditingEnhanced
+        } from 'ckeditor5-premium-features';
+
+        const LICENSE_KEY = 'lol';
+
+        const editorConfig = {
+            attachTo: document.querySelector('#editor'),
+            menuBar: { isVisible: true },
+            toolbar: {
+                items: [
+                    'undo',
+                    'redo',
+                    '|',
+                    'findAndReplace',
+                    'fullscreen',
+                    '|',
+                    'heading',
+                    '|',
+                    'bold',
+                    'italic',
+                    'underline',
+                    'strikethrough',
+                    'removeFormat',
+                    '|',
+                    'link',
+                    'insertImage',
+                    'insertTable',
+                    'blockQuote',
+                    'horizontalLine',
+                    '|',
+                    'alignment',
+                    '|',
+                    'bulletedList',
+                    'numberedList',
+                    'todoList',
+                    'outdent',
+                    'indent'
+                ],
+                shouldNotGroupWhenFull: false
+            },
+            plugins: [
+                Alignment,
+                AutoImage,
+                AutoLink,
+                Autosave,
+                BalloonToolbar,
+                BlockQuote,
+                Bold,
+                CaseChange,
+                Code,
+                CodeBlock,
+                Essentials,
+                FindAndReplace,
+                FontBackgroundColor,
+                FontColor,
+                FontFamily,
+                FontSize,
+                Footnotes,
+                FormatPainter,
+                Fullscreen,
+                GeneralHtmlSupport,
+                Heading,
+                Highlight,
+                HorizontalLine,
+                ImageBlock,
+                ImageCaption,
+                ImageInline,
+                ImageInsert,
+                ImageInsertViaUrl,
+                ImageResize,
+                ImageStyle,
+                ImageToolbar,
+                ImageUpload,
+                Indent,
+                IndentBlock,
+                Italic,
+                LineHeight,
+                Link,
+                LinkImage,
+                List,
+                ListProperties,
+                Mention,
+                MultiLevelList,
+                PageBreak,
+                Paragraph,
+                PlainTableOutput,
+                RemoveFormat,
+                ShowBlocks,
+                SimpleUploadAdapter,
+                SlashCommand,
+                SourceEditingEnhanced,
+                Strikethrough,
+                Style,
+                Subscript,
+                Superscript,
+                Table,
+                TableCaption,
+                TableCellProperties,
+                TableColumnResize,
+                TableLayout,
+                TableProperties,
+                TableToolbar,
+                TodoList,
+                Underline,
+                WordCount
+            ],
+            licenseKey: LICENSE_KEY,
+            balloonToolbar: ['bold', 'italic', 'underline', '|', 'link', 'insertImage', '|', 'bulletedList', 'numberedList'],
+            fontFamily: {
+                supportAllValues: true
+            },
+            fontSize: {
+                options: [10, 12, 14, 'default', 18, 20, 22],
+                supportAllValues: true
+            },
+            fullscreen: {
+                onEnterCallback: container =>
+                    container.classList.add(
+                        'editor-container',
+                        'editor-container_classic-editor',
+                        'editor-container_include-style',
+                        'editor-container_include-fullscreen',
+                        'main-container'
+                    )
+            },
+            heading: {
+                options: [
+                    {
+                        model: 'paragraph',
+                        title: 'Paragraph',
+                        class: 'ck-heading_paragraph'
+                    },
+                    {
+                        model: 'heading1',
+                        view: 'h1',
+                        title: 'Heading 1',
+                        class: 'ck-heading_heading1'
+                    },
+                    {
+                        model: 'heading2',
+                        view: 'h2',
+                        title: 'Heading 2',
+                        class: 'ck-heading_heading2'
+                    },
+                    {
+                        model: 'heading3',
+                        view: 'h3',
+                        title: 'Heading 3',
+                        class: 'ck-heading_heading3'
+                    },
+                    {
+                        model: 'heading4',
+                        view: 'h4',
+                        title: 'Heading 4',
+                        class: 'ck-heading_heading4'
+                    },
+                    {
+                        model: 'heading5',
+                        view: 'h5',
+                        title: 'Heading 5',
+                        class: 'ck-heading_heading5'
+                    },
+                    {
+                        model: 'heading6',
+                        view: 'h6',
+                        title: 'Heading 6',
+                        class: 'ck-heading_heading6'
+                    }
+                ]
+            },
+            htmlSupport: {
+                allow: [
+                    {
+                        name: /^.*$/,
+                        styles: true,
+                        attributes: true,
+                        classes: true
+                    }
+                ]
+            },
+            image: {
+                toolbar: ['toggleImageCaption', '|', 'imageStyle:inline', 'imageStyle:wrapText', 'imageStyle:breakText', '|', 'resizeImage']
+            },
+            lineHeight: {
+                supportAllValues: true
+            },
+            link: {
+                addTargetToExternalLinks: true,
+                defaultProtocol: 'https://',
+                decorators: {
+                    toggleDownloadable: {
+                        mode: 'manual',
+                        label: 'Downloadable',
+                        attributes: {
+                            download: 'file'
+                        }
+                    }
+                }
+            },
+            list: {
+                properties: {
+                    styles: true,
+                    startIndex: true,
+                    reversed: true
+                }
+            },
+            mention: {
+                feeds: [
+                    {
+                        marker: '@',
+                        feed: [
+                            /* See: https://ckeditor.com/docs/ckeditor5/latest/features/mentions.html */
+                        ]
+                    }
+                ]
+            },
+            style: {
+                definitions: [
+                    {
+                        name: 'Article category',
+                        element: 'h3',
+                        classes: ['category']
+                    },
+                    {
+                        name: 'Title',
+                        element: 'h2',
+                        classes: ['document-title']
+                    },
+                    {
+                        name: 'Subtitle',
+                        element: 'h3',
+                        classes: ['document-subtitle']
+                    },
+                    {
+                        name: 'Info box',
+                        element: 'p',
+                        classes: ['info-box']
+                    },
+                    {
+                        name: 'CTA Link Primary',
+                        element: 'a',
+                        classes: ['button', 'button--green']
+                    },
+                    {
+                        name: 'CTA Link Secondary',
+                        element: 'a',
+                        classes: ['button', 'button--black']
+                    },
+                    {
+                        name: 'Marker',
+                        element: 'span',
+                        classes: ['marker']
+                    },
+                    {
+                        name: 'Spoiler',
+                        element: 'span',
+                        classes: ['spoiler']
+                    }
+                ]
+            },
+            table: {
+                contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+            },
+            simpleUpload: {
+                uploadUrl: "http://localhost:8080/api/onlineEditor/v2/[[${date}]]/upload"
+            },
+            wordCount: {
+                container: document.getElementById("wordCountBody")
+            }
+        };
+
+        ClassicEditor.create(editorConfig).then(e => {
+            window.editor2 = e;
+        })
+
+
+
+    </script>
+
+    <script src="/static/mdb/mdb.umd.min.js"></script>
+
+    <div style="display:none" th:text="${id}" id="id"></div>
+
+    <script>
+        var element = document.getElementById("wordCountModal");
+        var instance = new mdb.Modal(element);
+
+        function showModal() {
+            instance.show();
+        }
+
+        function save() {
+            var content = editor2.getData();
+            var data = new FormData();
+            data.append("content", content);
+            data.append("id", document.getElementById("id").innerText);
+
+            fetch("/api/onlineEditor/v2/save", {
+                method: "POST",
+                body: data
+            }).then(response => {
+                if (response.ok) {
+                    alert("Document saved successfully.");
+                } else {
+                    alert("Error saving document.");
+                }
+            }).catch(error => {
+                alert("Error saving document: " + error);
+            });
+        }
+
+    </script>
+
+
+
+</body>
+
+</html>
