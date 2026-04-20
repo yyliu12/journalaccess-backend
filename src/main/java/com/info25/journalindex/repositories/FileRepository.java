@@ -3,8 +3,10 @@ package com.info25.journalindex.repositories;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -197,7 +199,38 @@ public class FileRepository {
             String sql = "SELECT COUNT(DISTINCT date) FROM files";
             return jdbcTemplate.queryForObject(sql, Integer.class);
         }
+    }
 
+    public Map<Integer, Map<Integer, Integer>> getFileCountsByYearAndMonth(boolean countFiles, int[] journals) {
+        Map<Integer, Map<Integer, Integer>> counts = new HashMap<>();
+        String sql;
+        Object[] args;
+        String count;
+        if (countFiles) {
+            count = "count(*)";
+        } else {
+            count = "count(distinct date)";
+        }
+        if (journals != null) {
+            sql = "select date_trunc('month', to_timestamp(date)) at time zone 'America/New_York' as ym, " + count + " from files where journal_id = ANY(?) group by ym";
+            args = new Object[]{journals};
+        } else {
+            sql = "select date_trunc('month', to_timestamp(date)) at time zone 'America/New_York' as ym, " + count + " from files group by ym";
+            args = new Object[0];
+        }
+
+        jdbcTemplate.query(sql, args, (ResultSetExtractor<Void>) rs -> {
+            while (rs.next()) {
+                Timestamp timestamp = rs.getTimestamp(1);
+                int num = rs.getInt(2);
+                LocalDate date = timestamp.toLocalDateTime().toLocalDate();
+                counts.putIfAbsent(date.getYear(), new java.util.HashMap<>());
+                counts.get(date.getYear()).put(date.getMonthValue(), num);
+            }
+            return null;
+        });
+
+        return counts;
     }
 
     /**
