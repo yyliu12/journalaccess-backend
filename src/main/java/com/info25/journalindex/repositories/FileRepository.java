@@ -306,7 +306,9 @@ public class FileRepository {
         // move file to its modified path first
         if (f.__isPathModified()) {
             java.io.File fsFile = new java.io.File(fsUtils.getFileByDateAndPath(curDate, f.__getOriginalPath()));
-            fsFile.renameTo(new java.io.File(fsUtils.getFileByDateAndPath(curDate, null)));
+            java.io.File renamedFile = new java.io.File(fsUtils.getFileByDateAndPath(curDate, null));
+            renamedFile.getParentFile().mkdirs();
+            fsFile.renameTo(renamedFile);
         }
 
         // we know that the file exists at its set path now

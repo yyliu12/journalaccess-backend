@@ -140,7 +140,7 @@ public class Stats {
 
             SolrSelectQuery selectQuery = new SolrSelectQuery()
                     .setQ(q)
-                    .setFl("date,content")
+                    .setFl("id,date,content")
                     .setSort("date desc")
                     .setRows(999999);
 
@@ -157,14 +157,15 @@ public class Stats {
                 int freq = 0;
 
                 String content = doc.get("content").asText().toLowerCase();
-                String[] split = cleanString(content).split("\\s+");
+                String[] split = cleanString(content).split("[^a-zA-Z0-9]+");
                 Set<Integer> matches = new HashSet<>();
 
                 for (String exactTerm : exactTerms) {
                     int occurrences = 0;
 
                     String stemmedExactTerm = cleanString(exactTerm);
-                    String[] termSplit = stemmedExactTerm.split("\\s+");
+                    System.out.println(content);
+                    String[] termSplit = stemmedExactTerm.split("[^a-zA-Z0-9]+");
 
                     for (int i = 0; i <= split.length - termSplit.length; i++) {
                         // attempt match
@@ -172,7 +173,7 @@ public class Stats {
                         int termMatchIndex = 0;
 
 
-                        for (int j = i; j < split.length - termSplit.length + 1; j++) {
+                        for (int j = i; j < i + termSplit.length; j++) {
 
                             if (matches.contains(j)) {
                                 break;
@@ -187,13 +188,16 @@ public class Stats {
                                     termMatchIndex = 0;
                                     matches.addAll(indicesMatched);
                                     indicesMatched.clear();
+                                    break;
                                 }
                             } else {
                                 break;
                             }
                         }
                     }
-
+                    String id = doc.get("id").asText();
+                    System.out.println(id + " " + occurrences);
+                    
                     freq += occurrences;
                 }
 
