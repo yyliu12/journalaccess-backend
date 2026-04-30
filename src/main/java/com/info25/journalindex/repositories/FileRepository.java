@@ -93,6 +93,12 @@ public class FileRepository {
         return file;
     }
 
+    public File getByDateAndPath(LocalDate date, String path) {
+        String sql = "SELECT * FROM files WHERE date = ? AND path = ?";
+        File file = jdbcTemplate.queryForObject(sql, new FileRowMapper(), DateUtils.localDateToTimestamp(date), path);
+        return file;
+    }
+
     /**
      * This function deletes a tag from all files that have the tag
      *
@@ -409,6 +415,8 @@ public class FileRepository {
 
         ps.setBoolean(16, f.isLegacyOnlineEditorFile());
         ps.setBoolean(17, f.isCKEditorFile());
+
+        ps.setDate(18, Date.valueOf(f.getWrittenDate()));
         // update ps.setInt in id == -1 when adding new statements -- the update
         // sql statement requires the id at the end
     }
@@ -426,20 +434,20 @@ public class FileRepository {
                     "location_coordinates = ?, location_address = ?, " +
                     "location_buildingname = ?, title = ?, description = ?, " + 
                     "parent = ?, attachment_code = ?, journal_id = ?, oo_file_id = ?, " + 
-                    "is_legacy_online_editor_file = ?, is_ck_editor_file = ? " +
+                    "is_legacy_online_editor_file = ?, is_ck_editor_file = ?, written_date = ? " +
                     "WHERE id = ?";
             jdbcTemplate.update(sql, ps -> {
                 preparedStatementFromFile(ps, f);
                 // modifying files also requires the file id, which is not set by
                 // the function in case we are actually creating a file
-                ps.setInt(18, f.getId());
+                ps.setInt(19, f.getId());
             });
         } else {
             // This is for existing files
             String sql = "INSERT INTO files (uuid, path, date, annotation, content," +
                     "tags, location_coordinates, location_address," +
                     "location_buildingname, title, description, parent, attachment_code," +
-                    "journal_id, oo_file_id, is_legacy_online_editor_file, is_ck_editor_file) " + 
+                    "journal_id, oo_file_id, is_legacy_online_editor_file, is_ck_editor_file, written_date) " + 
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
@@ -527,6 +535,11 @@ public class FileRepository {
 
             file.setLegacyOnlineEditorFile(rs.getBoolean("is_legacy_online_editor_file"));
             file.setCKEditorFile(rs.getBoolean("is_ck_editor_file"));
+
+            Date writtenDate = rs.getDate("written_date");
+            if (writtenDate != null) {
+                file.setWrittenDate(writtenDate.toLocalDate());
+            }
 
             Array tags = rs.getArray("tags");
             if (tags != null) {

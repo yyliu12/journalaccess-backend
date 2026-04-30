@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.info25.journalindex.models.File;
@@ -83,7 +86,7 @@ public class AnnotationController {
 
         switch (fileExt) {
             case "html":
-                return getHtmlEditorAndViewer(file);
+                return "redirect:/api/annotation/getViewer/byId/" + id + "/";
             case "pdf":
                 return getPdfViewer(file);
             case "jpeg":
@@ -95,6 +98,42 @@ public class AnnotationController {
         }
 
         return null;
+    }
+
+    @GetMapping("/getViewer/byId/{id}/")
+    public Object getHTMLViewer(@PathVariable("id") String id) {
+        File file = fileRepository.getById(Integer.valueOf(id));
+
+        return getHtmlEditorAndViewer(file);
+    }
+
+
+    @GetMapping("/getViewer/byId/{id}/**")
+    public String getResource(@PathVariable("id") int id, HttpServletRequest req) {
+        Object uriObject = req.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+        String urlParts = "";
+        String split = String.valueOf(id);
+        if (null != uriObject) {
+            String uri = uriObject.toString();
+            urlParts = uri.substring(uri.indexOf("/byId/" + split + "/") + ("/byId" + split + "/").length() + 1);
+        }
+
+        File f = fileRepository.getById(id);
+
+        // use path class to do path splitting, but behavior varies across OS-es
+        Path p = Path.of(f.getPath().replace("\\", java.io.File.separator)); 
+        
+        String additional = p.getParent() == null ? "" : p.getParent().toString() + "/";
+
+        if (req.getHeader("Sec-Fetch-Mode").equals("navigate")) {
+            // let's serve the annotation viewer this time
+
+            File viewingFile = fileRepository.getByDateAndPath(f.getDate(), URLDecoder.decode(additional + urlParts, StandardCharsets.UTF_8).replace("/", "\\"));
+            return "redirect:/api/annotation/getViewer/byId/" + viewingFile.getId();
+        } else {
+            // serve raw file because this is being embedded
+            return "redirect:/api/files/getFile/" + DateUtils.formatToString(f.getDate()) + "/" + additional + urlParts;
+        }
     }
 
     // Returns a pdf file after opening it with iText and adding annotations
@@ -115,7 +154,7 @@ public class AnnotationController {
             xfdfObject = factory.createXfdfObject(new ByteArrayInputStream(
                     f.getAnnotation().getBytes()));
         } catch (Exception e) {
-            //e.printStackTrace();
+            // e.printStackTrace();
         }
 
         // no annotations for doc if null, just close the pdfDoc
@@ -159,7 +198,8 @@ public class AnnotationController {
         return mav;
     }
 
-    // Returns an html file that has annotorious seadragon set up with the correct image
+    // Returns an html file that has annotorious seadragon set up with the correct
+    // image
     public ModelAndView getImageEditorAndViewer(File f) {
         ModelAndView mav = new ModelAndView("annotation_viewers/image.html");
         mav.addObject("id", f.getId());

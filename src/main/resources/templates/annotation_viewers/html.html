@@ -13,8 +13,8 @@
 <script th:inline="javascript">
 	/*<![CDATA[*/
 	var date = [[${date}]];
-	$('img').each(function(){ this.src='/api/files/getFile/' + date + '/' + this.getAttribute('src') });
-	$('a').each(function(){ if (!this.href.startsWith("https://")) this.href='/api/files/getFile/' + date + '/' + this.getAttribute('href') });
+	//$('img').each(function(){ this.src='/api/files/getFile/' + date + '/' + this.getAttribute('src') });
+	//$('a').each(function(){ if (!this.href.startsWith("https://")) this.href='/api/files/getFile/' + date + '/' + this.getAttribute('href') });
 	$(document).ready(function () {
 		var content = $('body').annotator();
 		content.annotator('addPlugin', 'Store', {
