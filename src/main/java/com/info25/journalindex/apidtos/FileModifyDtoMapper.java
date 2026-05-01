@@ -10,7 +10,7 @@ import com.info25.journalindex.models.File;
 /**
  * Mapper to create FileModifyDtos
  */
-@Mapper(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL)
 public interface FileModifyDtoMapper {
     File fileModifyDtoToFile(FileModifyDto file);
     FileModifyDto fileToFileModifyDto(File fileModifyDto);

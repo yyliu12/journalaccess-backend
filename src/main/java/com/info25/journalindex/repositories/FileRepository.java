@@ -356,7 +356,12 @@ public class FileRepository {
             new java.io.File(fsUtils.getOOFilePath(ooFile)).delete();
         }
 
+        if (f.isAsciidoc()) {
+            new java.io.File(fsUtils.getAsciidocPath(f)).delete();
+        }
 
+        java.io.File osFile = new java.io.File(fsUtils.getFilePathByFile(f));
+        osFile.delete();
 
         // Clear all parent file associations
         String sql = "UPDATE files SET parent = -1, attachment_code = '' WHERE parent = ?";
@@ -416,7 +421,9 @@ public class FileRepository {
         ps.setBoolean(16, f.isLegacyOnlineEditorFile());
         ps.setBoolean(17, f.isCKEditorFile());
 
-        ps.setDate(18, Date.valueOf(f.getWrittenDate()));
+        ps.setDate(18, f.getWrittenDate() != null ? Date.valueOf(f.getWrittenDate()) : null);
+
+        ps.setBoolean(19, f.isAsciidoc());
         // update ps.setInt in id == -1 when adding new statements -- the update
         // sql statement requires the id at the end
     }
@@ -434,21 +441,22 @@ public class FileRepository {
                     "location_coordinates = ?, location_address = ?, " +
                     "location_buildingname = ?, title = ?, description = ?, " + 
                     "parent = ?, attachment_code = ?, journal_id = ?, oo_file_id = ?, " + 
-                    "is_legacy_online_editor_file = ?, is_ck_editor_file = ?, written_date = ? " +
+                    "is_legacy_online_editor_file = ?, is_ck_editor_file = ?, written_date = ?, " +
+                    "is_asciidoc = ? " +
                     "WHERE id = ?";
             jdbcTemplate.update(sql, ps -> {
                 preparedStatementFromFile(ps, f);
                 // modifying files also requires the file id, which is not set by
                 // the function in case we are actually creating a file
-                ps.setInt(19, f.getId());
+                ps.setInt(20, f.getId());
             });
         } else {
             // This is for existing files
             String sql = "INSERT INTO files (uuid, path, date, annotation, content," +
                     "tags, location_coordinates, location_address," +
                     "location_buildingname, title, description, parent, attachment_code," +
-                    "journal_id, oo_file_id, is_legacy_online_editor_file, is_ck_editor_file, written_date) " + 
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                    "journal_id, oo_file_id, is_legacy_online_editor_file, is_ck_editor_file, written_date, is_asciidoc) " + 
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -535,6 +543,7 @@ public class FileRepository {
 
             file.setLegacyOnlineEditorFile(rs.getBoolean("is_legacy_online_editor_file"));
             file.setCKEditorFile(rs.getBoolean("is_ck_editor_file"));
+            file.setAsciidoc(rs.getBoolean("is_asciidoc"));
 
             Date writtenDate = rs.getDate("written_date");
             if (writtenDate != null) {

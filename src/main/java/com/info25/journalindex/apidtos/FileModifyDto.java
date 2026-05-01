@@ -29,6 +29,8 @@ public class FileModifyDto {
     int ooFileId;
     boolean isLegacyOnlineEditorFile;
     boolean isCKEditorFile;
+    LocalDate writtenDate;
+    boolean isAsciidoc;
 
     public FileModifyDto() {}
 }

@@ -25,6 +25,8 @@ public class File {
     int ooFileId = -1;
     boolean isLegacyOnlineEditorFile = false;
     boolean isCKEditorFile = false;
+    LocalDate writtenDate;
+    boolean isAsciidoc = false;
     /** 
      * These variables are used to save date and path modifications to the filesystem
      * since we need to know the original date & path in order to rename a file.
@@ -270,5 +272,21 @@ public class File {
 
     public void setCKEditorFile(boolean CKEditorFile) {
         isCKEditorFile = CKEditorFile;
+    }
+
+    public LocalDate getWrittenDate() {
+        return writtenDate;
+    }
+
+    public void setWrittenDate(LocalDate writtenDate) {
+        this.writtenDate = writtenDate;
+    }
+
+    public boolean isAsciidoc() {
+        return isAsciidoc;
+    }
+
+    public void setAsciidoc(boolean asciidoc) {
+        isAsciidoc = asciidoc;
     }
 }

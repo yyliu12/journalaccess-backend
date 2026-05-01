@@ -116,4 +116,13 @@ public class FsUtils {
                 .toString();
     }
 
+    public String getAsciidocPath(File f) {
+        return rootPath
+                .resolve("asciidocfs")
+                .resolve(Integer.toString(f.getId() / 100))
+                .resolve(f.getId() + ".adoc")
+                .toAbsolutePath()
+                .toString();
+    }
+
 }

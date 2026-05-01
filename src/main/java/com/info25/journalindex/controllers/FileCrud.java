@@ -111,10 +111,7 @@ public class FileCrud {
     @PostMapping("/api/files/delete")
     public String deleteFile(@RequestParam("id") int id) {
         File file = fileRepository.getById(id);
-        java.io.File osFile = new java.io.File(fsUtils.getFilePathByFile(file));
-        if (osFile.exists()) {
-            osFile.delete();
-        }
+
         fileRepository.delete(file);
         return "OK";
     }

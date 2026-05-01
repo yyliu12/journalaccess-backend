@@ -8,11 +8,13 @@ CREATE TABLE files (
     location_buildingname text[],
     path text,
     tags integer[],
-    uuid text,
+    uuid text, -- DEPRECATED
 	journal_id integer,
     oo_file_id integer DEFAULT -1,
     is_legacy_online_editor_file boolean DEFAULT false,
-    is_ck_editor_file boolean DEFAULT false
+    is_ck_editor_file boolean DEFAULT false,
+    written_date date,
+    is_asciidoc boolean DEFAULT false
 );
 
 CREATE INDEX journal_index on files(journal_id);
