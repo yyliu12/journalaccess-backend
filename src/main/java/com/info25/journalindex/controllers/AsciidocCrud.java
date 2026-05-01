@@ -98,13 +98,13 @@ public class AsciidocCrud {
     }
 
     @GetMapping("/editor/{id}/**")
-    public String getResource(@PathVariable("id") int id, HttpServletRequest req) {
+    public ModelAndView getResource(@PathVariable("id") int id, HttpServletRequest req) {
         String request = req.getRequestURL().toString();
 
         String path = request.substring(request.indexOf("/editor/" + id) + ("/editor/" + id).length());
         File file = fileRepository.getById(id);
 
-        return "redirect:/api/files/getFile/" + DateUtils.formatToString(file.getDate()) + path;
+        return new ModelAndView("redirect:/api/files/getFile/" + DateUtils.formatToString(file.getDate()) + path);
     }
 
     @PostMapping("/editor/{id}/save")
