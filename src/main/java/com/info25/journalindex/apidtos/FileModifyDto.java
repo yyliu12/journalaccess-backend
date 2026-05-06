@@ -20,6 +20,7 @@ public class FileModifyDto {
     String uuid;
     String content;
     ArrayList<Location> locations;
+    ArrayList<Integer> locationIds;
     ArrayList<Integer> tags;
     String title;
     String description;

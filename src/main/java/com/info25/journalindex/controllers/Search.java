@@ -296,4 +296,12 @@ public class Search {
 
         return fileSearchDtoMapper.toDtoList(files);
     }
+
+    @PostMapping("/api/files/byLocation")
+    public List<FileSearchDto> getFilesWithLocation(@RequestParam("id") int id, @RequestParam("journals") int[] journals) {
+        if (journals.length == 0)
+            journals = null;
+        
+        return fileSearchDtoMapper.toDtoList(fileRepository.getFilesByLocation(id, journals));
+    }
 }

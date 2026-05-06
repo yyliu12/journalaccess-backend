@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.info25.journalindex.models.File.Location;
+import com.info25.journalindex.models.Location;
 import com.info25.journalindex.services.TomTomService;
 
 @RestController

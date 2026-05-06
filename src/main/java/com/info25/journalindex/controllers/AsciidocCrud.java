@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -110,6 +111,12 @@ public class AsciidocCrud {
     @PostMapping("/editor/{id}/save")
     public String save(@PathVariable("id") int id, @RequestParam("asciidoc") String asciidoc, @RequestParam("html") String html) {
         File file = fileRepository.getById(id);
+
+        Document doc = Jsoup.parse(html);
+        file.setContent(doc.text());
+
+        fileRepository.save(file);
+
         try {
             Files.writeString(Path.of(fsUtils.getAsciidocPath(file)), asciidoc);
             Files.writeString(Path.of(fsUtils.getFilePathByFile(file)), ASCIIDOC_HEADER + html);

@@ -1,6 +1,7 @@
 package com.info25.journalindex.apidtos;
 
 import com.info25.journalindex.models.File;
+import com.info25.journalindex.models.Location;
 import com.info25.journalindex.models.Tag;
 import lombok.Data;
 
@@ -16,7 +17,7 @@ public class FileSearchDto {
     int id;
     String path;
     String highlight;
-    List<File.Location> locations;
+    List<Location> locations;
     List<Tag> tags;
     LocalDate date;
     String title;

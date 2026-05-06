@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.info25.journalindex.models.File.Location;
+import com.info25.journalindex.models.Location;
 
 /**
  * Service for interacting with TomTom APIs

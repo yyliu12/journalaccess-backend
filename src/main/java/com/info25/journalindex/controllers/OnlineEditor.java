@@ -103,7 +103,7 @@ public class OnlineEditor {
         }
 
         Document doc = Jsoup.parse(content);
-        file.setContent(doc.body().wholeText());
+        file.setContent(doc.body().text());
         fileRepository.save(file);
 
         return "OK";
@@ -124,7 +124,7 @@ public class OnlineEditor {
         }
 
         Document doc = Jsoup.parse(content);
-        file.setContent(doc.body().wholeText());
+        file.setContent(doc.body().text());
         fileRepository.save(file);
 
         return "OK";

@@ -109,9 +109,61 @@ public class FileRepository {
         jdbcTemplate.update(sql, tagId);
     }
 
+    public void deleteLocationFromFiles(int locationId) {
+        List<File> files = getFilesByLocation(locationId, null);
+        String sql = "UPDATE files SET location_ids = array_remove(location_ids, ?)";
+        jdbcTemplate.update(sql, locationId);
+
+        SolrUpdateBuffer solrUpdateBuffer = new SolrUpdateBuffer();
+        HashMap<Integer, com.info25.journalindex.models.Location> locationCache = new HashMap<>();
+
+        for (File f : files) {
+            f.getLocationIds().removeIf(id -> id == locationId);
+            solrUpdateBuffer.addToBuffer(
+                fileSolrSerializer.serializeLocationsForSolrModifyQuery(f, locationCache)
+            );
+        }
+
+        saveSolrBuffer(solrUpdateBuffer);
+    }
+
+    public void updateFilesWithLocation(int locationId) {
+        List<File> files = getFilesByLocation(locationId, null);
+
+        SolrUpdateBuffer solrUpdateBuffer = new SolrUpdateBuffer();
+        HashMap<Integer, com.info25.journalindex.models.Location> locationCache = new HashMap<>();
+
+        for (File f : files) {
+            solrUpdateBuffer.addToBuffer(
+                fileSolrSerializer.serializeLocationsForSolrModifyQuery(f, locationCache)
+            );
+        }
+
+        saveSolrBuffer(solrUpdateBuffer);
+    }
+
+    public void deleteLocationFromFile(int locationId, int fileId) {
+        String sql = "UPDATE files SET location_ids = array_remove(location_ids, ?) WHERE id = ?";
+        jdbcTemplate.update(sql, locationId, fileId);
+
+        __saveToSolr(getById(fileId));
+    }
+
     public void deleteJournalIdFromFiles(int journalId) {
+        List<File> files = getFilesByJournal(journalId);
         String sql = "UPDATE files SET journal_id = 1 WHERE journal_id = ?";
         jdbcTemplate.update(sql, journalId);
+
+        SolrUpdateBuffer solrUpdateBuffer = new SolrUpdateBuffer();
+
+        for (File f : files) {
+            f.setJournalId(1);
+            solrUpdateBuffer.addToBuffer(
+                fileSolrSerializer.serializeJournalsForSolrModifyQuery(f)
+            );
+        }
+
+        saveSolrBuffer(solrUpdateBuffer);
     }
 
     /**
@@ -207,6 +259,25 @@ public class FileRepository {
         }
     }
 
+    public List<File> getFilesByLocation(int locationId, int[] journals) {
+        List<File> files;
+        if (journals != null) {
+            String sql = "SELECT * FROM files WHERE location_ids @> ARRAY[?] AND journal_id = ANY(?)";
+            files = jdbcTemplate.query(sql, new FileRowMapper(), locationId, journals);
+        } else {
+            String sql = "SELECT * FROM files WHERE location_ids @> ARRAY[?]";
+            files = jdbcTemplate.query(sql, new FileRowMapper(), locationId);
+        }
+
+        return files;
+    }
+
+    public List<File> getFilesByJournal(int journalId) {
+        String sql = "SELECT * FROM files WHERE journal_id = ?";
+        List<File> files = jdbcTemplate.query(sql, new FileRowMapper(), journalId);
+        return files;
+    }
+
     public Map<Integer, Map<Integer, Integer>> getFileCountsByYearAndMonth(boolean countFiles, int[] journals) {
         Map<Integer, Map<Integer, Integer>> counts = new HashMap<>();
         String sql;
@@ -290,8 +361,13 @@ public class FileRepository {
     }
 
     public void saveToSolrBuffer(File f, SolrUpdateBuffer buffer) {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode serialization = fileSolrSerializer.serializeForSolrModifyQuery(f);
+        buffer.addToBuffer(serialization);
+    }
+
+    public void saveEventsToSolrBuffer(int id, SolrUpdateBuffer buffer) {
+        File f = getById(id);
+        ObjectNode serialization = fileSolrSerializer.serializeEventsForSolrModifyQuery(f);
         buffer.addToBuffer(serialization);
     }
 
@@ -397,7 +473,8 @@ public class FileRepository {
 
         ps.setArray(6, c.createArrayOf("integer", f.getTags().toArray(new Integer[0])));
 
-        Array coordinatesArray = c.createArrayOf("text", f.getLocations().stream()
+        ps.setArray(7, c.createArrayOf("integer", f.getLocationIds().toArray(new Integer[0])));
+        /*Array coordinatesArray = c.createArrayOf("text", f.getLocations().stream()
                 .map(Location::getCoordinate).toArray(String[]::new));
         ps.setArray(7, coordinatesArray);
 
@@ -406,24 +483,23 @@ public class FileRepository {
         ps.setArray(8, addressArray);
 
         Array buildingNameArray = c.createArrayOf("text", f.getLocations().stream()
-                .map(Location::getBuildingName).toArray(String[]::new));
+                .map(Location::getBuildingName).toArray(String[]::new));*/
 
         c.close(); // ALWAYS CLOSE - OTHERWISE LEAKS CONNECTIONS
-        ps.setArray(9, buildingNameArray);
 
-        ps.setString(10, f.getTitle());
-        ps.setString(11, f.getDescription());
-        ps.setInt(12, f.getParent());
-        ps.setString(13, f.getAttachmentCode());
-        ps.setInt(14, f.getJournalId());
-        ps.setInt(15, f.getOOFileId());
+        ps.setString(8, f.getTitle());
+        ps.setString(9, f.getDescription());
+        ps.setInt(10, f.getParent());
+        ps.setString(11, f.getAttachmentCode());
+        ps.setInt(12, f.getJournalId());
+        ps.setInt(13, f.getOOFileId());
 
-        ps.setBoolean(16, f.isLegacyOnlineEditorFile());
-        ps.setBoolean(17, f.isCKEditorFile());
+        ps.setBoolean(14, f.isLegacyOnlineEditorFile());
+        ps.setBoolean(15, f.isCKEditorFile());
 
-        ps.setDate(18, f.getWrittenDate() != null ? Date.valueOf(f.getWrittenDate()) : null);
+        ps.setDate(16, f.getWrittenDate() != null ? Date.valueOf(f.getWrittenDate()) : null);
 
-        ps.setBoolean(19, f.isAsciidoc());
+        ps.setBoolean(17, f.isAsciidoc());
         // update ps.setInt in id == -1 when adding new statements -- the update
         // sql statement requires the id at the end
     }
@@ -438,8 +514,8 @@ public class FileRepository {
         if (id != -1) {
             String sql = "UPDATE files SET uuid = ?, path = ?, " +
                     "date = ?, annotation = ?, content = ?, tags = ?, " +
-                    "location_coordinates = ?, location_address = ?, " +
-                    "location_buildingname = ?, title = ?, description = ?, " + 
+                    "location_ids = ?, " +
+                    "title = ?, description = ?, " + 
                     "parent = ?, attachment_code = ?, journal_id = ?, oo_file_id = ?, " + 
                     "is_legacy_online_editor_file = ?, is_ck_editor_file = ?, written_date = ?, " +
                     "is_asciidoc = ? " +
@@ -448,15 +524,15 @@ public class FileRepository {
                 preparedStatementFromFile(ps, f);
                 // modifying files also requires the file id, which is not set by
                 // the function in case we are actually creating a file
-                ps.setInt(20, f.getId());
+                ps.setInt(18, f.getId());
             });
         } else {
             // This is for existing files
             String sql = "INSERT INTO files (uuid, path, date, annotation, content," +
-                    "tags, location_coordinates, location_address," +
-                    "location_buildingname, title, description, parent, attachment_code," +
+                    "tags, location_ids, " +
+                    "title, description, parent, attachment_code," +
                     "journal_id, oo_file_id, is_legacy_online_editor_file, is_ck_editor_file, written_date, is_asciidoc) " + 
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -577,7 +653,15 @@ public class FileRepository {
                 }
             }
 
+            ArrayList<Integer> locationIds = new ArrayList<>();
+            Array locationIdsArray = rs.getArray("location_ids");
+            if (locationIdsArray != null) {
+                Integer[] locIds = (Integer[]) locationIdsArray.getArray();
+                locationIds.addAll(List.of(locIds));
+            }
+
             file.setLocations(locations);
+            file.setLocationIds(locationIds);
 
             return file;
         }

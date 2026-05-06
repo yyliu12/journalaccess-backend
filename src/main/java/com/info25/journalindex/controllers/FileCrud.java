@@ -167,7 +167,7 @@ public class FileCrud {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    f.setContent(doc.body().wholeText());
+                    f.setContent(doc.body().text());
                 }
             } else if (fileName.endsWith(".txt")) {
                 try {
@@ -346,5 +346,11 @@ public class FileCrud {
     class FileUploadResult {
         private boolean ok;
         private List<FileModifyDto> files;
+    }
+
+    @PostMapping("/api/files/deleteLocationFromFile")
+    public String deleteLocationFromFile(@RequestParam("location") int locationId, @RequestParam("file") int fileId) {
+        fileRepository.deleteLocationFromFile(locationId, fileId);
+        return "OK";
     }
 }

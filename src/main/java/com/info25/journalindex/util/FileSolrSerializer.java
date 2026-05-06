@@ -1,5 +1,9 @@
 package com.info25.journalindex.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +14,9 @@ import com.info25.journalindex.controllers.annotation.HTMLAnnotator;
 import com.info25.journalindex.controllers.annotation.ImageAnnotator;
 import com.info25.journalindex.controllers.annotation.PDFAnnotator;
 import com.info25.journalindex.models.File;
+import com.info25.journalindex.models.Location;
 import com.info25.journalindex.repositories.EventFileRepository;
+import com.info25.journalindex.repositories.LocationRepository;
 
 /**
  * This class takes a File object and creates Solr modify query JSON
@@ -19,6 +25,9 @@ import com.info25.journalindex.repositories.EventFileRepository;
 public class FileSolrSerializer {
     @Autowired
     EventFileRepository eventFileRepository;
+
+    @Autowired
+    LocationRepository locationRepository;
 
     /**
      * Turns a file into a Solr modify query
@@ -31,9 +40,10 @@ public class FileSolrSerializer {
         rootNode.put("id", f.getId());
         rootNode.set("date", createSet(mapper.valueToTree(DateUtils.localDateToTimestamp(f.getDate()))));
         rootNode.set("content", createSet(mapper.valueToTree(retrieveAllTextContent(f))));
-        rootNode.set("location", createSet(mapper.valueToTree(f.getLocations().stream()
-                .map(File.Location::getCoordinate)
-                .toList())));
+        rootNode.set("location", createSet(mapper.valueToTree(locationRepository.findByIdIn(f.getLocationIds()).stream()
+                .map(location -> location.getCoordinates())
+                .toList()
+        )));
         rootNode.set("events", createSet(mapper.valueToTree(
             eventFileRepository.findByFile(f.getId()).stream()
                 .map(eventFile -> eventFile.getEvent())
@@ -43,6 +53,61 @@ public class FileSolrSerializer {
         rootNode.set("journal_id", mapper.valueToTree(f.getJournalId()));
         return rootNode;
     }
+
+    public ObjectNode serializeEventsForSolrModifyQuery(File f) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("id", f.getId());
+        rootNode.set("events", createSet(mapper.valueToTree(
+            eventFileRepository.findByFile(f.getId()).stream()
+                .map(eventFile -> eventFile.getEvent())
+                .toList()
+        )));
+        return rootNode;
+    }
+
+    public ObjectNode serializeTagsForSolrModifyQuery(File f) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("id", f.getId());
+        rootNode.set("tags", createSet(mapper.valueToTree(f.getTags())));
+        return rootNode;
+    }
+
+    public ObjectNode serializeJournalsForSolrModifyQuery(File f) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("id", f.getId());
+        rootNode.set("journal_id", createSet(mapper.valueToTree(f.getJournalId())));
+        return rootNode;
+    }
+
+    public ObjectNode serializeLocationsForSolrModifyQuery(File f, HashMap<Integer, Location> locationCache) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("id", f.getId());
+        ArrayList<String> coordinates = new ArrayList<>();
+
+        ArrayList<Integer> locationIds = f.getLocationIds();
+        ArrayList<Integer> toSearch = new ArrayList<>();
+        for (Integer locationId : locationIds) {
+            if (locationCache.containsKey(locationId)) {
+                coordinates.add(locationCache.get(locationId).getCoordinates());
+            } else {
+                toSearch.add(locationId);
+            }
+        }
+
+        for (Location location : locationRepository.findByIdIn(toSearch)) {
+            coordinates.add(location.getCoordinates());
+            locationCache.put(location.getId(), location);
+        }
+
+        rootNode.set("location", createSet(mapper.valueToTree(coordinates)));
+
+        return rootNode;
+    }
+
 
     /**
      * Gets all text content that could conceivably be searched into one

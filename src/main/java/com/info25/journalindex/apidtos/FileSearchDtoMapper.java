@@ -1,9 +1,11 @@
 package com.info25.journalindex.apidtos;
 
 import com.info25.journalindex.models.File;
+import com.info25.journalindex.models.Location;
 import com.info25.journalindex.models.Tag;
 import com.info25.journalindex.repositories.BacklinkRepository;
 import com.info25.journalindex.repositories.EventRepository;
+import com.info25.journalindex.repositories.LocationRepository;
 import com.info25.journalindex.repositories.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -22,22 +24,24 @@ public class FileSearchDtoMapper {
     TagRepository tagRepository;
 
     @Autowired
-    @Lazy
     BacklinkRepository backlinkRepository;
 
     @Autowired
     EventRepository eventRepository;
 
+    @Autowired
+    LocationRepository locationRepository;
+
     public FileSearchDto toDto(File f) {
-        return toDto(f, null);
+        return toDto(f, null, null);
     }
 
     // creates a FileSearchDto and populates it with the appropriate fields
-    public FileSearchDto toDto(File f, HashMap<Integer, Tag> tagCache) {
+    public FileSearchDto toDto(File f, HashMap<Integer, Tag> tagCache, HashMap<Integer, Location> locationCache) {
         FileSearchDto dto = new FileSearchDto();
         dto.setId(f.getId());
         dto.setPath(f.getPath());
-        dto.setLocations(f.getLocations());
+        dto.setLocations(getLocationsByIdsWithCaching(f.getLocationIds(), locationCache));
         dto.setDate(f.getDate());
         dto.setTitle(f.getTitle());
         dto.setDescription(f.getDescription());
@@ -56,7 +60,7 @@ public class FileSearchDtoMapper {
 
     // creates a filesearchdto with highlight data returned from solr
     public FileSearchDto toDtoWithHighlight(File f, String highlight) {
-        FileSearchDto dto = toDto(f, null);
+        FileSearchDto dto = toDto(f, null, null);
         dto.setHighlight(highlight);
         return dto;
     }
@@ -64,9 +68,10 @@ public class FileSearchDtoMapper {
     // bulk action for creating filesearchdtos
     public List<FileSearchDto> toDtoList(List<File> files) {
         HashMap<Integer, Tag> tagCache = new HashMap<>();
+        HashMap<Integer, Location> locationCache = new HashMap<>();
         List<FileSearchDto> dtos = new ArrayList<>(files.size());
         for (File f : files) {
-            dtos.add(toDto(f, tagCache));
+            dtos.add(toDto(f, tagCache, locationCache));
         }
         return dtos;
     }
@@ -88,5 +93,22 @@ public class FileSearchDtoMapper {
         }
 
         return tags;
+    }
+
+    public List<Location> getLocationsByIdsWithCaching(List<Integer> ids, HashMap<Integer, Location> cache) {
+        List<Location> locations = new ArrayList<>();
+        for (int id : ids) {
+            if (cache != null && cache.containsKey(id)) {
+                locations.add(cache.get(id));
+            } else {
+                Location l = locationRepository.findById(id);
+                locations.add(l);
+                if (cache != null) {
+                    cache.put(id, l);
+                }
+            }
+        }
+
+        return locations;
     }
 }

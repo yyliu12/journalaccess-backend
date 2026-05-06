@@ -15,7 +15,7 @@ public class File {
     String uuid;
     String content;
     ArrayList<Location> locations;
-    ArrayList<Integer> tags;
+    ArrayList<Integer> tags = new ArrayList<>();
     String annotation;
     String title;
     String description;
@@ -27,6 +27,7 @@ public class File {
     boolean isCKEditorFile = false;
     LocalDate writtenDate;
     boolean isAsciidoc = false;
+    ArrayList<Integer> locationIds = new ArrayList<>();
     /** 
      * These variables are used to save date and path modifications to the filesystem
      * since we need to know the original date & path in order to rename a file.
@@ -142,14 +143,6 @@ public class File {
 
     public void setLocations(ArrayList<Location> locations) {
         this.locations = locations;
-    }
-
-    public void addLocation(Location location) {
-        this.locations.add(location);
-    }
-
-    public void removeLocation(int index) {
-        this.locations.remove(index);
     }
 
     public ArrayList<Integer> getTags() {
@@ -288,5 +281,13 @@ public class File {
 
     public void setAsciidoc(boolean asciidoc) {
         isAsciidoc = asciidoc;
+    }
+
+    public ArrayList<Integer> getLocationIds() {
+        return locationIds;
+    }
+
+    public void setLocationIds(ArrayList<Integer> locationIds) {
+        this.locationIds = locationIds;
     }
 }

@@ -31,18 +31,9 @@ public class EventFileRepositoryCustomImpl implements EventFileRepositoryCustom 
 
         SolrUpdateBuffer solrUpdateBuffer = new SolrUpdateBuffer();
         for (EventFile eventFile : filesAffected) {
-            fileRepository.saveToSolrBuffer(eventFile.getFile(), solrUpdateBuffer);
+            fileRepository.saveEventsToSolrBuffer(eventFile.getFile(), solrUpdateBuffer);
         }
         fileRepository.saveSolrBuffer(solrUpdateBuffer);
-    }
-
-    @Override
-    public void deleteByFileSafe(int fileId) {
-        String sql = "DELETE FROM events_file WHERE file = ?";
-
-        jdbcTemplate.update(sql, fileId);
-
-        fileRepository.save(fileRepository.getById(fileId));
     }
 
     @Override
