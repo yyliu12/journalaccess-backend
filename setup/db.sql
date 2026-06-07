@@ -14,7 +14,8 @@ CREATE TABLE files (
     is_legacy_online_editor_file boolean DEFAULT false,
     is_ck_editor_file boolean DEFAULT false,
     written_date date,
-    is_asciidoc boolean DEFAULT false
+    is_asciidoc boolean DEFAULT false,
+    location_ids integer[]
 );
 
 CREATE INDEX journal_index on files(journal_id);
@@ -79,6 +80,10 @@ CREATE TABLE oo_files (
     type integer
 );
 
-
-
+CREATE TABLE locations (
+    id serial primary key,
+    building_name text,
+    address text,
+    coordinates text
+);
 

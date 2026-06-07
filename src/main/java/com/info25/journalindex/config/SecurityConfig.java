@@ -68,7 +68,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true); // you USUALLY want this
         config.addAllowedOrigin("http://localhost:5173"); // Allow requests from this origin
-		config.addAllowedOrigin("http://172.16.153.1:8080"); // Allow requests from this origin
+		config.addAllowedOrigin("http://192.168.1.17:8080"); // Allow requests from this origin
         config.addAllowedHeader("*");
         config.addAllowedMethod("OPTIONS");
         config.addAllowedMethod("HEAD");

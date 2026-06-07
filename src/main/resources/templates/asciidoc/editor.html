@@ -647,7 +647,8 @@
             autoCloseBrackets: true,
             indentWithTabs: false,
             tabSize: 2,
-            extraKeys: { Tab: cm => cm.execCommand('indentMore') }
+            extraKeys: { Tab: cm => cm.execCommand('indentMore') },
+            cursorScrollMargin: 50
         });
 
         cm.setValue(SAMPLE);

@@ -5,6 +5,7 @@ import com.info25.journalindex.models.Location;
 import com.info25.journalindex.models.Tag;
 import com.info25.journalindex.repositories.BacklinkRepository;
 import com.info25.journalindex.repositories.EventRepository;
+import com.info25.journalindex.repositories.FileRepository;
 import com.info25.journalindex.repositories.LocationRepository;
 import com.info25.journalindex.repositories.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,9 @@ public class FileSearchDtoMapper {
     @Autowired
     LocationRepository locationRepository;
 
+    @Autowired
+    FileRepository fileRepository;
+
     public FileSearchDto toDto(File f) {
         return toDto(f, null, null);
     }
@@ -48,6 +52,7 @@ public class FileSearchDtoMapper {
         dto.setParent(f.getParent());
         dto.setAttachmentCode(f.getAttachmentCode());
         dto.setJournalId(f.getJournalId());
+        dto.setHasAttachment(fileRepository.existsWithParent(f.getId()));
 
         List<Tag> tags = getTagsByIdsWithCaching(f.getTags(), tagCache);
         dto.setTags(tags);

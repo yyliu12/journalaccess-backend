@@ -125,7 +125,8 @@ public class AnnotationController {
         
         String additional = p.getParent() == null ? "" : p.getParent().toString() + "/";
 
-        if (req.getHeader("Sec-Fetch-Mode").equals("navigate")) {
+        String secFetchMode = req.getHeader("Sec-Fetch-Mode");
+        if (secFetchMode != null && secFetchMode.equals("navigate")) {
             // let's serve the annotation viewer this time
 
             File viewingFile = fileRepository.getByDateAndPath(f.getDate(), URLDecoder.decode(additional + urlParts, StandardCharsets.UTF_8).replace("/", "\\"));

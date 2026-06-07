@@ -278,6 +278,12 @@ public class FileRepository {
         return files;
     }
 
+    public boolean existsWithParent(int parentId) {
+        String sql = "SELECT COUNT(*) FROM files WHERE parent = ? LIMIT 1";
+        int count = jdbcTemplate.queryForObject(sql, Integer.class, parentId);
+        return count > 0;
+    }
+
     public Map<Integer, Map<Integer, Integer>> getFileCountsByYearAndMonth(boolean countFiles, int[] journals) {
         Map<Integer, Map<Integer, Integer>> counts = new HashMap<>();
         String sql;

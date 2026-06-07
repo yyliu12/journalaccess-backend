@@ -80,7 +80,7 @@
 
     <script src="/static/mdb/mdb.umd.min.js"></script>
 
-    <script>
+    <script th:inline="javascript">
         const sessionId = document.getElementById("sessionId").innerText;
         const fileId = document.getElementById("fileId").innerText;
         const iframe = document.getElementById("editor");
@@ -91,10 +91,12 @@
 
             const successModal = new mdb.Modal(document.getElementById('successModal'));
 
-            iframe.contentWindow.postMessage(JSON.stringify({
-                "MessageId": "Action_Save",
-                "SendTime": Date.now()
-            }), "https://oo-ja.duckdns.org:9980");
+            setTimeout(() => {
+                iframe.contentWindow.postMessage(JSON.stringify({
+                    "MessageId": "Action_Save",
+                    "SendTime": Date.now()
+                }), [[${collaboraUrl}]]);
+            }, 1000);
 
             modal.show();
 
@@ -124,7 +126,7 @@
                     iframe.contentWindow.postMessage(JSON.stringify({
                         "MessageId": "Host_PostmessageReady",
                         "SendTime": Date.now()
-                    }), "https://oo-ja.duckdns.org:9980");
+                    }), [[${collaboraUrl}]]);
                 }
 
             }

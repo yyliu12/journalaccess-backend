@@ -4,7 +4,9 @@ import com.info25.journalindex.models.EventFile;
 import com.info25.journalindex.util.SolrUpdateBuffer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapperResultSetExtractor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -48,5 +50,29 @@ public class EventFileRepositoryCustomImpl implements EventFileRepositoryCustom 
     public void saveSafe(EventFile ef) {
         eventFileRepository.save(ef);
         fileRepository.save(fileRepository.getById(ef.getFile()));
+    }
+
+    @Override
+    public List<EventFile> findByEvent(int eventId, int[] journals) {
+        if (journals == null) {
+            String sql = "SELECT * FROM events_file WHERE  event = ?";
+            List<EventFile> result = jdbcTemplate.query(sql, new Object[] {eventId}, 
+                new RowMapperResultSetExtractor<>(
+                        new BeanPropertyRowMapper<>(EventFile.class)
+                )
+            );
+
+            return result;
+        } else {
+            String sql = "SELECT * FROM events_file LEFT JOIN files on events_file.file = files.id AND event = ? WHERE files.journal_id = ANY (?)";
+            List<EventFile> result = jdbcTemplate.query(sql, new Object[] {eventId, journals}, 
+                new RowMapperResultSetExtractor<>(
+                        new BeanPropertyRowMapper<>(EventFile.class)
+                )
+            );
+
+            return result;
+        }
+        
     }
 }

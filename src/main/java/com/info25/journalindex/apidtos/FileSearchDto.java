@@ -29,6 +29,9 @@ public class FileSearchDto {
     String attachmentCode;
     int journalId;
 
+    // synthetic
+    boolean hasAttachment;
+
     public FileSearchDto setBacklinks(List<BacklinkDto> backlinks) {
         this.backlinks = backlinks;
         return this;

@@ -156,16 +156,16 @@ public class Stats {
 
                 int freq = 0;
 
-                String content = doc.get("content").asText().toLowerCase();
-                String[] split = cleanString(content).split("[^a-zA-Z0-9]+");
+                String content = doc.get("content").asText().toLowerCase().replaceAll("[^a-zA-Z0-9]+", " ");
+                String[] split = cleanString(content).split("\s+");
+
                 Set<Integer> matches = new HashSet<>();
 
                 for (String exactTerm : exactTerms) {
                     int occurrences = 0;
 
-                    String stemmedExactTerm = cleanString(exactTerm);
-                    System.out.println(content);
-                    String[] termSplit = stemmedExactTerm.split("[^a-zA-Z0-9]+");
+                    String stemmedExactTerm = cleanString(exactTerm).replaceAll("[^a-zA-Z0-9]+", " ");
+                    String[] termSplit = stemmedExactTerm.split("\s+");
 
                     for (int i = 0; i <= split.length - termSplit.length; i++) {
                         // attempt match
@@ -195,9 +195,12 @@ public class Stats {
                             }
                         }
                     }
-                    String id = doc.get("id").asText();
-                    System.out.println(id + " " + occurrences);
-                    
+                    int id = doc.get("id").asInt();
+                    if (id == 1552 || id == 1556) {
+                        System.out.println(id + " eeee " + occurrences);
+                        System.out.println(content);
+                        System.out.println(Arrays.asList(split));
+                    }
                     freq += occurrences;
                 }
 

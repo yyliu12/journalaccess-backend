@@ -19,6 +19,12 @@ public class OOFile {
                 return "odp";
             case 3:
                 return "ods";
+            case 4:
+                return "docx";
+            case 5:
+                return "pptx";
+            case 6:
+                return "xlsx";
         }
 
         throw new IllegalArgumentException("Invalid OO file type: " + type);
@@ -32,8 +38,22 @@ public class OOFile {
                 return "odp";
             case 3:
                 return "ods";
+            case 4:
+                return "docx";
+            case 5:
+                return "pptx";
+            case 6:
+                return "xlsx";
         }
 
         throw new IllegalArgumentException("Invalid OO file type: " + type);
+    }
+
+    public boolean isCollabora() {
+        return type >= 1 && type <= 3;
+    }
+
+    public boolean isOnlyOffice() {
+        return type >= 4 && type <= 6;
     }
 }
