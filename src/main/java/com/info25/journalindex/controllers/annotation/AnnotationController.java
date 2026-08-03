@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -109,7 +110,7 @@ public class AnnotationController {
 
 
     @GetMapping("/getViewer/byId/{id}/**")
-    public String getResource(@PathVariable("id") int id, HttpServletRequest req) {
+    public String getResource(@PathVariable("id") int id, HttpServletRequest req, @RequestParam(required = false) String interactive) {
         Object uriObject = req.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         String urlParts = "";
         String split = String.valueOf(id);
@@ -126,7 +127,7 @@ public class AnnotationController {
         String additional = p.getParent() == null ? "" : p.getParent().toString() + "/";
 
         String secFetchMode = req.getHeader("Sec-Fetch-Mode");
-        if (secFetchMode != null && secFetchMode.equals("navigate")) {
+        if ((secFetchMode != null && secFetchMode.equals("navigate")) || interactive != null) {
             // let's serve the annotation viewer this time
 
             File viewingFile = fileRepository.getByDateAndPath(f.getDate(), URLDecoder.decode(additional + urlParts, StandardCharsets.UTF_8).replace("/", "\\"));

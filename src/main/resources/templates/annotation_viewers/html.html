@@ -1,18 +1,22 @@
 <!-- sorry this is not how html is supposed to work -->
-<link href="/static/annotator/annotator.min.css" rel="stylesheet"/>
+<link href="/static/annotator/annotator.min.css" rel="stylesheet" />
 
 <style>
 	* {
-		white-space: normal !important; /* notion CSS that seems to break annotator */
+		white-space: normal !important;
+		/* notion CSS that seems to break annotator */
 	}
 </style>
-<body><th:block th:utext="${html}"/></body>
+
+<body>
+	<th:block th:utext="${html}" />
+</body>
 
 <script src="/static/jquery.min.js"></script>
 <script src="/static/annotator/annotator-full.min.js"></script>
 <script th:inline="javascript">
 	/*<![CDATA[*/
-	var date = [[${date}]];
+	var date = [[${ date }]];
 	//$('img').each(function(){ this.src='/api/files/getFile/' + date + '/' + this.getAttribute('src') });
 	//$('a').each(function(){ if (!this.href.startsWith("https://")) this.href='/api/files/getFile/' + date + '/' + this.getAttribute('href') });
 	$(document).ready(function () {
@@ -30,6 +34,15 @@
 			loadFromSearch: {
 				id: /*[[${id}]]*/
 			}
+		});
+
+		$('a').on('click', function (event) {
+			event.preventDefault();
+			var url = $(this).attr('href');
+
+			var finalUrl = new URL(url, window.location.href);
+			finalUrl.searchParams.set('interactive', '1');
+			document.location.href = finalUrl.href;
 		});
 	});
 	/*]]>*/
