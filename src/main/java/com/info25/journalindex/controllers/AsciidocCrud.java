@@ -42,6 +42,8 @@ public class AsciidocCrud {
     @PostMapping("create")
     public String create(@RequestParam("filename") String fileName,
                          @RequestParam("date") String date) {
+        fsUtils.cleanUnusablePathCharacters(fileName);
+        
         File f = new File();
         LocalDate parsedDate = DateUtils.parseFromString(date);
         f.setDate(parsedDate);

@@ -125,4 +125,8 @@ public class FsUtils {
                 .toString();
     }
 
+    public String cleanUnusablePathCharacters(String path) {
+        return path.replaceAll("[<>:\"/\\|?*]", "_");
+    }
+
 }

@@ -87,7 +87,9 @@ public class Search {
             selectQuery.setRows(2147483647);
             // we don't need highlights data on the map screen because there
             // is no way to display it
-            selectQuery.setHl("false");
+            // 7/3/2026 -- map can now display highlights as popover
+            // selectQuery.setHl("false"); 
+            
         }
 
         if (tagSearchOptions.getTags().size() > 0) {
@@ -125,14 +127,21 @@ public class Search {
                     DateUtils.localDateToTimestamp(so.getDateOptions().getEndDate()) + "]");
         }
 
-        // calendar month year filtering
+        // calendar month year filterng
         if (month != 0 && year != 0) {
             assembler.addTerm("date: [" +
                     DateUtils.localDateToTimestamp(LocalDate.of(year, month, 1)) + " TO " +
                     DateUtils.localDateToTimestamp(LocalDate.of(year, month, LocalDate.of(year, month, 1).lengthOfMonth())) + "]");
             
             selectQuery.setRows(2147483647);
-            selectQuery.setHl("false");
+            // selectQuery.setHl("false");
+        } else if (year != 0) {
+            assembler.addTerm("date: [" +
+                    DateUtils.localDateToTimestamp(LocalDate.of(year, 1, 1)) + " TO " +
+                    DateUtils.localDateToTimestamp(LocalDate.of(year, 12, 31)) + "]");
+            
+            selectQuery.setRows(2147483647);
+            // selectQuery.setHl("false");
         }
 
         selectQuery.setFq(assembler.getFullQuery());
@@ -169,9 +178,7 @@ public class Search {
                     }
                 }
             } else {
-                for (File f : dbResp.getFiles()) {
-                    results.add(fileSearchDtoMapper.toDto(f));
-                }
+                results.addAll(fileSearchDtoMapper.toDtoList(dbResp.getFiles()));
             }
             resp.setFiles(results);
         }

@@ -52,6 +52,8 @@ public class OnlineEditor {
      */
     @PostMapping("/api/onlineEditor/init")
     public String initOnlineEditor(@RequestParam("date") String date, @RequestParam("path") String path) {
+        fsUtils.cleanUnusablePathCharacters(path);
+        
         LocalDate parsedDate = DateUtils.parseFromString(date);
         java.io.File file = new java.io.File(fsUtils.getFileByDateAndPath(parsedDate, path));
 

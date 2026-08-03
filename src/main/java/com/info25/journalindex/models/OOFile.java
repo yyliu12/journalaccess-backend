@@ -49,6 +49,25 @@ public class OOFile {
         throw new IllegalArgumentException("Invalid OO file type: " + type);
     }
 
+    public static int getTypeForFileExtension(String extension) {
+        switch (extension.toLowerCase()) {
+            case "odt":
+                return 1;
+            case "odp":
+                return 2;
+            case "ods":
+                return 3;
+            case "docx":
+                return 4;
+            case "pptx":
+                return 5;
+            case "xlsx":
+                return 6; 
+        }
+
+        throw new IllegalArgumentException("Invalid OO file type: " + extension);
+    }
+
     public boolean isCollabora() {
         return type >= 1 && type <= 3;
     }
