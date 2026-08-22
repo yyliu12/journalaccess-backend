@@ -113,7 +113,7 @@ public class Journals extends TableImpl<JournalsRecord> {
 
     @Override
     public UniqueKey<JournalsRecord> getPrimaryKey() {
-        return Keys.SYS_C0031109;
+        return Keys.SYS_C0031177;
     }
 
     @Override

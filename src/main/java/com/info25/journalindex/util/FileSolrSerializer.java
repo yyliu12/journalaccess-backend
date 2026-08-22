@@ -88,7 +88,7 @@ public class FileSolrSerializer {
         rootNode.put("id", f.getId());
         ArrayList<String> coordinates = new ArrayList<>();
 
-        ArrayList<Integer> locationIds = f.getLocationIds();
+        List<Integer> locationIds = f.getLocationIds();
         ArrayList<Integer> toSearch = new ArrayList<>();
         for (Integer locationId : locationIds) {
             if (locationCache.containsKey(locationId)) {

@@ -17,24 +17,24 @@ public class EventsFile implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private BigDecimal id;
-    private BigDecimal file;
+    private BigDecimal fileId;
     private BigDecimal event;
 
     public EventsFile() {}
 
     public EventsFile(EventsFile value) {
         this.id = value.id;
-        this.file = value.file;
+        this.fileId = value.fileId;
         this.event = value.event;
     }
 
     public EventsFile(
         BigDecimal id,
-        BigDecimal file,
+        BigDecimal fileId,
         BigDecimal event
     ) {
         this.id = id;
-        this.file = file;
+        this.fileId = fileId;
         this.event = event;
     }
 
@@ -53,17 +53,17 @@ public class EventsFile implements Serializable {
     }
 
     /**
-     * Getter for <code>ADMIN.EVENTS_FILE.file</code>.
+     * Getter for <code>ADMIN.EVENTS_FILE.FILE_ID</code>.
      */
-    public BigDecimal getFile() {
-        return this.file;
+    public BigDecimal getFileId() {
+        return this.fileId;
     }
 
     /**
-     * Setter for <code>ADMIN.EVENTS_FILE.file</code>.
+     * Setter for <code>ADMIN.EVENTS_FILE.FILE_ID</code>.
      */
-    public void setFile(BigDecimal file) {
-        this.file = file;
+    public void setFileId(BigDecimal fileId) {
+        this.fileId = fileId;
     }
 
     /**
@@ -95,11 +95,11 @@ public class EventsFile implements Serializable {
         }
         else if (!this.id.equals(other.id))
             return false;
-        if (this.file == null) {
-            if (other.file != null)
+        if (this.fileId == null) {
+            if (other.fileId != null)
                 return false;
         }
-        else if (!this.file.equals(other.file))
+        else if (!this.fileId.equals(other.fileId))
             return false;
         if (this.event == null) {
             if (other.event != null)
@@ -115,7 +115,7 @@ public class EventsFile implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
-        result = prime * result + ((this.file == null) ? 0 : this.file.hashCode());
+        result = prime * result + ((this.fileId == null) ? 0 : this.fileId.hashCode());
         result = prime * result + ((this.event == null) ? 0 : this.event.hashCode());
         return result;
     }
@@ -125,7 +125,7 @@ public class EventsFile implements Serializable {
         StringBuilder sb = new StringBuilder("EventsFile (");
 
         sb.append(id);
-        sb.append(", ").append(file);
+        sb.append(", ").append(fileId);
         sb.append(", ").append(event);
 
         sb.append(")");

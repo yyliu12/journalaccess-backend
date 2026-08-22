@@ -8,6 +8,8 @@ import com.info25.generated.tables.Backlinks;
 import com.info25.generated.tables.Dbtools$executionHistory;
 import com.info25.generated.tables.Events;
 import com.info25.generated.tables.EventsFile;
+import com.info25.generated.tables.FileLocations;
+import com.info25.generated.tables.FileTags;
 import com.info25.generated.tables.Files;
 import com.info25.generated.tables.Journals;
 import com.info25.generated.tables.Locations;
@@ -56,6 +58,16 @@ public class Admin extends SchemaImpl {
      * The table <code>ADMIN.EVENTS_FILE</code>.
      */
     public final EventsFile EVENTS_FILE = EventsFile.EVENTS_FILE;
+
+    /**
+     * The table <code>ADMIN.FILE_LOCATIONS</code>.
+     */
+    public final FileLocations FILE_LOCATIONS = FileLocations.FILE_LOCATIONS;
+
+    /**
+     * The table <code>ADMIN.FILE_TAGS</code>.
+     */
+    public final FileTags FILE_TAGS = FileTags.FILE_TAGS;
 
     /**
      * The table <code>ADMIN.FILES</code>.
@@ -109,6 +121,8 @@ public class Admin extends SchemaImpl {
             Dbtools$executionHistory.DBTOOLS$EXECUTION_HISTORY,
             Events.EVENTS,
             EventsFile.EVENTS_FILE,
+            FileLocations.FILE_LOCATIONS,
+            FileTags.FILE_TAGS,
             Files.FILES,
             Journals.JOURNALS,
             Locations.LOCATIONS,

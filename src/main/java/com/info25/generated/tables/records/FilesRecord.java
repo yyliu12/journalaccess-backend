@@ -5,7 +5,6 @@ package com.info25.generated.tables.records;
 
 
 import com.info25.generated.tables.Files;
-import com.info25.generated.udt.records.IntegerVarrayRecord;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -93,185 +92,157 @@ public class FilesRecord extends UpdatableRecordImpl<FilesRecord> {
     }
 
     /**
-     * Setter for <code>ADMIN.FILES.TAGS</code>.
-     */
-    public void setTags(IntegerVarrayRecord value) {
-        set(5, value);
-    }
-
-    /**
-     * Getter for <code>ADMIN.FILES.TAGS</code>.
-     */
-    public IntegerVarrayRecord getTags() {
-        return (IntegerVarrayRecord) get(5);
-    }
-
-    /**
      * Setter for <code>ADMIN.FILES.UUID</code>.
      */
     public void setUuid(String value) {
-        set(6, value);
+        set(5, value);
     }
 
     /**
      * Getter for <code>ADMIN.FILES.UUID</code>.
      */
     public String getUuid() {
-        return (String) get(6);
+        return (String) get(5);
     }
 
     /**
      * Setter for <code>ADMIN.FILES.TITLE</code>.
      */
     public void setTitle(String value) {
-        set(7, value);
+        set(6, value);
     }
 
     /**
      * Getter for <code>ADMIN.FILES.TITLE</code>.
      */
     public String getTitle() {
-        return (String) get(7);
+        return (String) get(6);
     }
 
     /**
      * Setter for <code>ADMIN.FILES.DESCRIPTION</code>.
      */
     public void setDescription(String value) {
-        set(8, value);
+        set(7, value);
     }
 
     /**
      * Getter for <code>ADMIN.FILES.DESCRIPTION</code>.
      */
     public String getDescription() {
-        return (String) get(8);
+        return (String) get(7);
     }
 
     /**
      * Setter for <code>ADMIN.FILES.PARENT</code>.
      */
     public void setParent(BigDecimal value) {
-        set(9, value);
+        set(8, value);
     }
 
     /**
      * Getter for <code>ADMIN.FILES.PARENT</code>.
      */
     public BigDecimal getParent() {
-        return (BigDecimal) get(9);
+        return (BigDecimal) get(8);
     }
 
     /**
      * Setter for <code>ADMIN.FILES.ATTACHMENT_CODE</code>.
      */
     public void setAttachmentCode(String value) {
-        set(10, value);
+        set(9, value);
     }
 
     /**
      * Getter for <code>ADMIN.FILES.ATTACHMENT_CODE</code>.
      */
     public String getAttachmentCode() {
-        return (String) get(10);
+        return (String) get(9);
     }
 
     /**
      * Setter for <code>ADMIN.FILES.JOURNAL_ID</code>.
      */
     public void setJournalId(BigDecimal value) {
-        set(11, value);
+        set(10, value);
     }
 
     /**
      * Getter for <code>ADMIN.FILES.JOURNAL_ID</code>.
      */
     public BigDecimal getJournalId() {
-        return (BigDecimal) get(11);
+        return (BigDecimal) get(10);
     }
 
     /**
      * Setter for <code>ADMIN.FILES.OO_FILE_ID</code>.
      */
     public void setOoFileId(BigDecimal value) {
-        set(12, value);
+        set(11, value);
     }
 
     /**
      * Getter for <code>ADMIN.FILES.OO_FILE_ID</code>.
      */
     public BigDecimal getOoFileId() {
-        return (BigDecimal) get(12);
+        return (BigDecimal) get(11);
     }
 
     /**
      * Setter for <code>ADMIN.FILES.IS_LEGACY_ONLINE_EDITOR_FILE</code>.
      */
     public void setIsLegacyOnlineEditorFile(Boolean value) {
-        set(13, value);
+        set(12, value);
     }
 
     /**
      * Getter for <code>ADMIN.FILES.IS_LEGACY_ONLINE_EDITOR_FILE</code>.
      */
     public Boolean getIsLegacyOnlineEditorFile() {
-        return (Boolean) get(13);
+        return (Boolean) get(12);
     }
 
     /**
      * Setter for <code>ADMIN.FILES.IS_CK_EDITOR_FILE</code>.
      */
     public void setIsCkEditorFile(Boolean value) {
-        set(14, value);
+        set(13, value);
     }
 
     /**
      * Getter for <code>ADMIN.FILES.IS_CK_EDITOR_FILE</code>.
      */
     public Boolean getIsCkEditorFile() {
-        return (Boolean) get(14);
+        return (Boolean) get(13);
     }
 
     /**
      * Setter for <code>ADMIN.FILES.WRITTEN_DATE</code>.
      */
     public void setWrittenDate(LocalDate value) {
-        set(15, value);
+        set(14, value);
     }
 
     /**
      * Getter for <code>ADMIN.FILES.WRITTEN_DATE</code>.
      */
     public LocalDate getWrittenDate() {
-        return (LocalDate) get(15);
+        return (LocalDate) get(14);
     }
 
     /**
      * Setter for <code>ADMIN.FILES.IS_ASCIIDOC</code>.
      */
     public void setIsAsciidoc(Boolean value) {
-        set(16, value);
+        set(15, value);
     }
 
     /**
      * Getter for <code>ADMIN.FILES.IS_ASCIIDOC</code>.
      */
     public Boolean getIsAsciidoc() {
-        return (Boolean) get(16);
-    }
-
-    /**
-     * Setter for <code>ADMIN.FILES.LOCATION_IDS</code>.
-     */
-    public void setLocationIds(IntegerVarrayRecord value) {
-        set(17, value);
-    }
-
-    /**
-     * Getter for <code>ADMIN.FILES.LOCATION_IDS</code>.
-     */
-    public IntegerVarrayRecord getLocationIds() {
-        return (IntegerVarrayRecord) get(17);
+        return (Boolean) get(15);
     }
 
     // -------------------------------------------------------------------------
@@ -297,7 +268,7 @@ public class FilesRecord extends UpdatableRecordImpl<FilesRecord> {
     /**
      * Create a detached, initialised FilesRecord
      */
-    public FilesRecord(BigDecimal id, String annotation, String content, LocalDate fileDate, String path, IntegerVarrayRecord tags, String uuid, String title, String description, BigDecimal parent, String attachmentCode, BigDecimal journalId, BigDecimal ooFileId, Boolean isLegacyOnlineEditorFile, Boolean isCkEditorFile, LocalDate writtenDate, Boolean isAsciidoc, IntegerVarrayRecord locationIds) {
+    public FilesRecord(BigDecimal id, String annotation, String content, LocalDate fileDate, String path, String uuid, String title, String description, BigDecimal parent, String attachmentCode, BigDecimal journalId, BigDecimal ooFileId, Boolean isLegacyOnlineEditorFile, Boolean isCkEditorFile, LocalDate writtenDate, Boolean isAsciidoc) {
         super(Files.FILES);
 
         setId(id);
@@ -305,7 +276,6 @@ public class FilesRecord extends UpdatableRecordImpl<FilesRecord> {
         setContent(content);
         setFileDate(fileDate);
         setPath(path);
-        setTags(tags);
         setUuid(uuid);
         setTitle(title);
         setDescription(description);
@@ -317,7 +287,6 @@ public class FilesRecord extends UpdatableRecordImpl<FilesRecord> {
         setIsCkEditorFile(isCkEditorFile);
         setWrittenDate(writtenDate);
         setIsAsciidoc(isAsciidoc);
-        setLocationIds(locationIds);
         resetTouchedOnNotNull();
     }
 
@@ -333,7 +302,6 @@ public class FilesRecord extends UpdatableRecordImpl<FilesRecord> {
             setContent(value.getContent());
             setFileDate(value.getFileDate());
             setPath(value.getPath());
-            setTags(value.getTags() == null ? null : new IntegerVarrayRecord(value.getTags()));
             setUuid(value.getUuid());
             setTitle(value.getTitle());
             setDescription(value.getDescription());
@@ -345,7 +313,6 @@ public class FilesRecord extends UpdatableRecordImpl<FilesRecord> {
             setIsCkEditorFile(value.getIsCkEditorFile());
             setWrittenDate(value.getWrittenDate());
             setIsAsciidoc(value.getIsAsciidoc());
-            setLocationIds(value.getLocationIds() == null ? null : new IntegerVarrayRecord(value.getLocationIds()));
             resetTouchedOnNotNull();
         }
     }

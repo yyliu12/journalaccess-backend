@@ -1,5 +1,9 @@
 package com.info25.journalindex.repositories;
 
+import static com.info25.generated.tables.FileLocations.FILE_LOCATIONS;
+import static com.info25.generated.tables.FileTags.FILE_TAGS;
+import static com.info25.generated.tables.Files.FILES;
+
 import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Connection;
@@ -19,6 +23,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Record1;
+import org.jooq.Result;
+import org.jooq.Record;
+import org.jooq.SelectConditionStep;
+import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -34,9 +44,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.info25.generated.tables.pojos.Files;
+import com.info25.generated.tables.records.FilesRecord;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.models.File.Location;
+import com.info25.journalindex.models.JooqFile;
 import com.info25.journalindex.models.OOFile;
 import com.info25.journalindex.services.SolrClient;
 import com.info25.journalindex.util.DateUtils;
@@ -44,8 +55,8 @@ import com.info25.journalindex.util.FileSolrSerializer;
 import com.info25.journalindex.util.FsUtils;
 import com.info25.journalindex.util.SolrSelectQuery;
 import com.info25.journalindex.util.SolrUpdateBuffer;
-import static com.info25.generated.tables.Files.FILES;
 
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 
 /**
@@ -94,8 +105,31 @@ public class FileRepository {
         return new BigDecimal(i);
     }
 
-    public File toClassicFile(Files f) {
+    public File toClassicFile(JooqFile f) {
         return File.fromJooqFile(f);
+    }
+
+    public List<File> toClassicFiles(List<JooqFile> files) {
+        return files.stream().map(this::toClassicFile).collect(Collectors.toList());
+    }
+
+    Field<List<BigDecimal>> locationIds;
+
+    Field<List<BigDecimal>> tagIds;
+
+    @PostConstruct
+    void init() {
+        tagIds = DSL.multiset(dsl.select(FILE_TAGS.TAG_ID)
+            .from(FILE_TAGS)
+            .where(FILES.ID.eq(FILE_TAGS.FILE_ID)))
+            .convertFrom(r -> r.map(Record1::value1))
+            .as("tagIds");
+        
+        locationIds = DSL.multiset(dsl.select(FILE_LOCATIONS.LOCATION_ID)
+            .from(FILE_LOCATIONS)
+            .where(FILES.ID.eq(FILE_LOCATIONS.FILE_ID)))
+            .convertFrom(r -> r.map(Record1::value1))
+            .as("locationIds");
     }
 
     /**
@@ -106,18 +140,18 @@ public class FileRepository {
      */
     @Transactional
     public File getById(int id) {
-        return toClassicFile(dsl.select()
-            .from(FILES)
-            .where(FILES.ID.eq(toBd(id)))
-            .fetchOneInto(Files.class));
+        return toClassicFile(dsl.select(DSL.asterisk(), locationIds, tagIds)
+                .from(FILES)
+                .where(FILES.ID.eq(toBd(id)))
+                .fetchOneInto(JooqFile.class));
     }
 
     public File getByDateAndPath(LocalDate date, String path) {
-        return toClassicFile(dsl.select()
-            .from(FILES)
-            .where(FILES.FILE_DATE.eq(date))
-            .and(FILES.PATH.eq(path))
-            .fetchOneInto(Files.class));
+        return toClassicFile(dsl.select(DSL.asterisk(), locationIds, tagIds)
+                .from(FILES)
+                .where(FILES.FILE_DATE.eq(date))
+                .and(FILES.PATH.eq(path))
+                .fetchOneInto(JooqFile.class));
     }
 
     /**
@@ -126,14 +160,16 @@ public class FileRepository {
      * @param tagId The id of the tag to delete from files.
      */
     public void deleteTagFromFiles(int tagId) {
-        String sql = "UPDATE files SET tags = array_remove(tags, ?)";
-        jdbcTemplate.update(sql, tagId);
+        DSL.delete(FILE_TAGS)
+                .where(FILE_TAGS.TAG_ID.eq(toBd(tagId)))
+                .execute();
     }
 
     public void deleteLocationFromFiles(int locationId) {
         List<File> files = getFilesByLocation(locationId, null);
-        String sql = "UPDATE files SET location_ids = array_remove(location_ids, ?)";
-        jdbcTemplate.update(sql, locationId);
+        DSL.delete(FILE_LOCATIONS)
+                .where(FILE_LOCATIONS.LOCATION_ID.eq(toBd(locationId)))
+                .execute();
 
         SolrUpdateBuffer solrUpdateBuffer = new SolrUpdateBuffer();
         HashMap<Integer, com.info25.journalindex.models.Location> locationCache = new HashMap<>();
@@ -141,8 +177,7 @@ public class FileRepository {
         for (File f : files) {
             f.getLocationIds().removeIf(id -> id == locationId);
             solrUpdateBuffer.addToBuffer(
-                fileSolrSerializer.serializeLocationsForSolrModifyQuery(f, locationCache)
-            );
+                    fileSolrSerializer.serializeLocationsForSolrModifyQuery(f, locationCache));
         }
 
         saveSolrBuffer(solrUpdateBuffer);
@@ -156,35 +191,26 @@ public class FileRepository {
 
         for (File f : files) {
             solrUpdateBuffer.addToBuffer(
-                fileSolrSerializer.serializeLocationsForSolrModifyQuery(f, locationCache)
-            );
+                    fileSolrSerializer.serializeLocationsForSolrModifyQuery(f, locationCache));
         }
 
         saveSolrBuffer(solrUpdateBuffer);
     }
 
     public void deleteLocationFromFile(int locationId, int fileId) {
-        String sql = "UPDATE files SET location_ids = array_remove(location_ids, ?) WHERE id = ?";
-        jdbcTemplate.update(sql, locationId, fileId);
+        DSL.delete(FILE_LOCATIONS)
+                .where(FILE_LOCATIONS.LOCATION_ID.eq(toBd(locationId)))
+                .and(FILE_LOCATIONS.FILE_ID.eq(toBd(fileId)))
+                .execute();
 
         __saveToSolr(getById(fileId));
     }
 
     public void deleteJournalIdFromFiles(int journalId) {
-        List<File> files = getFilesByJournal(journalId);
-        String sql = "UPDATE files SET journal_id = 1 WHERE journal_id = ?";
-        jdbcTemplate.update(sql, journalId);
-
-        SolrUpdateBuffer solrUpdateBuffer = new SolrUpdateBuffer();
-
-        for (File f : files) {
-            f.setJournalId(1);
-            solrUpdateBuffer.addToBuffer(
-                fileSolrSerializer.serializeJournalsForSolrModifyQuery(f)
-            );
-        }
-
-        saveSolrBuffer(solrUpdateBuffer);
+        DSL.update(FILES)
+                .set(FILES.JOURNAL_ID, toBd(1))
+                .where(FILES.JOURNAL_ID.eq(toBd(journalId)))
+                .execute();
     }
 
     /**
@@ -195,9 +221,14 @@ public class FileRepository {
      * @return true if the file exists, false otherwise.
      */
     public boolean existsByDateAndPath(LocalDate date, String path) {
-        String sql = "SELECT COUNT(*) FROM files WHERE date = ? AND path = ?";
-        int count = jdbcTemplate.queryForObject(sql, Integer.class, DateUtils.localDateToTimestamp(date), path);
-        return count > 0;
+        return dsl.fetchExists(DSL.selectOne()
+                .from(FILES)
+                .where(FILES.FILE_DATE.eq(date))
+                .and(FILES.PATH.eq(path)));
+    }
+
+    private <R extends Record> SelectConditionStep<R> applyJournalFilter(SelectConditionStep<R> step, int[] journals) {
+        return step.and(journals != null ? FILES.JOURNAL_ID.in(List.of(journals)) : DSL.trueCondition());
     }
 
     /**
@@ -208,101 +239,70 @@ public class FileRepository {
      * @return A list of files for the specified date.
      */
     public List<File> getFilesByDate(LocalDate date, int[] journals) {
-        List<File> files;
-
-        if (journals == null) {
-            String sql = "SELECT * FROM files WHERE date = ?";
-            files = jdbcTemplate.query(sql, new FileRowMapper(), DateUtils.localDateToTimestamp(date));
-        } else {
-            String sql = "SELECT * FROM files WHERE date = ? AND journal_id = ANY (?)";
-            files = jdbcTemplate.query(sql, new FileRowMapper(), DateUtils.localDateToTimestamp(date), journals);
-        }
-
-        return files;
+        return toClassicFiles(applyJournalFilter(dsl.select(DSL.asterisk(), locationIds, tagIds)
+                .from(FILES)
+                .where(FILES.FILE_DATE.eq(date)), journals)
+                .fetchInto(JooqFile.class));
     }
 
     /**
      * This function retrieves all files within a date range
+     * 
      * @param startDate
      * @param endDate
      * @return
      */
     public List<File> getFilesByDateRange(LocalDate startDate, LocalDate endDate, int[] journals) {
-
-
-        List<File> files;
-        if (journals == null) {
-            String sql = "SELECT * FROM files WHERE date BETWEEN ? AND ? ORDER BY date ASC";
-            files = jdbcTemplate.query(sql, new FileRowMapper(),
-                    DateUtils.localDateToTimestamp(startDate),
-                    DateUtils.localDateToTimestamp(endDate));
-        } else {
-            String sql = "SELECT * FROM files WHERE (date BETWEEN ? AND ?) AND (journal_id = ANY (?)) ORDER BY date ASC";
-            files = jdbcTemplate.query(sql, new FileRowMapper(),
-                    DateUtils.localDateToTimestamp(startDate),
-                    DateUtils.localDateToTimestamp(endDate), journals);
-        }
-
-        return files;
+        return toClassicFiles(applyJournalFilter(dsl.select(DSL.asterisk(), locationIds, tagIds)
+                .from(FILES)
+                .where(FILES.FILE_DATE.between(startDate, endDate)), journals)
+                .orderBy(FILES.FILE_DATE.asc())
+                .fetchInto(JooqFile.class));
     }
 
     /**
      * Retrieves the file and its attachments by file id.
      */
     public List<File> getAttachmentsAndFile(int id) {
-        List<File> files = new ArrayList<>();
-        files.add(getById(id));
-
-        String sql = "SELECT * FROM files WHERE parent = ?";
-        List<File> attachments = jdbcTemplate.query(sql, new FileRowMapper(), id);
-        files.addAll(attachments);
-        return files;
+        return toClassicFiles(dsl.select(DSL.asterisk(), locationIds, tagIds)
+                .from(FILES)
+                .where(FILES.ID.eq(toBd(id)).or(FILES.PARENT.eq(toBd(id))))
+                .fetchInto(JooqFile.class));
     }
 
     public int totalEntries(int[] journals) {
-        if (journals != null) {
-            String sql = "SELECT COUNT(*) FROM files WHERE journal_id = ANY(?)";
-            return jdbcTemplate.queryForObject(sql, Integer.class, journals);
-        } else {
-            String sql = "SELECT COUNT(*) FROM files";
-            return jdbcTemplate.queryForObject(sql, Integer.class);
-
-        }
+        return dsl.selectCount()
+                .from(FILES)
+                .where(journals != null ? FILES.JOURNAL_ID.in(List.of(journals)) : DSL.trueCondition())
+                .fetchOne(0, int.class);
     }
 
     public int totalDates(int[] journals) {
-        if (journals != null) {
-            String sql = "SELECT COUNT(DISTINCT date) FROM files WHERE journal_id = ANY(?)";
-            return jdbcTemplate.queryForObject(sql, Integer.class, journals);
-        } else {
-            String sql = "SELECT COUNT(DISTINCT date) FROM files";
-            return jdbcTemplate.queryForObject(sql, Integer.class);
-        }
+        return dsl.select(DSL.countDistinct(FILES.FILE_DATE))
+                .from(FILES)
+                .where(journals != null ? FILES.JOURNAL_ID.in(List.of(journals)) : DSL.trueCondition())
+                .fetchOne(0, int.class);
     }
 
     public List<File> getFilesByLocation(int locationId, int[] journals) {
-        List<File> files;
-        if (journals != null) {
-            String sql = "SELECT * FROM files WHERE location_ids @> ARRAY[?] AND journal_id = ANY(?)";
-            files = jdbcTemplate.query(sql, new FileRowMapper(), locationId, journals);
-        } else {
-            String sql = "SELECT * FROM files WHERE location_ids @> ARRAY[?]";
-            files = jdbcTemplate.query(sql, new FileRowMapper(), locationId);
-        }
-
-        return files;
+        return toClassicFiles(applyJournalFilter(dsl.select(FILES.asterisk(), locationIds, tagIds)
+                .from(FILES)
+                .join(FILE_LOCATIONS).on(FILES.ID.eq(FILE_LOCATIONS.FILE_ID))
+                .where(FILE_LOCATIONS.LOCATION_ID.eq(toBd(locationId))), journals)
+                .fetchInto(JooqFile.class));
     }
 
     public List<File> getFilesByJournal(int journalId) {
-        String sql = "SELECT * FROM files WHERE journal_id = ?";
-        List<File> files = jdbcTemplate.query(sql, new FileRowMapper(), journalId);
-        return files;
+        return toClassicFiles(dsl.select(DSL.asterisk(), locationIds, tagIds)
+                .from(FILES)
+                .where(FILES.JOURNAL_ID.eq(toBd(journalId)))
+                .fetchInto(JooqFile.class));
     }
 
     public boolean existsWithParent(int parentId) {
-        String sql = "SELECT COUNT(*) FROM files WHERE parent = ? LIMIT 1";
-        int count = jdbcTemplate.queryForObject(sql, Integer.class, parentId);
-        return count > 0;
+        return dsl.fetchExists(DSL.selectOne()
+                .from(FILES)
+                .where(FILES.PARENT.eq(toBd(parentId))));
     }
 
     public Map<Integer, Map<Integer, Integer>> getFileCountsByYearAndMonth(boolean countFiles, int[] journals) {
@@ -316,10 +316,12 @@ public class FileRepository {
             count = "count(distinct date)";
         }
         if (journals != null) {
-            sql = "select date_trunc('month', to_timestamp(date)) at time zone 'America/New_York' as ym, " + count + " from files where journal_id = ANY(?) group by ym";
-            args = new Object[]{journals};
+            sql = "select TRUNC(FILES.FILE_DATE, 'MM') as ym, " + count
+                    + " from files where journal_id = ANY(?) group by ym";
+            args = new Object[] { journals };
         } else {
-            sql = "select date_trunc('month', to_timestamp(date)) at time zone 'America/New_York' as ym, " + count + " from files group by ym";
+            sql = "select TRUNC(FILES.FILE_DATE, 'MM') as ym, " + count
+                    + " from files group by ym";
             args = new Object[0];
         }
 
@@ -435,6 +437,7 @@ public class FileRepository {
 
     /**
      * Deletes the given file in the database
+     * 
      * @param f
      */
     public void delete(File f) {
@@ -467,12 +470,16 @@ public class FileRepository {
         osFile.delete();
 
         // Clear all parent file associations
-        String sql = "UPDATE files SET parent = -1, attachment_code = '' WHERE parent = ?";
-        jdbcTemplate.update(sql, f.getId());
+        dsl.update(FILES)
+                .set(FILES.PARENT, toBd(-1))
+                .set(FILES.ATTACHMENT_CODE, "")
+                .where(FILES.PARENT.eq(toBd(f.getId())))
+                .execute();
     }
 
     /**
      * Gets the connection object of the jdbc database
+     * 
      * @return
      * @throws SQLException
      */
@@ -486,8 +493,9 @@ public class FileRepository {
 
     /**
      * Prepares a PreparedStatement object based on a file object
+     * 
      * @param ps the preparedstatement to prepare
-     * @param f the file object with which to prepare the preparedstatement
+     * @param f  the file object with which to prepare the preparedstatement
      * @throws SQLException
      */
     private void preparedStatementFromFile(PreparedStatement ps, File f) throws SQLException {
@@ -501,16 +509,18 @@ public class FileRepository {
         ps.setArray(6, c.createArrayOf("integer", f.getTags().toArray(new Integer[0])));
 
         ps.setArray(7, c.createArrayOf("integer", f.getLocationIds().toArray(new Integer[0])));
-        /*Array coordinatesArray = c.createArrayOf("text", f.getLocations().stream()
-                .map(Location::getCoordinate).toArray(String[]::new));
-        ps.setArray(7, coordinatesArray);
-
-        Array addressArray = c.createArrayOf("text", f.getLocations().stream()
-                .map(Location::getAddress).toArray(String[]::new));
-        ps.setArray(8, addressArray);
-
-        Array buildingNameArray = c.createArrayOf("text", f.getLocations().stream()
-                .map(Location::getBuildingName).toArray(String[]::new));*/
+        /*
+         * Array coordinatesArray = c.createArrayOf("text", f.getLocations().stream()
+         * .map(Location::getCoordinate).toArray(String[]::new));
+         * ps.setArray(7, coordinatesArray);
+         * 
+         * Array addressArray = c.createArrayOf("text", f.getLocations().stream()
+         * .map(Location::getAddress).toArray(String[]::new));
+         * ps.setArray(8, addressArray);
+         * 
+         * Array buildingNameArray = c.createArrayOf("text", f.getLocations().stream()
+         * .map(Location::getBuildingName).toArray(String[]::new));
+         */
 
         c.close(); // ALWAYS CLOSE - OTHERWISE LEAKS CONNECTIONS
 
@@ -535,45 +545,15 @@ public class FileRepository {
      * Assembles an SQL commant based on the preparedStatement
      */
     private void __saveToSql(File f) {
-        int id = f.getId();
-        boolean newEntry = id == -1;
-        // This is for new files
-        if (id != -1) {
-            String sql = "UPDATE files SET uuid = ?, path = ?, " +
-                    "date = ?, annotation = ?, content = ?, tags = ?, " +
-                    "location_ids = ?, " +
-                    "title = ?, description = ?, " + 
-                    "parent = ?, attachment_code = ?, journal_id = ?, oo_file_id = ?, " + 
-                    "is_legacy_online_editor_file = ?, is_ck_editor_file = ?, written_date = ?, " +
-                    "is_asciidoc = ? " +
-                    "WHERE id = ?";
-            jdbcTemplate.update(sql, ps -> {
-                preparedStatementFromFile(ps, f);
-                // modifying files also requires the file id, which is not set by
-                // the function in case we are actually creating a file
-                ps.setInt(18, f.getId());
-            });
-        } else {
-            // This is for existing files
-            String sql = "INSERT INTO files (uuid, path, date, annotation, content," +
-                    "tags, location_ids, " +
-                    "title, description, parent, attachment_code," +
-                    "journal_id, oo_file_id, is_legacy_online_editor_file, is_ck_editor_file, written_date, is_asciidoc) " + 
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
-            KeyHolder kh = new GeneratedKeyHolder();
-            jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                preparedStatementFromFile(ps, f);
-                return ps;
-            }, kh);
-            // After insert, we need to get the generated ID
-
-            f.setId(kh.getKey().intValue());
-        }
+        FilesRecord record = dsl.fetchOne(FILES, FILES.ID.eq(toBd(f.getId())));
+        record.from(f.toJooqFile());
+        record.store();
+        f.setId(record.getId().intValue());
     }
 
     /**
      * Sends a solr update command
+     * 
      * @param f the file with which to update in solr
      */
     private void __saveToSolr(File f) {
@@ -586,15 +566,18 @@ public class FileRepository {
 
     /**
      * Deletes a file from Sql
+     * 
      * @param f
      */
     private void __deleteFromSql(File f) {
-        String sql = "DELETE FROM files WHERE id = ?";
-        jdbcTemplate.update(sql, f.getId());
+        dsl.delete(FILES)
+                .where(FILES.ID.eq(toBd(f.getId())))
+                .execute();
     }
 
     /**
      * Deletes a file from Solr
+     * 
      * @param f
      */
     private void __deleteFromSolr(File f) {
@@ -604,27 +587,18 @@ public class FileRepository {
 
     /**
      * Gets dates where there exists files in given month and year
+     * 
      * @param month
      * @param year
      * @return a list of dates
      */
     public List<LocalDate> getDatesWithFilesInJournals(int month, int year, int[] journals) {
-        LocalDate startDate = LocalDate.of(year, month, 1);
-        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
-        long startDateTimestamp = DateUtils.localDateToTimestamp(startDate);
-        long endDateTimestamp = DateUtils.localDateToTimestamp(endDate);
-        List<Long> dates;
-        if (journals != null) {
-            String sql = "SELECT DISTINCT date FROM files WHERE (date BETWEEN ? AND ?) AND (journal_id = ANY (?))";
-            dates = jdbcTemplate.queryForList(sql, Long.class, startDateTimestamp, endDateTimestamp, journals);
-        } else {
-            String sql = "SELECT DISTINCT date FROM files WHERE date BETWEEN ? AND ?";
-            dates = jdbcTemplate.queryForList(sql, Long.class, startDateTimestamp, endDateTimestamp);
-        }
-
-        return dates.stream()
-                .map(DateUtils::timestampToLocalDate)
-                .collect(Collectors.toList());
+        return applyJournalFilter(dsl.selectDistinct(FILES.FILE_DATE)
+                .from(FILES)
+                .where(FILES.FILE_DATE.between(
+                        LocalDate.of(year, month, 1),
+                        LocalDate.of(year, month, LocalDate.of(year, month, 1).lengthOfMonth()))), journals)
+                .fetchInto(LocalDate.class);
     }
 
     public class FileRowMapper implements RowMapper<File> {

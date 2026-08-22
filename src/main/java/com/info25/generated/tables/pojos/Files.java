@@ -7,7 +7,6 @@ package com.info25.generated.tables.pojos;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 
 /**
@@ -23,7 +22,6 @@ public class Files implements Serializable {
     private String content;
     private LocalDate fileDate;
     private String path;
-    private List<BigDecimal> tags;
     private String uuid;
     private String title;
     private String description;
@@ -35,7 +33,6 @@ public class Files implements Serializable {
     private Boolean isCkEditorFile;
     private LocalDate writtenDate;
     private Boolean isAsciidoc;
-    private List<BigDecimal> locationIds;
 
     public Files() {}
 
@@ -45,7 +42,6 @@ public class Files implements Serializable {
         this.content = value.content;
         this.fileDate = value.fileDate;
         this.path = value.path;
-        this.tags = value.tags;
         this.uuid = value.uuid;
         this.title = value.title;
         this.description = value.description;
@@ -57,7 +53,6 @@ public class Files implements Serializable {
         this.isCkEditorFile = value.isCkEditorFile;
         this.writtenDate = value.writtenDate;
         this.isAsciidoc = value.isAsciidoc;
-        this.locationIds = value.locationIds;
     }
 
     public Files(
@@ -66,7 +61,6 @@ public class Files implements Serializable {
         String content,
         LocalDate fileDate,
         String path,
-        List<BigDecimal> tags,
         String uuid,
         String title,
         String description,
@@ -77,15 +71,13 @@ public class Files implements Serializable {
         Boolean isLegacyOnlineEditorFile,
         Boolean isCkEditorFile,
         LocalDate writtenDate,
-        Boolean isAsciidoc,
-        List<BigDecimal> locationIds
+        Boolean isAsciidoc
     ) {
         this.id = id;
         this.annotation = annotation;
         this.content = content;
         this.fileDate = fileDate;
         this.path = path;
-        this.tags = tags;
         this.uuid = uuid;
         this.title = title;
         this.description = description;
@@ -97,7 +89,6 @@ public class Files implements Serializable {
         this.isCkEditorFile = isCkEditorFile;
         this.writtenDate = writtenDate;
         this.isAsciidoc = isAsciidoc;
-        this.locationIds = locationIds;
     }
 
     /**
@@ -168,20 +159,6 @@ public class Files implements Serializable {
      */
     public void setPath(String path) {
         this.path = path;
-    }
-
-    /**
-     * Getter for <code>ADMIN.FILES.TAGS</code>.
-     */
-    public List<BigDecimal> getTags() {
-        return this.tags;
-    }
-
-    /**
-     * Setter for <code>ADMIN.FILES.TAGS</code>.
-     */
-    public void setTags(List<BigDecimal> tags) {
-        this.tags = tags;
     }
 
     /**
@@ -338,20 +315,6 @@ public class Files implements Serializable {
         this.isAsciidoc = isAsciidoc;
     }
 
-    /**
-     * Getter for <code>ADMIN.FILES.LOCATION_IDS</code>.
-     */
-    public List<BigDecimal> getLocationIds() {
-        return this.locationIds;
-    }
-
-    /**
-     * Setter for <code>ADMIN.FILES.LOCATION_IDS</code>.
-     */
-    public void setLocationIds(List<BigDecimal> locationIds) {
-        this.locationIds = locationIds;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -390,12 +353,6 @@ public class Files implements Serializable {
                 return false;
         }
         else if (!this.path.equals(other.path))
-            return false;
-        if (this.tags == null) {
-            if (other.tags != null)
-                return false;
-        }
-        else if (!this.tags.equals(other.tags))
             return false;
         if (this.uuid == null) {
             if (other.uuid != null)
@@ -463,12 +420,6 @@ public class Files implements Serializable {
         }
         else if (!this.isAsciidoc.equals(other.isAsciidoc))
             return false;
-        if (this.locationIds == null) {
-            if (other.locationIds != null)
-                return false;
-        }
-        else if (!this.locationIds.equals(other.locationIds))
-            return false;
         return true;
     }
 
@@ -481,7 +432,6 @@ public class Files implements Serializable {
         result = prime * result + ((this.content == null) ? 0 : this.content.hashCode());
         result = prime * result + ((this.fileDate == null) ? 0 : this.fileDate.hashCode());
         result = prime * result + ((this.path == null) ? 0 : this.path.hashCode());
-        result = prime * result + ((this.tags == null) ? 0 : this.tags.hashCode());
         result = prime * result + ((this.uuid == null) ? 0 : this.uuid.hashCode());
         result = prime * result + ((this.title == null) ? 0 : this.title.hashCode());
         result = prime * result + ((this.description == null) ? 0 : this.description.hashCode());
@@ -493,7 +443,6 @@ public class Files implements Serializable {
         result = prime * result + ((this.isCkEditorFile == null) ? 0 : this.isCkEditorFile.hashCode());
         result = prime * result + ((this.writtenDate == null) ? 0 : this.writtenDate.hashCode());
         result = prime * result + ((this.isAsciidoc == null) ? 0 : this.isAsciidoc.hashCode());
-        result = prime * result + ((this.locationIds == null) ? 0 : this.locationIds.hashCode());
         return result;
     }
 
@@ -506,7 +455,6 @@ public class Files implements Serializable {
         sb.append(", ").append(content);
         sb.append(", ").append(fileDate);
         sb.append(", ").append(path);
-        sb.append(", ").append(tags);
         sb.append(", ").append(uuid);
         sb.append(", ").append(title);
         sb.append(", ").append(description);
@@ -518,7 +466,6 @@ public class Files implements Serializable {
         sb.append(", ").append(isCkEditorFile);
         sb.append(", ").append(writtenDate);
         sb.append(", ").append(isAsciidoc);
-        sb.append(", ").append(locationIds);
 
         sb.append(")");
         return sb.toString();

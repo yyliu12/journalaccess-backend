@@ -241,10 +241,11 @@
 						<id>my-id</id>
 						<phase>do-jooq</phase>
 						<goals>
-							<goal>generate</goal>
+							<goal>do-jooq</goal>
 						</goals>
 					</execution>
 				</executions>
+				
 
 				<configuration>
 					<!-- Configure the database connection here -->

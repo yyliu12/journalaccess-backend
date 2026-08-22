@@ -2,6 +2,7 @@ package com.info25.journalindex.models;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A file represents a file uploaded to the system as part of a journal entry.
@@ -16,7 +17,8 @@ public class File {
     String uuid;
     String content;
     ArrayList<Location> locations;
-    ArrayList<Integer> tags = new ArrayList<>();
+    List<Integer> tags = new ArrayList<>();
+    boolean tagsChanged = false;
     String annotation;
     String title;
     String description;
@@ -28,7 +30,8 @@ public class File {
     boolean isCKEditorFile = false;
     LocalDate writtenDate;
     boolean isAsciidoc = false;
-    ArrayList<Integer> locationIds = new ArrayList<>();
+    List<Integer> locationIds = new ArrayList<>();
+    boolean locationIdsChanged = false;
     /** 
      * These variables are used to save date and path modifications to the filesystem
      * since we need to know the original date & path in order to rename a file.
@@ -146,20 +149,13 @@ public class File {
         this.locations = locations;
     }
 
-    public ArrayList<Integer> getTags() {
+    public List<Integer> getTags() {
         return tags;
     }
 
-    public void setTags(ArrayList<Integer> tags) {
+    public void setTags(List<Integer> tags) {
+        this.tagsChanged = true;
         this.tags = tags;
-    }
-
-    public void addTag(int tag) {
-        this.tags.add(tag);
-    }
-
-    public void removeTag(int tag) {
-        this.tags.remove(Integer.valueOf(tag));
     }
 
     public String getContent() {
@@ -178,6 +174,8 @@ public class File {
         this.__pathModified = false;
         this.__originalDate = null;
         this.__originalPath = null;
+        this.locationIdsChanged = false;
+        this.tagsChanged = false;
     }
 
     public boolean __isDateModified() {
@@ -284,18 +282,19 @@ public class File {
         isAsciidoc = asciidoc;
     }
 
-    public ArrayList<Integer> getLocationIds() {
+    public List<Integer> getLocationIds() {
         return locationIds;
     }
 
-    public void setLocationIds(ArrayList<Integer> locationIds) {
+    public void setLocationIds(List<Integer> locationIds) {
+        this.locationIdsChanged = true;
         this.locationIds = locationIds;
     }
 
     // As part of the Jooq transition we need to convert this
     // to the Jooq generated version
-    public com.info25.generated.tables.pojos.Files toJooqFile() {
-        com.info25.generated.tables.pojos.Files jooqFile = new com.info25.generated.tables.pojos.Files();
+    public JooqFile toJooqFile() {
+        JooqFile jooqFile = new JooqFile();
         jooqFile.setId(new BigDecimal(this.id));
         jooqFile.setPath(this.path);
         jooqFile.setFileDate(this.date);
@@ -312,10 +311,12 @@ public class File {
         jooqFile.setIsCkEditorFile(this.isCKEditorFile);
         jooqFile.setWrittenDate(this.writtenDate);
         jooqFile.setIsAsciidoc(this.isAsciidoc);
+        jooqFile.setLocationIds(this.locationIds.stream().map(BigDecimal::new).toList());
+        jooqFile.setTagIds(this.tags.stream().map(BigDecimal::new).toList());
         return jooqFile;
     }
 
-    public static File fromJooqFile(com.info25.generated.tables.pojos.Files jooqFile) {
+    public static File fromJooqFile(JooqFile jooqFile) {
         File file = new File();
         file.setId(jooqFile.getId().intValue());
         file.setPath(jooqFile.getPath());
@@ -339,6 +340,8 @@ public class File {
         file.setCKEditorFile(Boolean.TRUE.equals(jooqFile.getIsCkEditorFile()));
         file.setWrittenDate(jooqFile.getWrittenDate());
         file.setAsciidoc(Boolean.TRUE.equals(jooqFile.getIsAsciidoc()));
+        System.out.println("JooqFile locationIds: " + jooqFile.getLocationIds());
+        file.setLocationIds(jooqFile.getLocationIds().stream().map(BigDecimal::intValue).toList());
         return file;
     }
 

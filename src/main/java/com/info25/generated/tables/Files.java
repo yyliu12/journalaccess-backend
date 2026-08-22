@@ -8,7 +8,6 @@ import com.info25.generated.Admin;
 import com.info25.generated.Indexes;
 import com.info25.generated.Keys;
 import com.info25.generated.tables.records.FilesRecord;
-import com.info25.generated.udt.records.IntegerVarrayRecord;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -84,11 +83,6 @@ public class Files extends TableImpl<FilesRecord> {
     public final TableField<FilesRecord, String> PATH = createField(DSL.name("PATH"), SQLDataType.VARCHAR(1000), this, "");
 
     /**
-     * The column <code>ADMIN.FILES.TAGS</code>.
-     */
-    public final TableField<FilesRecord, IntegerVarrayRecord> TAGS = createField(DSL.name("TAGS"), SQLDataType.NUMERIC.asArrayDataType(IntegerVarrayRecord.class), this, "");
-
-    /**
      * The column <code>ADMIN.FILES.UUID</code>.
      */
     public final TableField<FilesRecord, String> UUID = createField(DSL.name("UUID"), SQLDataType.VARCHAR(255), this, "");
@@ -143,11 +137,6 @@ public class Files extends TableImpl<FilesRecord> {
      */
     public final TableField<FilesRecord, Boolean> IS_ASCIIDOC = createField(DSL.name("IS_ASCIIDOC"), SQLDataType.BOOLEAN, this, "");
 
-    /**
-     * The column <code>ADMIN.FILES.LOCATION_IDS</code>.
-     */
-    public final TableField<FilesRecord, IntegerVarrayRecord> LOCATION_IDS = createField(DSL.name("LOCATION_IDS"), SQLDataType.NUMERIC.asArrayDataType(IntegerVarrayRecord.class), this, "");
-
     private Files(Name alias, Table<FilesRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -194,7 +183,7 @@ public class Files extends TableImpl<FilesRecord> {
 
     @Override
     public UniqueKey<FilesRecord> getPrimaryKey() {
-        return Keys.SYS_C0031107;
+        return Keys.SYS_C0031175;
     }
 
     @Override

@@ -35,16 +35,16 @@ public class EventsFileRecord extends UpdatableRecordImpl<EventsFileRecord> {
     }
 
     /**
-     * Setter for <code>ADMIN.EVENTS_FILE.file</code>.
+     * Setter for <code>ADMIN.EVENTS_FILE.FILE_ID</code>.
      */
-    public void setFile(BigDecimal value) {
+    public void setFileId(BigDecimal value) {
         set(1, value);
     }
 
     /**
-     * Getter for <code>ADMIN.EVENTS_FILE.file</code>.
+     * Getter for <code>ADMIN.EVENTS_FILE.FILE_ID</code>.
      */
-    public BigDecimal getFile() {
+    public BigDecimal getFileId() {
         return (BigDecimal) get(1);
     }
 
@@ -85,11 +85,11 @@ public class EventsFileRecord extends UpdatableRecordImpl<EventsFileRecord> {
     /**
      * Create a detached, initialised EventsFileRecord
      */
-    public EventsFileRecord(BigDecimal id, BigDecimal file, BigDecimal event) {
+    public EventsFileRecord(BigDecimal id, BigDecimal fileId, BigDecimal event) {
         super(EventsFile.EVENTS_FILE);
 
         setId(id);
-        setFile(file);
+        setFileId(fileId);
         setEvent(event);
         resetTouchedOnNotNull();
     }
@@ -102,7 +102,7 @@ public class EventsFileRecord extends UpdatableRecordImpl<EventsFileRecord> {
 
         if (value != null) {
             setId(value.getId());
-            setFile(value.getFile());
+            setFileId(value.getFileId());
             setEvent(value.getEvent());
             resetTouchedOnNotNull();
         }

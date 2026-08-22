@@ -8,6 +8,8 @@ import com.info25.generated.tables.Backlinks;
 import com.info25.generated.tables.Dbtools$executionHistory;
 import com.info25.generated.tables.Events;
 import com.info25.generated.tables.EventsFile;
+import com.info25.generated.tables.FileLocations;
+import com.info25.generated.tables.FileTags;
 import com.info25.generated.tables.Files;
 import com.info25.generated.tables.Journals;
 import com.info25.generated.tables.Locations;
@@ -40,6 +42,16 @@ public class Tables {
      * The table <code>ADMIN.EVENTS_FILE</code>.
      */
     public static final EventsFile EVENTS_FILE = EventsFile.EVENTS_FILE;
+
+    /**
+     * The table <code>ADMIN.FILE_LOCATIONS</code>.
+     */
+    public static final FileLocations FILE_LOCATIONS = FileLocations.FILE_LOCATIONS;
+
+    /**
+     * The table <code>ADMIN.FILE_TAGS</code>.
+     */
+    public static final FileTags FILE_TAGS = FileTags.FILE_TAGS;
 
     /**
      * The table <code>ADMIN.FILES</code>.

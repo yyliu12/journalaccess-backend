@@ -132,7 +132,7 @@ public class Tags extends TableImpl<TagsRecord> {
 
     @Override
     public UniqueKey<TagsRecord> getPrimaryKey() {
-        return Keys.SYS_C0031115;
+        return Keys.SYS_C0031183;
     }
 
     @Override

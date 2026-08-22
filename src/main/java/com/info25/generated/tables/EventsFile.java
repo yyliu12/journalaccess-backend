@@ -62,9 +62,9 @@ public class EventsFile extends TableImpl<EventsFileRecord> {
     public final TableField<EventsFileRecord, BigDecimal> ID = createField(DSL.name("ID"), SQLDataType.NUMERIC.nullable(false).generatedByDefaultAsIdentity(), this, "");
 
     /**
-     * The column <code>ADMIN.EVENTS_FILE.file</code>.
+     * The column <code>ADMIN.EVENTS_FILE.FILE_ID</code>.
      */
-    public final TableField<EventsFileRecord, BigDecimal> FILE = createField(DSL.name("file"), SQLDataType.NUMERIC, this, "");
+    public final TableField<EventsFileRecord, BigDecimal> FILE_ID = createField(DSL.name("FILE_ID"), SQLDataType.NUMERIC, this, "");
 
     /**
      * The column <code>ADMIN.EVENTS_FILE.EVENT</code>.
@@ -117,7 +117,7 @@ public class EventsFile extends TableImpl<EventsFileRecord> {
 
     @Override
     public UniqueKey<EventsFileRecord> getPrimaryKey() {
-        return Keys.SYS_C0031105;
+        return Keys.SYS_C0031173;
     }
 
     @Override

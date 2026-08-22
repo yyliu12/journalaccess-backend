@@ -127,7 +127,7 @@ public class Locations extends TableImpl<LocationsRecord> {
 
     @Override
     public UniqueKey<LocationsRecord> getPrimaryKey() {
-        return Keys.SYS_C0031111;
+        return Keys.SYS_C0031179;
     }
 
     @Override
