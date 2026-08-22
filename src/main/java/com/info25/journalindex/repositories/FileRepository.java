@@ -1,6 +1,14 @@
 package com.info25.journalindex.repositories;
 
-import java.sql.*;
+import java.math.BigDecimal;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,24 +18,23 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang3.ArrayUtils;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.info25.journalindex.models.Backlink;
-import com.info25.journalindex.models.EventFile;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.info25.generated.tables.pojos.Files;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.models.File.Location;
 import com.info25.journalindex.models.OOFile;
@@ -37,9 +44,9 @@ import com.info25.journalindex.util.FileSolrSerializer;
 import com.info25.journalindex.util.FsUtils;
 import com.info25.journalindex.util.SolrSelectQuery;
 import com.info25.journalindex.util.SolrUpdateBuffer;
+import static com.info25.generated.tables.Files.FILES;
 
 import lombok.Data;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * This class is responsible for saving files to Solr and SQL.
@@ -80,6 +87,17 @@ public class FileRepository {
     @Autowired
     OOFileRepository ooFileRepository;
 
+    @Autowired
+    DSLContext dsl;
+
+    public BigDecimal toBd(int i) {
+        return new BigDecimal(i);
+    }
+
+    public File toClassicFile(Files f) {
+        return File.fromJooqFile(f);
+    }
+
     /**
      * This function returns a file with SQL and Solr data baesd on id.
      *
@@ -88,15 +106,18 @@ public class FileRepository {
      */
     @Transactional
     public File getById(int id) {
-        String sql = "SELECT * FROM files WHERE id = ?";
-        File file = jdbcTemplate.queryForObject(sql, new FileRowMapper(), new Object[]{id});
-        return file;
+        return toClassicFile(dsl.select()
+            .from(FILES)
+            .where(FILES.ID.eq(toBd(id)))
+            .fetchOneInto(Files.class));
     }
 
     public File getByDateAndPath(LocalDate date, String path) {
-        String sql = "SELECT * FROM files WHERE date = ? AND path = ?";
-        File file = jdbcTemplate.queryForObject(sql, new FileRowMapper(), DateUtils.localDateToTimestamp(date), path);
-        return file;
+        return toClassicFile(dsl.select()
+            .from(FILES)
+            .where(FILES.FILE_DATE.eq(date))
+            .and(FILES.PATH.eq(path))
+            .fetchOneInto(Files.class));
     }
 
     /**

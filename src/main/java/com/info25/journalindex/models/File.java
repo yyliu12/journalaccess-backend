@@ -1,4 +1,5 @@
 package com.info25.journalindex.models;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
@@ -290,4 +291,55 @@ public class File {
     public void setLocationIds(ArrayList<Integer> locationIds) {
         this.locationIds = locationIds;
     }
+
+    // As part of the Jooq transition we need to convert this
+    // to the Jooq generated version
+    public com.info25.generated.tables.pojos.Files toJooqFile() {
+        com.info25.generated.tables.pojos.Files jooqFile = new com.info25.generated.tables.pojos.Files();
+        jooqFile.setId(new BigDecimal(this.id));
+        jooqFile.setPath(this.path);
+        jooqFile.setFileDate(this.date);
+        jooqFile.setUuid(this.uuid);
+        jooqFile.setContent(this.content);
+        jooqFile.setAnnotation(this.annotation);
+        jooqFile.setTitle(this.title);
+        jooqFile.setDescription(this.description);
+        jooqFile.setParent(new BigDecimal(this.parent));
+        jooqFile.setAttachmentCode(this.attachmentCode);
+        jooqFile.setJournalId(new BigDecimal(this.journalId));
+        jooqFile.setOoFileId(new BigDecimal(this.ooFileId));
+        jooqFile.setIsLegacyOnlineEditorFile(this.isLegacyOnlineEditorFile);
+        jooqFile.setIsCkEditorFile(this.isCKEditorFile);
+        jooqFile.setWrittenDate(this.writtenDate);
+        jooqFile.setIsAsciidoc(this.isAsciidoc);
+        return jooqFile;
+    }
+
+    public static File fromJooqFile(com.info25.generated.tables.pojos.Files jooqFile) {
+        File file = new File();
+        file.setId(jooqFile.getId().intValue());
+        file.setPath(jooqFile.getPath());
+        file.setDate(jooqFile.getFileDate());
+        file.setUuid(jooqFile.getUuid());
+        file.setContent(jooqFile.getContent());
+        file.setAnnotation(jooqFile.getAnnotation());
+        file.setTitle(jooqFile.getTitle());
+        file.setDescription(jooqFile.getDescription());
+        if (jooqFile.getParent() != null) {
+            file.setParent(jooqFile.getParent().intValue());
+        }
+        file.setAttachmentCode(jooqFile.getAttachmentCode());
+        if (jooqFile.getJournalId() != null) {
+            file.setJournalId(jooqFile.getJournalId().intValue());
+        }
+        if (jooqFile.getOoFileId() != null) {
+            file.setOOFileId(jooqFile.getOoFileId().intValue());
+        }
+        file.setLegacyOnlineEditorFile(Boolean.TRUE.equals(jooqFile.getIsLegacyOnlineEditorFile()));
+        file.setCKEditorFile(Boolean.TRUE.equals(jooqFile.getIsCkEditorFile()));
+        file.setWrittenDate(jooqFile.getWrittenDate());
+        file.setAsciidoc(Boolean.TRUE.equals(jooqFile.getIsAsciidoc()));
+        return file;
+    }
+
 }

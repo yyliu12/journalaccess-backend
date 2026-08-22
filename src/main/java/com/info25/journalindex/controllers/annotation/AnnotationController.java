@@ -110,7 +110,7 @@ public class AnnotationController {
 
 
     @GetMapping("/getViewer/byId/{id}/**")
-    public String getResource(@PathVariable("id") int id, HttpServletRequest req, @RequestParam(required = false) String interactive) {
+    public String getResource(@PathVariable("id") int id, HttpServletRequest req, @RequestParam(name = "interactive", required = false) String interactive) {
         Object uriObject = req.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         String urlParts = "";
         String split = String.valueOf(id);

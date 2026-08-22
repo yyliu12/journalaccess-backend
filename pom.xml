@@ -171,10 +171,140 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Source: https://mvnrepository.com/artifact/com.oracle.database.jdbc/ojdbc11 -->
+		<dependency>
+			<groupId>com.oracle.database.jdbc</groupId>
+			<artifactId>ojdbc11</artifactId>
+			<version>23.26.3.0.0</version>
+			<scope>compile</scope>
+		</dependency>
+
+
+		<dependency>
+			<!-- Use org.jooq                for the Open Source Edition
+                         org.jooq.pro            for commercial editions with Java 25 support,
+                         org.jooq.pro-java-21    for commercial editions with Java 21 support,
+                         org.jooq.pro-java-17    for commercial editions with Java 17 support,
+                         org.jooq.pro-java-11    for commercial editions with Java 11 support,
+                         org.jooq.pro-java-8     for commercial editions with Java 8 support,
+                         org.jooq.trial          for the free trial edition with Java 25 support,
+                         org.jooq.trial-java-21  for the free trial edition with Java 21 support,
+                         org.jooq.trial-java-17  for the free trial edition with Java 17 support,
+                         org.jooq.trial-java-11  for the free trial edition with Java 11 support,
+                         org.jooq.trial-java-8   for the free trial edition with Java 8 support
+    
+                 Note: Only the Open Source Edition is hosted on Maven Central.
+                       Install the others locally using the provided scripts, or access them from here:
+			https://repo.jooq.org
+                       See the JDK version support matrix here: https://www.jooq.org/download/support-matrix-jdk -->
+
+			<groupId>org.jooq.trial</groupId>
+			<artifactId>jooq</artifactId>
+			<version>3.21.7</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jooq</artifactId>
+		</dependency>
+
+
 	</dependencies>
 
 	<build>
 		<plugins>
+			<plugin>
+				<!-- Specify the maven code generator plugin -->
+				<!-- Use org.jooq                for the Open Source Edition
+                       org.jooq.pro            for commercial editions with Java 21 support,
+                       org.jooq.pro-java-17    for commercial editions with Java 17 support,
+                       org.jooq.pro-java-11    for commercial editions with Java 11 support,
+                       org.jooq.pro-java-8     for commercial editions with Java 8 support,
+                       org.jooq.trial          for the free trial edition with Java 21 support,
+                       org.jooq.trial-java-17  for the free trial edition with Java 17 support,
+                       org.jooq.trial-java-11  for the free trial edition with Java 11 support,
+                       org.jooq.trial-java-8   for the free trial edition with Java 8 support
+  
+               Note: Only the Open Source Edition is hosted on Maven Central.
+                     Install the others locally using the provided scripts, or access them from here:
+				https://repo.jooq.org
+                     See the JDK version support matrix here: https://www.jooq.org/download/support-matrix-jdk -->
+
+				<groupId>org.jooq.trial</groupId>
+				<artifactId>jooq-codegen-maven</artifactId>
+				<version>3.21.7</version>
+
+
+				<executions>
+					<execution>
+						<id>my-id</id>
+						<phase>do-jooq</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+
+				<configuration>
+					<!-- Configure the database connection here -->
+					<jdbc>
+						<driver>oracle.jdbc.OracleDriver</driver>
+						<url>
+							jdbc:oracle:thin:@(description=
+							(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.us-ashburn-1.oraclecloud.com))(connect_data=(service_name=g272e32638d7bab_w9uz9p24kt9idmcm_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))</url>
+						<user>admin</user>
+						<password>98UP3ho95pmFXnXB</password>
+					</jdbc>
+
+					<generator>
+						<generate>
+							<pojos>true</pojos>
+						</generate>
+						<!-- The default code generator. You can override this one, to generate your
+						own code style.
+         Supported generators:
+         - org.jooq.codegen.JavaGenerator
+         - org.jooq.codegen.KotlinGenerator
+         - org.jooq.codegen.ScalaGenerator
+         - org.jooq.codegen.Scala3Generator
+         Defaults to org.jooq.codegen.JavaGenerator -->
+						<name>org.jooq.codegen.JavaGenerator</name>
+
+						<database>
+							<!-- The database type. The format here is:
+           org.jooq.meta.[database].[database]Database -->
+							<name>org.jooq.meta.oracle.OracleDatabase</name>
+
+							<!-- The database schema (or in the absence of schema support, in your
+							RDBMS this
+           can be the owner, user, database name) to be generated -->
+							<inputSchema>ADMIN</inputSchema>
+
+							<!-- All elements that are generated from your schema
+           (A Java regular expression. Use the pipe to separate several expressions)
+           Watch out for case-sensitivity. Depending on your database, this might be important! -->
+							<includes>.*</includes>
+
+							<!-- All elements that are excluded from your schema
+           (A Java regular expression. Use the pipe to separate several expressions).
+           Excludes match before includes, i.e. excludes have a higher priority -->
+							<excludes></excludes>
+						</database>
+
+						<target>
+							<!-- The destination package of your generated classes (within the
+							destination directory) -->
+							<packageName>com.info25.generated</packageName>
+
+							<!-- The destination directory of your generated classes. Using Maven
+							directory layout here -->
+							<directory>
+								/Users/yuyangliu/Desktop/journalindex/journalaccess-backend/src/main/java</directory>
+						</target>
+					</generator>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
