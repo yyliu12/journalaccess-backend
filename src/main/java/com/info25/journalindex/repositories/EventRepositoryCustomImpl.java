@@ -1,7 +1,9 @@
 package com.info25.journalindex.repositories;
 
+import java.math.BigDecimal;
 import java.util.List;
 
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,6 +13,8 @@ import com.info25.journalindex.apidtos.EventDto;
 import com.info25.journalindex.apidtos.FileSearchDto;
 import com.info25.journalindex.models.Event;
 import com.info25.journalindex.models.EventFile;
+
+import static com.info25.generated.tables.Events.EVENTS;
 
 @Repository
 public class EventRepositoryCustomImpl implements EventRepositoryCustom {
@@ -26,12 +30,17 @@ public class EventRepositoryCustomImpl implements EventRepositoryCustom {
     @Autowired
     private EventRepository eventRepository;
 
+    @Autowired
+    DSLContext dsl;
+
 	// Updates all children in a (soon to be deleted) parent to have a new parent
 	// of the original parent's parent
     @Override
     public int moveChildrenToNewParent(int oldParent, int newParent) {
-        String sql = "UPDATE events SET parent = ? WHERE parent = ?";
-        return jdbcTemplate.update(sql, newParent, oldParent);
+        dsl.update(EVENTS)
+                .set(EVENTS.PARENT, new BigDecimal(newParent))
+                .where(EVENTS.PARENT.eq(new BigDecimal(oldParent)))
+                .execute();
     }
 
 	// Function to populate the events field of a FileSearchDto object.

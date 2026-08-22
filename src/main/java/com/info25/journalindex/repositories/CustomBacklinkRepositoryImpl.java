@@ -2,6 +2,7 @@ package com.info25.journalindex.repositories;
 
 import java.util.List;
 
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 

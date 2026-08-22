@@ -1,7 +1,10 @@
 package com.info25.journalindex.repositories;
 
+import com.info25.generated.tables.pojos.EventsFile;
 import com.info25.journalindex.models.EventFile;
 import com.info25.journalindex.util.SolrUpdateBuffer;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -9,7 +12,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapperResultSetExtractor;
 import org.springframework.stereotype.Repository;
 
+import static com.info25.generated.tables.EventsFile.EVENTS_FILE;
+import static com.info25.generated.tables.Files.FILES;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class EventFileRepositoryCustomImpl implements EventFileRepositoryCustom {
@@ -24,18 +34,14 @@ public class EventFileRepositoryCustomImpl implements EventFileRepositoryCustom 
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    DSLContext dsl;
+
     @Override
     public void deleteByEventSafe(int eventId) {
-        String sql = "DELETE FROM events_file WHERE event = ?";
-        List<EventFile> filesAffected = eventFileRepository.findByEvent(eventId);
-
-        jdbcTemplate.update(sql, eventId);
-
-        SolrUpdateBuffer solrUpdateBuffer = new SolrUpdateBuffer();
-        for (EventFile eventFile : filesAffected) {
-            fileRepository.saveEventsToSolrBuffer(eventFile.getFile(), solrUpdateBuffer);
-        }
-        fileRepository.saveSolrBuffer(solrUpdateBuffer);
+        dsl.delete(EVENTS_FILE)
+            .where(EVENTS_FILE.EVENT.eq(new BigDecimal(eventId)))
+            .execute();
     }
 
     @Override
@@ -54,25 +60,14 @@ public class EventFileRepositoryCustomImpl implements EventFileRepositoryCustom 
 
     @Override
     public List<EventFile> findByEvent(int eventId, int[] journals) {
-        if (journals == null) {
-            String sql = "SELECT * FROM events_file WHERE  event = ?";
-            List<EventFile> result = jdbcTemplate.query(sql, new Object[] {eventId}, 
-                new RowMapperResultSetExtractor<>(
-                        new BeanPropertyRowMapper<>(EventFile.class)
-                )
-            );
-
-            return result;
-        } else {
-            String sql = "SELECT * FROM events_file LEFT JOIN files on events_file.file = files.id AND event = ? WHERE files.journal_id = ANY (?)";
-            List<EventFile> result = jdbcTemplate.query(sql, new Object[] {eventId, journals}, 
-                new RowMapperResultSetExtractor<>(
-                        new BeanPropertyRowMapper<>(EventFile.class)
-                )
-            );
-
-            return result;
-        }
-        
+        return dsl.select(EVENTS_FILE.asterisk())
+                .from(EVENTS_FILE)
+                .leftJoin(FILES).on(EVENTS_FILE.FILE_ID.eq(FILES.ID))
+                .where(EVENTS_FILE.EVENT.eq(new BigDecimal(eventId)))
+                .and(journals == null ? DSL.trueCondition() : FILES.JOURNAL_ID.in(Arrays.asList(journals)))
+                .fetchInto(EventsFile.class)
+                .stream()
+                .map(EventFile::fromJooqEventFile)
+                .collect(Collectors.toList());
     }
 }
