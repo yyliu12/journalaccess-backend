@@ -14,4 +14,5 @@ public interface BacklinkRepository extends CrudRepository<Backlink, Integer>, C
     void deleteById(int id);
     List<Backlink> findByFrom(int from);
     List<Backlink> findByTo(int to);
+    List<Backlink> findByToIn(List<Integer> to);
 }

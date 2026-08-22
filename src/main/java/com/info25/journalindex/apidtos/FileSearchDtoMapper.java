@@ -37,11 +37,11 @@ public class FileSearchDtoMapper {
     FileRepository fileRepository;
 
     public FileSearchDto toDto(File f) {
-        return toDto(f, null, null);
+        return toDto(f, null, null, true);
     }
 
     // creates a FileSearchDto and populates it with the appropriate fields
-    public FileSearchDto toDto(File f, HashMap<Integer, Tag> tagCache, HashMap<Integer, Location> locationCache) {
+    public FileSearchDto toDto(File f, HashMap<Integer, Tag> tagCache, HashMap<Integer, Location> locationCache, boolean doExtPopulation) {
         FileSearchDto dto = new FileSearchDto();
         dto.setId(f.getId());
         dto.setPath(f.getPath());
@@ -57,15 +57,17 @@ public class FileSearchDtoMapper {
         List<Tag> tags = getTagsByIdsWithCaching(f.getTags(), tagCache);
         dto.setTags(tags);
 
-        backlinkRepository.populateBacklinks(dto);
-        eventRepository.populateEventDtos(dto);
+        if (doExtPopulation) {
+            backlinkRepository.populateBacklinks(dto);
+            eventRepository.populateEventDtos(dto);
+        }
 
         return dto;
     }
 
     // creates a filesearchdto with highlight data returned from solr
     public FileSearchDto toDtoWithHighlight(File f, String highlight) {
-        FileSearchDto dto = toDto(f, null, null);
+        FileSearchDto dto = toDto(f, null, null, true);
         dto.setHighlight(highlight);
         return dto;
     }
@@ -75,9 +77,16 @@ public class FileSearchDtoMapper {
         HashMap<Integer, Tag> tagCache = new HashMap<>();
         HashMap<Integer, Location> locationCache = new HashMap<>();
         List<FileSearchDto> dtos = new ArrayList<>(files.size());
+        // Warm up tags & location caches
+        getTagsByIdsWithCaching(files.stream().flatMap(x -> x.getTags().stream()).distinct().toList(), tagCache);
+        getLocationsByIdsWithCaching(files.stream().flatMap(x -> x.getLocationIds().stream()).distinct().toList(), locationCache);
         for (File f : files) {
-            dtos.add(toDto(f, tagCache, locationCache));
+            dtos.add(toDto(f, tagCache, locationCache, false));
         }
+
+        eventRepository.populateManyEventDtos(dtos);
+        backlinkRepository.populateManyBacklinks(dtos);
+
         return dtos;
     }
 
@@ -117,7 +126,7 @@ public class FileSearchDtoMapper {
             }
         }
 
-        List<Location> results = locationRepository.findByIdIn(
+        List<Location> results = locationRepository.findByManyIds(
             ids.stream()
             .filter(x -> !cache.containsKey(x))
             .distinct()
@@ -131,23 +140,5 @@ public class FileSearchDtoMapper {
         locations.addAll(results);
 
         return locations;
-    }
-
-    public FileSearchDtoMapperSession createSession() {
-        return new FileSearchDtoMapperSession(this);
-    }
-
-    public static class FileSearchDtoMapperSession {
-        private final FileSearchDtoMapper mapper;
-        private final HashMap<Integer, Tag> tagCache = new HashMap<>();
-        private final HashMap<Integer, Location> locationCache = new HashMap<>();
-
-        public FileSearchDtoMapperSession(FileSearchDtoMapper mapper) {
-            this.mapper = mapper;
-        }
-
-        public FileSearchDto toDto(File f) {
-            return mapper.toDto(f, tagCache, locationCache);
-        }
     }
 }

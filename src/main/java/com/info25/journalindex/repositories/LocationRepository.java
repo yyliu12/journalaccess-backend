@@ -11,7 +11,7 @@ import com.info25.journalindex.models.Location;
 
 public interface LocationRepository extends CrudRepository<Location, Integer>, LocationRepositoryCustom {
     Location findById(int id);
-    List<Location> findByIdIn(List<Integer> ids);
+    List<Location> findByManyIds(List<Integer> ids);
     Page<Location> findAllByOrderByIdDesc(Pageable pageable);
     List<Location> searchByBuildingNameOrAddress(@Param("query") String query);
 }

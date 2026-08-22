@@ -12,7 +12,6 @@ import com.info25.journalindex.models.File;
  */
 @Mapper(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL)
 public interface FileModifyDtoMapper {
-    File fileModifyDtoToFile(FileModifyDto file);
     FileModifyDto fileToFileModifyDto(File fileModifyDto);
     void updateFileFromDto(FileModifyDto fileModifyDto, @MappingTarget File file);
 }

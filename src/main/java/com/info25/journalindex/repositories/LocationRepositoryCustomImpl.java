@@ -45,4 +45,19 @@ public class LocationRepositoryCustomImpl implements LocationRepositoryCustom {
                 .map(x -> Location.fromJooqLocation(x))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Location> findByManyIds(List<Integer> ids) {
+        if (ids.size() == 0) {
+            return List.of();
+        } else {
+            return dsl.select(LOCATIONS.asterisk())
+                    .from(LOCATIONS)
+                    .where(LOCATIONS.ID.in(ids))
+                    .fetchInto(Locations.class)
+                    .stream()
+                    .map(x -> Location.fromJooqLocation(x))
+                    .collect(Collectors.toList());
+        }
+    }
 }

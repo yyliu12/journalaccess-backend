@@ -332,7 +332,7 @@ public class FileRepository {
         if (countFiles) {
             count = "count(*)";
         } else {
-            count = "count(distinct date)";
+            count = "count(distinct FILES.FILE_DATE)";
         }
         if (journals != null) {
             sql = "select TRUNC(FILES.FILE_DATE, 'MM') as ym, " + count

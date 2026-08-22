@@ -75,7 +75,7 @@ public class LocationCrud {
         for (int i = 0; i < ids.size(); i++) {
             locationIds.add(ids.get(i).asInt());
         }
-        return locationRepository.findByIdIn(locationIds);
+        return locationRepository.findByManyIds(locationIds);
     }
 
     @PostMapping("getById")

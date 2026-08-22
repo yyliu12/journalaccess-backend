@@ -1,5 +1,6 @@
 package com.info25.journalindex.models;
 
+import com.info25.generated.tables.pojos.Events;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
@@ -21,4 +22,14 @@ public class Event {
     @Column(name = "is_folder")
     boolean isFolder;
     String description;
+
+    public static Event fromJooqEvent(Events jooqEvent) {
+        Event event = new Event();
+        event.setId(jooqEvent.getId().intValue());
+        event.setName(jooqEvent.getName());
+        event.setParent(jooqEvent.getParent().intValue());
+        event.setFolder(jooqEvent.getIsFolder());
+        event.setDescription(jooqEvent.getDescription());
+        return event;
+    }
 }

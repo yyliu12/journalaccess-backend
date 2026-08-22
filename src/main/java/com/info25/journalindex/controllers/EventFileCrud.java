@@ -2,6 +2,7 @@ package com.info25.journalindex.controllers;
 
 import com.info25.journalindex.apidtos.EventFileDto;
 import com.info25.journalindex.apidtos.EventDto;
+import com.info25.journalindex.apidtos.FileSearchDto;
 import com.info25.journalindex.apidtos.FileSearchDtoMapper;
 import com.info25.journalindex.models.EventFile;
 import com.info25.journalindex.models.Event;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * CRUD functions for modifying which files belong to an event
@@ -60,14 +63,18 @@ public class EventFileCrud {
 
     private List<EventFileDto> convertToDto(List<EventFile> files, boolean includeEvent) {
         List<EventFileDto> out = new ArrayList<>();
-        var session = fileSearchDtoMapper.createSession();
+
+        List<Integer> fileIds = files.stream().map(x -> x.getFile()).toList();
+        Map<Integer, FileSearchDto> results = fileSearchDtoMapper.toDtoList(fileRepository.getByIds(fileIds))
+                .stream()
+                .collect(Collectors.toMap(FileSearchDto::getId, x -> x));
 
         for (EventFile ef : files) {
             EventFileDto dto = new EventFileDto();
             dto.setId(ef.getId());
             dto.setEventId(ef.getEvent());
             dto.setFileId(ef.getFile());
-            dto.setFile(session.toDto(fileRepository.getById(ef.getFile())));
+            dto.setFile(results.get(ef.getFile()));
             if (includeEvent) {
                 Event e = eventRepository.findById(ef.getEvent());
                 dto.setEvent(EventDto.builder()

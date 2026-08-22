@@ -40,7 +40,7 @@ public class FileSolrSerializer {
         rootNode.put("id", f.getId());
         rootNode.set("date", createSet(mapper.valueToTree(DateUtils.localDateToTimestamp(f.getDate()))));
         rootNode.set("content", createSet(mapper.valueToTree(retrieveAllTextContent(f))));
-        rootNode.set("location", createSet(mapper.valueToTree(locationRepository.findByIdIn(f.getLocationIds()).stream()
+        rootNode.set("location", createSet(mapper.valueToTree(locationRepository.findByManyIds(f.getLocationIds()).stream()
                 .map(location -> location.getCoordinates())
                 .toList()
         )));
@@ -98,7 +98,7 @@ public class FileSolrSerializer {
             }
         }
 
-        for (Location location : locationRepository.findByIdIn(toSearch)) {
+        for (Location location : locationRepository.findByManyIds(toSearch)) {
             coordinates.add(location.getCoordinates());
             locationCache.put(location.getId(), location);
         }

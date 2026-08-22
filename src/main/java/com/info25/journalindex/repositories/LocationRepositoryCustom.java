@@ -8,4 +8,5 @@ public interface LocationRepositoryCustom {
     void deleteSafe(int locationId);
     void updateSafe(Location location);
     List<Location> searchByBuildingNameOrAddress(String query);
+    List<Location> findByManyIds(List<Integer> ids);
 }

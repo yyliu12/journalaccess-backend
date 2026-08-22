@@ -70,4 +70,15 @@ public class EventFileRepositoryCustomImpl implements EventFileRepositoryCustom 
                 .map(EventFile::fromJooqEventFile)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<EventFile> findByManyFileIds(List<Integer> fileIds) {
+        return dsl.select(EVENTS_FILE.asterisk())
+                .from(EVENTS_FILE)
+                .where(EVENTS_FILE.FILE_ID.in(fileIds.stream().map(BigDecimal::new).collect(Collectors.toList())))
+                .fetchInto(EventsFile.class)
+                .stream()
+                .map(EventFile::fromJooqEventFile)
+                .collect(Collectors.toList());
+    }
 }

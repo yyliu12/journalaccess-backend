@@ -9,4 +9,5 @@ public interface EventFileRepositoryCustom {
     void deleteSafe(EventFile ef);
     void saveSafe(EventFile ef);
     List<EventFile> findByEvent(int eventId, int[] journals);
+    List<EventFile> findByManyFileIds(List<Integer> fileIds);
 }

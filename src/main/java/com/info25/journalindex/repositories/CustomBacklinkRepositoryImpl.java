@@ -21,20 +21,13 @@ class CustomBacklinkRepositoryImpl implements CustomBacklinkRepository {
     @Autowired
     FileRepository fileRepository;
 
-    /**
-     * With a FileSearchDto object, populates the Backlink field of the object
-     * with backlinks that go TO the specific file
-     */
-    @Override
-    public void populateBacklinks(FileSearchDto f) {
-        // Find all backlinks going to this file
-        List<Backlink> backlinks = backlinkRepository.findByTo(f.getId());
+    private void doPopulation(FileSearchDto f, List<Backlink> backlinks) {
         for (Backlink b : backlinks) {
             // don't give client non displayed backlinks -- these are only available
             // when queried on the viewfile screen
-            if (!b.isDisplay()) 
+            if (!b.isDisplay())
                 continue;
-            
+
             File fromFile = fileRepository.getById(b.getFrom());
             FileModifyDto fileModifyDto = new FileModifyDto();
 
@@ -47,17 +40,38 @@ class CustomBacklinkRepositoryImpl implements CustomBacklinkRepository {
             fileModifyDto.setPath(fromFile.getPath());
             fileModifyDto.setDate(fromFile.getDate());
             fileModifyDto.setTitle(fromFile.getTitle());
-			fileModifyDto.setJournalId(fromFile.getJournalId());
+            fileModifyDto.setJournalId(fromFile.getJournalId());
 
             f.getBacklinks().add(
-                BacklinkDto.builder()
-                    .id(b.getId())
-                    .from(b.getFrom())
-                    .to(b.getTo())
-                    .annotation(b.getAnnotation())
-                    .toFile(fileModifyDto)
-                    .build()
+                    BacklinkDto.builder()
+                            .id(b.getId())
+                            .from(b.getFrom())
+                            .to(b.getTo())
+                            .annotation(b.getAnnotation())
+                            .toFile(fileModifyDto)
+                            .build()
             );
+        }
+    }
+
+    /**
+     * With a FileSearchDto object, populates the Backlink field of the object
+     * with backlinks that go TO the specific file
+     */
+    @Override
+    public void populateBacklinks(FileSearchDto f) {
+        // Find all backlinks going to this file
+        List<Backlink> backlinks = backlinkRepository.findByTo(f.getId());
+        doPopulation(f, backlinks);
+
+    }
+
+    public void populateManyBacklinks(List<FileSearchDto> files) {
+        List<Backlink> backlinks = backlinkRepository.findByToIn(files.stream().map(FileSearchDto::getId).toList());
+
+        for (FileSearchDto f : files) {
+            List<Backlink> backlinksForFile = backlinks.stream().filter(b -> b.getTo() == f.getId()).toList();
+            doPopulation(f, backlinksForFile);
         }
     }
 }
