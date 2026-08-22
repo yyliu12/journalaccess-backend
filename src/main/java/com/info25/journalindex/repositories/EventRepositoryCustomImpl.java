@@ -36,7 +36,7 @@ public class EventRepositoryCustomImpl implements EventRepositoryCustom {
 	// Updates all children in a (soon to be deleted) parent to have a new parent
 	// of the original parent's parent
     @Override
-    public int moveChildrenToNewParent(int oldParent, int newParent) {
+    public void moveChildrenToNewParent(int oldParent, int newParent) {
         dsl.update(EVENTS)
                 .set(EVENTS.PARENT, new BigDecimal(newParent))
                 .where(EVENTS.PARENT.eq(new BigDecimal(oldParent)))
