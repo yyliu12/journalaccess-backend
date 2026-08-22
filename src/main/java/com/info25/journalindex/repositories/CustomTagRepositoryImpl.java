@@ -37,6 +37,9 @@ public class CustomTagRepositoryImpl implements CustomTagRepository {
      */
     @Override
     public List<Tag> findByManyIds(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
         return dsl.select(TAGS.asterisk())
                 .from(TAGS)
                 .where(TAGS.ID.in(ids))

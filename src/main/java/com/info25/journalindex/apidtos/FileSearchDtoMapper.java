@@ -52,7 +52,7 @@ public class FileSearchDtoMapper {
         dto.setParent(f.getParent());
         dto.setAttachmentCode(f.getAttachmentCode());
         dto.setJournalId(f.getJournalId());
-        dto.setHasAttachment(fileRepository.existsWithParent(f.getId()));
+        dto.setHasAttachment(f.getHasParent() != null ? f.getHasParent() : fileRepository.existsWithParent(f.getId()));
 
         List<Tag> tags = getTagsByIdsWithCaching(f.getTags(), tagCache);
         dto.setTags(tags);
@@ -85,35 +85,69 @@ public class FileSearchDtoMapper {
     // pass in cache = null to disable caching
     public List<Tag> getTagsByIdsWithCaching(List<Integer> ids, HashMap<Integer, Tag> cache) {
         List<Tag> tags = new ArrayList<>();
-        for (int id : ids) {
-            if (cache != null && cache.containsKey(id)) {
-                tags.add(cache.get(id));
-            } else {
-                Tag t = tagRepository.findById(id);
-                tags.add(t);
-                if (cache != null) {
-                    cache.put(id, t);
-                }
+        
+        for (int x : ids) {
+            if (cache != null && cache.containsKey(x)) {
+                tags.add(cache.get(x));
             }
         }
+
+        List<Tag> results = tagRepository.findByManyIds(
+            ids.stream()
+            .filter(x -> !cache.containsKey(x))
+            .distinct()
+            .toList()
+        );
+
+        for (Tag t : results) {
+            cache.put(t.getId(), t);
+        }
+
+        tags.addAll(results);
 
         return tags;
     }
 
     public List<Location> getLocationsByIdsWithCaching(List<Integer> ids, HashMap<Integer, Location> cache) {
         List<Location> locations = new ArrayList<>();
+        
         for (int id : ids) {
             if (cache != null && cache.containsKey(id)) {
                 locations.add(cache.get(id));
-            } else {
-                Location l = locationRepository.findById(id);
-                locations.add(l);
-                if (cache != null) {
-                    cache.put(id, l);
-                }
             }
         }
 
+        List<Location> results = locationRepository.findByIdIn(
+            ids.stream()
+            .filter(x -> !cache.containsKey(x))
+            .distinct()
+            .toList()
+        );
+
+        for (Location l : results) {
+            cache.put(l.getId(), l);
+        }
+
+        locations.addAll(results);
+
         return locations;
+    }
+
+    public FileSearchDtoMapperSession createSession() {
+        return new FileSearchDtoMapperSession(this);
+    }
+
+    public static class FileSearchDtoMapperSession {
+        private final FileSearchDtoMapper mapper;
+        private final HashMap<Integer, Tag> tagCache = new HashMap<>();
+        private final HashMap<Integer, Location> locationCache = new HashMap<>();
+
+        public FileSearchDtoMapperSession(FileSearchDtoMapper mapper) {
+            this.mapper = mapper;
+        }
+
+        public FileSearchDto toDto(File f) {
+            return mapper.toDto(f, tagCache, locationCache);
+        }
     }
 }

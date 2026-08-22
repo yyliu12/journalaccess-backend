@@ -15,6 +15,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +23,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.DatePart;
 import org.jooq.Field;
 import org.jooq.Record1;
 import org.jooq.Result;
@@ -44,6 +47,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.info25.generated.tables.records.FileTagsRecord;
 import com.info25.generated.tables.records.FilesRecord;
 import com.info25.journalindex.models.File;
 import com.info25.journalindex.models.File.Location;
@@ -117,6 +121,8 @@ public class FileRepository {
 
     Field<List<BigDecimal>> tagIds;
 
+    Field<Boolean> hasParent;
+
     @PostConstruct
     void init() {
         tagIds = DSL.multiset(dsl.select(FILE_TAGS.TAG_ID)
@@ -130,6 +136,11 @@ public class FileRepository {
             .where(FILES.ID.eq(FILE_LOCATIONS.FILE_ID)))
             .convertFrom(r -> r.map(Record1::value1))
             .as("locationIds");
+        
+        hasParent = DSL.exists(dsl.selectOne()
+            .from(FILES)
+            .where(FILES.PARENT.eq(FILES.ID)))
+            .as("hasParent");
     }
 
     /**
@@ -140,14 +151,22 @@ public class FileRepository {
      */
     @Transactional
     public File getById(int id) {
-        return toClassicFile(dsl.select(DSL.asterisk(), locationIds, tagIds)
+        return toClassicFile(dsl.select(DSL.asterisk(), locationIds, tagIds, hasParent)
                 .from(FILES)
                 .where(FILES.ID.eq(toBd(id)))
                 .fetchOneInto(JooqFile.class));
     }
 
+    @Transactional
+    public List<File> getByIds(List<Integer> ids) {
+        return toClassicFiles(dsl.select(DSL.asterisk(), locationIds, tagIds, hasParent)
+                .from(FILES)
+                .where(FILES.ID.in(ids.stream().map(this::toBd).toList()))
+                .fetchInto(JooqFile.class));
+    }
+
     public File getByDateAndPath(LocalDate date, String path) {
-        return toClassicFile(dsl.select(DSL.asterisk(), locationIds, tagIds)
+        return toClassicFile(dsl.select(DSL.asterisk(), locationIds, tagIds, hasParent)
                 .from(FILES)
                 .where(FILES.FILE_DATE.eq(date))
                 .and(FILES.PATH.eq(path))
@@ -228,7 +247,7 @@ public class FileRepository {
     }
 
     private <R extends Record> SelectConditionStep<R> applyJournalFilter(SelectConditionStep<R> step, int[] journals) {
-        return step.and(journals != null ? FILES.JOURNAL_ID.in(List.of(journals)) : DSL.trueCondition());
+        return step.and(journals != null ? FILES.JOURNAL_ID.in(Arrays.stream(journals).boxed().map(BigDecimal::new).collect(Collectors.toList())) : DSL.trueCondition());
     }
 
     /**
@@ -239,7 +258,7 @@ public class FileRepository {
      * @return A list of files for the specified date.
      */
     public List<File> getFilesByDate(LocalDate date, int[] journals) {
-        return toClassicFiles(applyJournalFilter(dsl.select(DSL.asterisk(), locationIds, tagIds)
+        return toClassicFiles(applyJournalFilter(dsl.select(DSL.asterisk(), locationIds, tagIds, hasParent)
                 .from(FILES)
                 .where(FILES.FILE_DATE.eq(date)), journals)
                 .fetchInto(JooqFile.class));
@@ -253,7 +272,7 @@ public class FileRepository {
      * @return
      */
     public List<File> getFilesByDateRange(LocalDate startDate, LocalDate endDate, int[] journals) {
-        return toClassicFiles(applyJournalFilter(dsl.select(DSL.asterisk(), locationIds, tagIds)
+        return toClassicFiles(applyJournalFilter(dsl.select(DSL.asterisk(), locationIds, tagIds, hasParent)
                 .from(FILES)
                 .where(FILES.FILE_DATE.between(startDate, endDate)), journals)
                 .orderBy(FILES.FILE_DATE.asc())
@@ -264,7 +283,7 @@ public class FileRepository {
      * Retrieves the file and its attachments by file id.
      */
     public List<File> getAttachmentsAndFile(int id) {
-        return toClassicFiles(dsl.select(DSL.asterisk(), locationIds, tagIds)
+        return toClassicFiles(dsl.select(DSL.asterisk(), locationIds, tagIds, hasParent)
                 .from(FILES)
                 .where(FILES.ID.eq(toBd(id)).or(FILES.PARENT.eq(toBd(id))))
                 .fetchInto(JooqFile.class));
@@ -285,7 +304,7 @@ public class FileRepository {
     }
 
     public List<File> getFilesByLocation(int locationId, int[] journals) {
-        return toClassicFiles(applyJournalFilter(dsl.select(FILES.asterisk(), locationIds, tagIds)
+        return toClassicFiles(applyJournalFilter(dsl.select(FILES.asterisk(), locationIds, tagIds, hasParent)
                 .from(FILES)
                 .join(FILE_LOCATIONS).on(FILES.ID.eq(FILE_LOCATIONS.FILE_ID))
                 .where(FILE_LOCATIONS.LOCATION_ID.eq(toBd(locationId))), journals)
@@ -293,7 +312,7 @@ public class FileRepository {
     }
 
     public List<File> getFilesByJournal(int journalId) {
-        return toClassicFiles(dsl.select(DSL.asterisk(), locationIds, tagIds)
+        return toClassicFiles(dsl.select(DSL.asterisk(), locationIds, tagIds, hasParent)
                 .from(FILES)
                 .where(FILES.JOURNAL_ID.eq(toBd(journalId)))
                 .fetchInto(JooqFile.class));
@@ -435,6 +454,14 @@ public class FileRepository {
         f.__savedByRepository();
     }
 
+    public List<File> getOTD(int month, int day, int[] journals) {
+        return toClassicFiles(applyJournalFilter(dsl.select(DSL.asterisk(), locationIds, tagIds, hasParent)
+                .from(FILES)
+                .where(DSL.extract(FILES.FILE_DATE, DatePart.MONTH).eq(month))
+                .and(DSL.extract(FILES.FILE_DATE, DatePart.DAY).eq(day)), journals)
+                .fetchInto(JooqFile.class));
+    }
+
     /**
      * Deletes the given file in the database
      * 
@@ -478,77 +505,44 @@ public class FileRepository {
     }
 
     /**
-     * Gets the connection object of the jdbc database
-     * 
-     * @return
-     * @throws SQLException
-     */
-    private Connection getConnection() {
-        try {
-            return jdbcTemplate.getDataSource().getConnection();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /**
-     * Prepares a PreparedStatement object based on a file object
-     * 
-     * @param ps the preparedstatement to prepare
-     * @param f  the file object with which to prepare the preparedstatement
-     * @throws SQLException
-     */
-    private void preparedStatementFromFile(PreparedStatement ps, File f) throws SQLException {
-        ps.setString(1, f.getUuid());
-        ps.setString(2, f.getPath());
-        ps.setLong(3, DateUtils.localDateToTimestamp(f.getDate()));
-        ps.setString(4, f.getAnnotation());
-        ps.setString(5, f.getContent());
-        Connection c = getConnection();
-
-        ps.setArray(6, c.createArrayOf("integer", f.getTags().toArray(new Integer[0])));
-
-        ps.setArray(7, c.createArrayOf("integer", f.getLocationIds().toArray(new Integer[0])));
-        /*
-         * Array coordinatesArray = c.createArrayOf("text", f.getLocations().stream()
-         * .map(Location::getCoordinate).toArray(String[]::new));
-         * ps.setArray(7, coordinatesArray);
-         * 
-         * Array addressArray = c.createArrayOf("text", f.getLocations().stream()
-         * .map(Location::getAddress).toArray(String[]::new));
-         * ps.setArray(8, addressArray);
-         * 
-         * Array buildingNameArray = c.createArrayOf("text", f.getLocations().stream()
-         * .map(Location::getBuildingName).toArray(String[]::new));
-         */
-
-        c.close(); // ALWAYS CLOSE - OTHERWISE LEAKS CONNECTIONS
-
-        ps.setString(8, f.getTitle());
-        ps.setString(9, f.getDescription());
-        ps.setInt(10, f.getParent());
-        ps.setString(11, f.getAttachmentCode());
-        ps.setInt(12, f.getJournalId());
-        ps.setInt(13, f.getOOFileId());
-
-        ps.setBoolean(14, f.isLegacyOnlineEditorFile());
-        ps.setBoolean(15, f.isCKEditorFile());
-
-        ps.setDate(16, f.getWrittenDate() != null ? Date.valueOf(f.getWrittenDate()) : null);
-
-        ps.setBoolean(17, f.isAsciidoc());
-        // update ps.setInt in id == -1 when adding new statements -- the update
-        // sql statement requires the id at the end
-    }
-
-    /**
      * Assembles an SQL commant based on the preparedStatement
      */
     private void __saveToSql(File f) {
+        File curFile = getById(f.getId());
         FilesRecord record = dsl.fetchOne(FILES, FILES.ID.eq(toBd(f.getId())));
+        
         record.from(f.toJooqFile());
         record.store();
         f.setId(record.getId().intValue());
+
+        // Save tags & locations
+        if (!curFile.getTags().equals(f.getTags())) {
+            dsl.delete(FILE_TAGS)
+                    .where(FILE_TAGS.FILE_ID.eq(toBd(f.getId())))
+                    .execute();
+            for (Integer tagId : f.getTags()) {
+                List<FileTagsRecord> records = new ArrayList<>();
+                for (Integer tag : f.getTags()) {
+                    FileTagsRecord tagRecord = new FileTagsRecord();
+                    tagRecord.setFileId(toBd(f.getId()));
+                    tagRecord.setTagId(toBd(tag));
+                    records.add(tagRecord);
+                } 
+                dsl.batchInsert(records).execute();
+            }
+        }
+
+        if (!curFile.getLocationIds().equals(f.getLocationIds())) {
+            dsl.delete(FILE_LOCATIONS)
+                    .where(FILE_LOCATIONS.FILE_ID.eq(toBd(f.getId())))
+                    .execute();
+            for (Integer locationId : f.getLocationIds()) {
+                dsl.insertInto(FILE_LOCATIONS)
+                        .set(FILE_LOCATIONS.FILE_ID, toBd(f.getId()))
+                        .set(FILE_LOCATIONS.LOCATION_ID, toBd(locationId))
+                        .execute();
+            }
+        }
     }
 
     /**
@@ -599,84 +593,6 @@ public class FileRepository {
                         LocalDate.of(year, month, 1),
                         LocalDate.of(year, month, LocalDate.of(year, month, 1).lengthOfMonth()))), journals)
                 .fetchInto(LocalDate.class);
-    }
-
-    public class FileRowMapper implements RowMapper<File> {
-        @Override
-        public File mapRow(ResultSet rs, int rowNum) throws SQLException {
-            File file = new File();
-            file.setId(rs.getInt("id"));
-            file.setPath(rs.getString("path"));
-            file.setDate(DateUtils.timestampToLocalDate(rs.getInt("date")));
-            file.setUuid(rs.getString("uuid"));
-            file.setAnnotation(rs.getString("annotation"));
-            file.setContent(rs.getString("content"));
-            file.setTitle(rs.getString("title"));
-            file.setDescription(rs.getString("description"));
-            file.setParent(rs.getInt("parent"));
-            file.setAttachmentCode(rs.getString("attachment_code"));
-            file.setJournalId(rs.getInt("journal_id"));
-            file.setOOFileId(rs.getInt("oo_file_id"));
-
-            file.setLegacyOnlineEditorFile(rs.getBoolean("is_legacy_online_editor_file"));
-            file.setCKEditorFile(rs.getBoolean("is_ck_editor_file"));
-            file.setAsciidoc(rs.getBoolean("is_asciidoc"));
-
-            Date writtenDate = rs.getDate("written_date");
-            if (writtenDate != null) {
-                file.setWrittenDate(writtenDate.toLocalDate());
-            }
-
-            Array tags = rs.getArray("tags");
-            if (tags != null) {
-                Integer[] tagIds = (Integer[]) tags.getArray();
-                file.setTags(new ArrayList<>(List.of(tagIds)));
-            } else {
-                file.setTags(new ArrayList<>());
-            }
-            Array coordinates = rs.getArray("location_coordinates");
-            Array addresses = rs.getArray("location_address");
-            Array buildingNames = rs.getArray("location_buildingname");
-
-            // assemble location objects out of the three array objects stored in SQL
-            ArrayList<Location> locations = new ArrayList<>();
-            if (coordinates != null && addresses != null && buildingNames != null) {
-                String[] coords = (String[]) coordinates.getArray();
-                String[] addrs = (String[]) addresses.getArray();
-                String[] buildings = (String[]) buildingNames.getArray();
-
-                for (int i = 0; i < coords.length; i++) {
-                    Location loc = new Location();
-                    loc.setCoordinate(coords[i]);
-                    loc.setAddress(addrs[i]);
-                    loc.setBuildingName(buildings[i]);
-                    locations.add(loc);
-                }
-            }
-
-            ArrayList<Integer> locationIds = new ArrayList<>();
-            Array locationIdsArray = rs.getArray("location_ids");
-            if (locationIdsArray != null) {
-                Integer[] locIds = (Integer[]) locationIdsArray.getArray();
-                locationIds.addAll(List.of(locIds));
-            }
-
-            file.setLocations(locations);
-            file.setLocationIds(locationIds);
-
-            return file;
-        }
-
-        public List<File> extractData(ResultSet rs) throws SQLException {
-            List<File> files = new ArrayList<>();
-
-            while (!rs.isAfterLast()) {
-                files.add(mapRow(rs, 0));
-                rs.next();
-            }
-
-            return files;
-        }
     }
 
     // helper class to add the number of files found and if there is a solr error

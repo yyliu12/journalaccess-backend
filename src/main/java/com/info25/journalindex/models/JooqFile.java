@@ -13,4 +13,5 @@ import lombok.EqualsAndHashCode;
 public class JooqFile extends Files {
     List<BigDecimal> locationIds = List.of();
     List<BigDecimal> tagIds = List.of();
+    Boolean hasParent = null;
 }

@@ -60,13 +60,14 @@ public class EventFileCrud {
 
     private List<EventFileDto> convertToDto(List<EventFile> files, boolean includeEvent) {
         List<EventFileDto> out = new ArrayList<>();
+        var session = fileSearchDtoMapper.createSession();
 
         for (EventFile ef : files) {
             EventFileDto dto = new EventFileDto();
             dto.setId(ef.getId());
             dto.setEventId(ef.getEvent());
             dto.setFileId(ef.getFile());
-            dto.setFile(fileSearchDtoMapper.toDto(fileRepository.getById(ef.getFile())));
+            dto.setFile(session.toDto(fileRepository.getById(ef.getFile())));
             if (includeEvent) {
                 Event e = eventRepository.findById(ef.getEvent());
                 dto.setEvent(EventDto.builder()

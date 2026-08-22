@@ -3,6 +3,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A file represents a file uploaded to the system as part of a journal entry.
@@ -44,6 +45,7 @@ public class File {
     boolean __pathModified = false;
     LocalDate __originalDate = null;
     String __originalPath = null;
+    Boolean hasParent = null;
 
     static public class Location {
         String coordinate;
@@ -291,6 +293,14 @@ public class File {
         this.locationIds = locationIds;
     }
 
+    public Boolean getHasParent() {
+        return hasParent;
+    }
+
+    public void setHasParent(Boolean hasParent) {
+        this.hasParent = hasParent;
+    }
+
     // As part of the Jooq transition we need to convert this
     // to the Jooq generated version
     public JooqFile toJooqFile() {
@@ -313,6 +323,7 @@ public class File {
         jooqFile.setIsAsciidoc(this.isAsciidoc);
         jooqFile.setLocationIds(this.locationIds.stream().map(BigDecimal::new).toList());
         jooqFile.setTagIds(this.tags.stream().map(BigDecimal::new).toList());
+        jooqFile.setHasParent(this.hasParent);
         return jooqFile;
     }
 
@@ -340,8 +351,9 @@ public class File {
         file.setCKEditorFile(Boolean.TRUE.equals(jooqFile.getIsCkEditorFile()));
         file.setWrittenDate(jooqFile.getWrittenDate());
         file.setAsciidoc(Boolean.TRUE.equals(jooqFile.getIsAsciidoc()));
-        System.out.println("JooqFile locationIds: " + jooqFile.getLocationIds());
-        file.setLocationIds(jooqFile.getLocationIds().stream().map(BigDecimal::intValue).toList());
+        file.setLocationIds(jooqFile.getLocationIds().stream().map(BigDecimal::intValue).collect(Collectors.toList()));
+        file.setTags(jooqFile.getTagIds().stream().map(BigDecimal::intValue).collect(Collectors.toList()));
+        file.setHasParent(jooqFile.getHasParent());
         return file;
     }
 

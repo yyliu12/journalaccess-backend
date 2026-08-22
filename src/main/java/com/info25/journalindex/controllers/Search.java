@@ -246,28 +246,18 @@ public class Search {
         LocalDate dateTime = DateUtils.parseFromString(date);
         ArrayList<FileSearchDto> results = new ArrayList<>();
 
-        for (int year = OTD_START_YEAR; year <= OTD_END_YEAR; year++) {
-            try {
-                results.addAll(
-                        fileSearchDtoMapper.toDtoList(
-                                journals.length > 0 ? fileRepository.getFilesByDate(
-                                        LocalDate.of(year, dateTime.getMonth(),
-                                                dateTime.getDayOfMonth()
-                                        ),
-                                        journals
-                                ) :  fileRepository.getFilesByDate(
-                                        LocalDate.of(year, dateTime.getMonth(),
-                                                dateTime.getDayOfMonth()
-                                        ),
-                                        null
-                                )
+
+        results.addAll(
+                fileSearchDtoMapper.toDtoList(
+                        journals.length > 0 ? fileRepository.getOTD(
+                                dateTime.getMonthValue(), dateTime.getDayOfMonth(),
+                                journals
+                        ) :  fileRepository.getOTD(
+                                dateTime.getMonthValue(), dateTime.getDayOfMonth(),
+                                null
                         )
-                );
-            } catch (Exception e) {
-                // invalid date
-                continue;
-            }
-        }
+                )
+        );
 
         return results;
     }
