@@ -40,13 +40,13 @@ public class Keys {
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final UniqueKey<BacklinksRecord> SYS_C0031169 = Internal.createUniqueKey(Backlinks.BACKLINKS, DSL.name("SYS_C0031169"), new TableField[] { Backlinks.BACKLINKS.ID }, true);
+    public static final UniqueKey<BacklinksRecord> SYS_C0031187 = Internal.createUniqueKey(Backlinks.BACKLINKS, DSL.name("SYS_C0031187"), new TableField[] { Backlinks.BACKLINKS.ID }, true);
     public static final UniqueKey<Dbtools$executionHistoryRecord> DBTOOLS$EXECUTION_HISTORY_PK = Internal.createUniqueKey(Dbtools$executionHistory.DBTOOLS$EXECUTION_HISTORY, DSL.name("DBTOOLS$EXECUTION_HISTORY_PK"), new TableField[] { Dbtools$executionHistory.DBTOOLS$EXECUTION_HISTORY.ID }, true);
-    public static final UniqueKey<EventsRecord> SYS_C0031171 = Internal.createUniqueKey(Events.EVENTS, DSL.name("SYS_C0031171"), new TableField[] { Events.EVENTS.ID }, true);
-    public static final UniqueKey<EventsFileRecord> SYS_C0031173 = Internal.createUniqueKey(EventsFile.EVENTS_FILE, DSL.name("SYS_C0031173"), new TableField[] { EventsFile.EVENTS_FILE.ID }, true);
-    public static final UniqueKey<FilesRecord> SYS_C0031175 = Internal.createUniqueKey(Files.FILES, DSL.name("SYS_C0031175"), new TableField[] { Files.FILES.ID }, true);
-    public static final UniqueKey<JournalsRecord> SYS_C0031177 = Internal.createUniqueKey(Journals.JOURNALS, DSL.name("SYS_C0031177"), new TableField[] { Journals.JOURNALS.ID }, true);
-    public static final UniqueKey<LocationsRecord> SYS_C0031179 = Internal.createUniqueKey(Locations.LOCATIONS, DSL.name("SYS_C0031179"), new TableField[] { Locations.LOCATIONS.ID }, true);
-    public static final UniqueKey<OoFilesRecord> SYS_C0031181 = Internal.createUniqueKey(OoFiles.OO_FILES, DSL.name("SYS_C0031181"), new TableField[] { OoFiles.OO_FILES.ID }, true);
-    public static final UniqueKey<TagsRecord> SYS_C0031183 = Internal.createUniqueKey(Tags.TAGS, DSL.name("SYS_C0031183"), new TableField[] { Tags.TAGS.ID }, true);
+    public static final UniqueKey<EventsRecord> SYS_C0031189 = Internal.createUniqueKey(Events.EVENTS, DSL.name("SYS_C0031189"), new TableField[] { Events.EVENTS.ID }, true);
+    public static final UniqueKey<EventsFileRecord> SYS_C0031191 = Internal.createUniqueKey(EventsFile.EVENTS_FILE, DSL.name("SYS_C0031191"), new TableField[] { EventsFile.EVENTS_FILE.ID }, true);
+    public static final UniqueKey<FilesRecord> SYS_C0031193 = Internal.createUniqueKey(Files.FILES, DSL.name("SYS_C0031193"), new TableField[] { Files.FILES.ID }, true);
+    public static final UniqueKey<JournalsRecord> SYS_C0031195 = Internal.createUniqueKey(Journals.JOURNALS, DSL.name("SYS_C0031195"), new TableField[] { Journals.JOURNALS.ID }, true);
+    public static final UniqueKey<LocationsRecord> SYS_C0031197 = Internal.createUniqueKey(Locations.LOCATIONS, DSL.name("SYS_C0031197"), new TableField[] { Locations.LOCATIONS.ID }, true);
+    public static final UniqueKey<OoFilesRecord> SYS_C0031199 = Internal.createUniqueKey(OoFiles.OO_FILES, DSL.name("SYS_C0031199"), new TableField[] { OoFiles.OO_FILES.ID }, true);
+    public static final UniqueKey<TagsRecord> SYS_C0031201 = Internal.createUniqueKey(Tags.TAGS, DSL.name("SYS_C0031201"), new TableField[] { Tags.TAGS.ID }, true);
 }

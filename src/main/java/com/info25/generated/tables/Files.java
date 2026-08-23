@@ -173,7 +173,7 @@ public class Files extends TableImpl<FilesRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.DATE_INDEX, Indexes.JOURNAL_INDEX, Indexes.OO_FILE_INDEX);
+        return Arrays.asList(Indexes.DATE_INDEX, Indexes.JOURNAL_INDEX, Indexes.OO_FILE_INDEX, Indexes.PARENT_INDEX);
     }
 
     @Override
@@ -183,7 +183,7 @@ public class Files extends TableImpl<FilesRecord> {
 
     @Override
     public UniqueKey<FilesRecord> getPrimaryKey() {
-        return Keys.SYS_C0031175;
+        return Keys.SYS_C0031193;
     }
 
     @Override

@@ -103,7 +103,7 @@ public class OoFiles extends TableImpl<OoFilesRecord> {
 
     @Override
     public UniqueKey<OoFilesRecord> getPrimaryKey() {
-        return Keys.SYS_C0031181;
+        return Keys.SYS_C0031199;
     }
 
     @Override

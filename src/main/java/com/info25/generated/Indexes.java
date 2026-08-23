@@ -43,6 +43,7 @@ public class Indexes {
     public static final Index LOCATIONS_LATITUDE = Internal.createIndex(DSL.name("LOCATIONS_LATITUDE"), Locations.LOCATIONS, new OrderField[] { Locations.LOCATIONS.LATITUDE }, false);
     public static final Index LOCATIONS_LONGITUDE = Internal.createIndex(DSL.name("LOCATIONS_LONGITUDE"), Locations.LOCATIONS, new OrderField[] { Locations.LOCATIONS.LONGITUDE }, false);
     public static final Index OO_FILE_INDEX = Internal.createIndex(DSL.name("OO_FILE_INDEX"), Files.FILES, new OrderField[] { Files.FILES.OO_FILE_ID }, false);
+    public static final Index PARENT_INDEX = Internal.createIndex(DSL.name("PARENT_INDEX"), Files.FILES, new OrderField[] { Files.FILES.PARENT }, false);
     public static final Index TAGS_FOLDER = Internal.createIndex(DSL.name("TAGS_FOLDER"), Tags.TAGS, new OrderField[] { Tags.TAGS.PARENT }, false);
     public static final Index TAGS_NAME = Internal.createIndex(DSL.name("TAGS_NAME"), Tags.TAGS, new OrderField[] { Tags.TAGS.NAME }, false);
 }

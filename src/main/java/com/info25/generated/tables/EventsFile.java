@@ -117,7 +117,7 @@ public class EventsFile extends TableImpl<EventsFileRecord> {
 
     @Override
     public UniqueKey<EventsFileRecord> getPrimaryKey() {
-        return Keys.SYS_C0031173;
+        return Keys.SYS_C0031191;
     }
 
     @Override

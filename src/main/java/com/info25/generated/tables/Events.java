@@ -127,7 +127,7 @@ public class Events extends TableImpl<EventsRecord> {
 
     @Override
     public UniqueKey<EventsRecord> getPrimaryKey() {
-        return Keys.SYS_C0031171;
+        return Keys.SYS_C0031189;
     }
 
     @Override

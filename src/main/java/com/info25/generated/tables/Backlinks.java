@@ -127,7 +127,7 @@ public class Backlinks extends TableImpl<BacklinksRecord> {
 
     @Override
     public UniqueKey<BacklinksRecord> getPrimaryKey() {
-        return Keys.SYS_C0031169;
+        return Keys.SYS_C0031187;
     }
 
     @Override

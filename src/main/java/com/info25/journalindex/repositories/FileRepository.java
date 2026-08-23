@@ -508,11 +508,22 @@ public class FileRepository {
      * Assembles an SQL commant based on the preparedStatement
      */
     private void __saveToSql(File f) {
-        File curFile = getById(f.getId());
-        FilesRecord record = dsl.fetchOne(FILES, FILES.ID.eq(toBd(f.getId())));
-        
-        record.from(f.toJooqFile());
-        record.store();
+        FilesRecord record = null;
+        File curFile;
+        if (f.getId() == -1) {
+            record = dsl.newRecord(FILES);
+            record.from(f.toJooqFile());
+            record.reset(FILES.ID);
+            record.insert();
+            curFile = f;
+        } else {
+            curFile = getById(f.getId());
+            record = dsl.fetchOne(FILES, FILES.ID.eq(toBd(f.getId())));
+
+            record.from(f.toJooqFile());
+            record.store();
+        }
+
         f.setId(record.getId().intValue());
 
         // Save tags & locations
